@@ -21,6 +21,12 @@ public static class ServiceCollectionExtensions
                 services.AddScoped(contrato, implementacao);
         }
 
+        var rotinas = assembly.GetTypes()
+            .Where(t => t is { IsClass: true, IsAbstract: false } && t.IsSubclassOf(typeof(BackgroundService)));
+
+        foreach (var rotina in rotinas)
+            services.AddSingleton(typeof(IHostedService), rotina);
+
         return services;
     }
 }
