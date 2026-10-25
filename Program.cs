@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Chamapro.Api.Common;
 using Chamapro.Api.Data;
@@ -54,7 +55,7 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.FromMinutes(1),
         NameClaimType = "sub",
-        RoleClaimType = ClaimTypes.Role
+        RoleClaimType = System.Security.Claims.ClaimTypes.Role
     };
 });
 
@@ -83,6 +84,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.UseSwaggerUI(o => o.SwaggerEndpoint("/openapi/v1.json", "CHAMAPRO API v1"));
 }
+
+app.UseStaticFiles();
 
 var pastaPublica = Path.Combine(app.Environment.ContentRootPath, app.Configuration["Arquivos:PastaPublica"] ?? "uploads");
 Directory.CreateDirectory(pastaPublica);
