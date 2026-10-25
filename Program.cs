@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Chamapro.Api.Common;
 using Chamapro.Api.Data;
 using Chamapro.Api.Extensions;
@@ -19,7 +18,7 @@ builder.Services
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(new JsonUpperCaseNamingPolicy()));
+        o.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter(new JsonUpperCaseNamingPolicy()));
     });
 
 builder.Services.AddDbContext<AppDbContext>(o =>
@@ -29,17 +28,42 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddServicesERepositories();
 
-if (builder.Environment.IsDevelopment())
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "CHAMAPRO-DEV-KEY-CHANGE-ME-2026-!@#";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "Chamapro.Api";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "Chamapro.Clients";
+
+builder.Services.AddAuthentication(options =>
 {
-    builder.Services
-        .AddAuthentication(DevAuthenticationDefaults.Scheme)
-        .AddScheme<AuthenticationSchemeOptions, DevAuthenticationHandler>(DevAuthenticationDefaults.Scheme, _ => { });
-}
-else
+    options.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
 {
-    builder.Services.AddAuthentication();
-}
-builder.Services.AddAuthorization();
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtKey)),
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromMinutes(1),
+        NameClaimType = System.Security.Claims.ClaimsIdentity.DefaultNameClaimType,
+        RoleClaimType = System.Security.Claims.ClaimTypes.Role
+    };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ClienteOnly", policy => policy.RequireRole(Perfis.Cliente));
+    options.AddPolicy("ProfissionalOnly", policy => policy.RequireRole(Perfis.Profissional));
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole(Perfis.Admin));
+    options.AddPolicy("ClienteOuAdmin", policy => policy.RequireRole(Perfis.Cliente, Perfis.Admin));
+    options.AddPolicy("ProfissionalOuAdmin", policy => policy.RequireRole(Perfis.Profissional, Perfis.Admin));
+});
 
 var origens = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? Array.Empty<string>();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
@@ -50,6 +74,7 @@ builder.Services.AddOpenApi();
 var app = builder.Build();
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseMiddleware<LoginRateLimitMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -67,6 +92,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseCors();
 app.UseAuthentication();
+app.UseMiddleware<UserActiveMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
