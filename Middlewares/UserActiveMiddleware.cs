@@ -1,8 +1,7 @@
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Concurrent;
 using System.Security.Claims;
-using System.Text.Json;
 using Chamapro.Api.Data;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace Chamapro.Api.Middlewares;
 

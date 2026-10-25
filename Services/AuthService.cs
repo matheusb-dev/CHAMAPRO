@@ -28,18 +28,15 @@ public class AuthService : IAuthService
     }
 
     public async Task<LoginResponse> RegistrarClienteAsync(CadastroClienteRequest request, CancellationToken ct = default)
-    {
-        return await RegistrarAsync(request.Email, request.Nome, request.Senha, TipoUsuario.Cliente, ct);
-    }
+        => await RegistrarAsync(request.Email, request.Nome, request.Senha, TipoUsuario.Cliente, ct);
 
     public async Task<LoginResponse> RegistrarProfissionalAsync(CadastroProfissionalRequest request, CancellationToken ct = default)
-    {
-        return await RegistrarAsync(request.Email, request.Nome, request.Senha, TipoUsuario.Profissional, ct, request.DescricaoPerfil);
-    }
+        => await RegistrarAsync(request.Email, request.Nome, request.Senha, TipoUsuario.Profissional, ct, request.DescricaoPerfil);
 
     public async Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken ct = default)
     {
-        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email.Trim(), ct);
+        var email = request.Email.Trim();
+        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email, ct);
         if (usuario is null || !usuario.Ativo)
             throw BusinessException.Proibido("CREDENCIAIS_INVALIDAS", "E-mail ou senha inválidos.");
 
@@ -47,13 +44,10 @@ public class AuthService : IAuthService
         if (!senhaValida)
             throw BusinessException.Proibido("CREDENCIAIS_INVALIDAS", "E-mail ou senha inválidos.");
 
-        var token = _tokenService.GerarToken(usuario);
-        var expiraEm = DateTime.UtcNow.AddHours(2);
-
         return new LoginResponse
         {
-            Token = token,
-            ExpiraEm = expiraEm,
+            Token = _tokenService.GerarToken(usuario),
+            ExpiraEm = DateTime.UtcNow.AddHours(2),
             Usuario = MapearUsuario(usuario)
         };
     }

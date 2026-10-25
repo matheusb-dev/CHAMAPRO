@@ -1,11 +1,13 @@
-using System.Text.Json;
+using System.Text.Json.Serialization;
 using Chamapro.Api.Common;
 using Chamapro.Api.Data;
 using Chamapro.Api.Extensions;
 using Chamapro.Api.Middlewares;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +20,7 @@ builder.Services
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        o.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter(new JsonUpperCaseNamingPolicy()));
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(new JsonUpperCaseNamingPolicy()));
     });
 
 builder.Services.AddDbContext<AppDbContext>(o =>
@@ -34,25 +36,25 @@ var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "Chamapro.Clients";
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidIssuer = jwtIssuer,
         ValidateAudience = true,
         ValidAudience = jwtAudience,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtKey)),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
         ValidateLifetime = true,
         ClockSkew = TimeSpan.FromMinutes(1),
-        NameClaimType = System.Security.Claims.ClaimsIdentity.DefaultNameClaimType,
-        RoleClaimType = System.Security.Claims.ClaimTypes.Role
+        NameClaimType = "sub",
+        RoleClaimType = ClaimTypes.Role
     };
 });
 

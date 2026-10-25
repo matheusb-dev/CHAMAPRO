@@ -1,9 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Chamapro.Api.Common;
 using Chamapro.Api.DTOs.Requests;
 using Chamapro.Api.DTOs.Responses;
 using Chamapro.Api.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Chamapro.Api.Controllers;
 
@@ -44,14 +45,11 @@ public class AuthController : ApiControllerBase
     [HttpGet("me")]
     public async Task<ActionResult<UsuarioResumoResponse>> Me(CancellationToken ct)
     {
-        var usuarioId = User.Identity?.IsAuthenticated == true
-            ? int.Parse(User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0")
-            : 0;
-
-        if (usuarioId <= 0)
+        var userIdRaw = User.FindFirstValue("sub") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdRaw, out var userId) || userId <= 0)
             throw BusinessException.Proibido("NAO_AUTENTICADO", "Usuário não autenticado.");
 
-        var resposta = await _authService.ObterUsuarioAtualAsync(usuarioId, ct);
+        var resposta = await _authService.ObterUsuarioAtualAsync(userId, ct);
         return Ok(resposta);
     }
 }

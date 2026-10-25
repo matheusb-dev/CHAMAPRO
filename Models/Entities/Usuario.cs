@@ -1,4 +1,3 @@
-using Chamapro.Api.Models.Entities;
 using Chamapro.Api.Models.Enums;
 
 namespace Chamapro.Api.Models.Entities;
