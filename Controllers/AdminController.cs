@@ -59,7 +59,7 @@ public class AdminController : ApiControllerBase
         if (pedido is null)
             throw BusinessException.NaoEncontrado("PEDIDO_NAO_ENCONTRADO", "Pedido não encontrado.");
 
-        if (!Enum.TryParse<StatusPedido>(request.Status, true, out var novoStatus))
+        if (request.Status is not { } novoStatus)
             throw BusinessException.Invalido("STATUS_INVALIDO", "Status do pedido inválido.");
 
         pedido.Status = novoStatus;

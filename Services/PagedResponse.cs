@@ -1,20 +1,18 @@
-﻿using Chamapro.Api.DTOs.Responses;
+namespace Chamapro.Api.Services;
 
-namespace Chamapro.Api.Services
+/// <summary>Resposta paginada de GET /pedidos: { itens, pagina, tamanho, total } (mesmo formato de RespostaPaginada).</summary>
+public class PagedResponse<T>
 {
-    public class PagedResponse<T>
-    {
-        private List<PedidoResumoResponse> pedidoResumoResponses;
-        private int pagina;
-        private int tamanho;
-        private int total;
+    public IReadOnlyList<T> Itens { get; }
+    public int Pagina { get; }
+    public int Tamanho { get; }
+    public int Total { get; }
 
-        public PagedResponse(List<PedidoResumoResponse> pedidoResumoResponses, int pagina, int tamanho, int total)
-        {
-            this.pedidoResumoResponses = pedidoResumoResponses;
-            this.pagina = pagina;
-            this.tamanho = tamanho;
-            this.total = total;
-        }
+    public PagedResponse(IReadOnlyList<T> itens, int pagina, int tamanho, int total)
+    {
+        Itens = itens;
+        Pagina = pagina;
+        Tamanho = tamanho;
+        Total = total;
     }
 }

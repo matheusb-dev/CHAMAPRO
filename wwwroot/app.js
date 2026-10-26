@@ -1,6 +1,10 @@
 const TOKEN_KEY = 'chamapro_token';
 const USER_KEY = 'chamapro_user';
 
+function homeFor(perfil) {
+  return ({ ADMIN: '/admin.html', CLIENTE: '/painel.html', PROFISSIONAL: '/painel.html' })[String(perfil).toUpperCase()] || '/login.html';
+}
+
 function showAlert(message, type = 'error') {
   const alert = document.getElementById('alert');
   if (!alert) return;
@@ -75,12 +79,7 @@ async function loginSubmit(event) {
     saveSession(result.token, result.usuario);
     showAlert('Login realizado com sucesso!', 'success');
 
-    if (result.usuario.perfil === 'ADMIN') {
-      setTimeout(() => window.location.href = '/admin.html', 600);
-      return;
-    }
-
-    setTimeout(() => window.location.href = '/login.html', 600);
+    setTimeout(() => window.location.href = homeFor(result.usuario.perfil), 600);
   } catch (error) {
     showAlert(error.message || 'Erro ao entrar.', 'error');
   }
@@ -109,7 +108,7 @@ async function cadastroSubmit(event) {
 
     saveSession(result.token, result.usuario);
     showAlert('Cadastro realizado com sucesso!', 'success');
-    setTimeout(() => window.location.href = '/admin.html', 700);
+    setTimeout(() => window.location.href = homeFor(result.usuario.perfil), 700);
   } catch (error) {
     showAlert(error.message || 'Erro ao cadastrar.', 'error');
   }
