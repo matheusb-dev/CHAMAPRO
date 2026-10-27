@@ -25,7 +25,10 @@ builder.Services
     });
 
 builder.Services.AddDbContext<AppDbContext>(o =>
-    o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    o.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsql => npgsql.EnableRetryOnFailure(3)
+    ));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();

@@ -38,11 +38,11 @@ public class AuthService : IAuthService
         var email = request.Email.Trim();
         var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email, ct);
         if (usuario is null || !usuario.Ativo)
-            throw BusinessException.Proibido("CREDENCIAIS_INVALIDAS", "E-mail ou senha inválidos.");
+            throw BusinessException.Proibido("CREDENCIAIS_INVALIDADAS", "E-mail ou senha inválidos.");
 
         var senhaValida = BCrypt.Net.BCrypt.Verify(request.Senha, usuario.SenhaHash);
         if (!senhaValida)
-            throw BusinessException.Proibido("CREDENCIAIS_INVALIDAS", "E-mail ou senha inválidos.");
+            throw BusinessException.Proibido("CREDENCIAIS_INVALIDADAS", "E-mail ou senha inválidos.");
 
         return new LoginResponse
         {
@@ -61,7 +61,13 @@ public class AuthService : IAuthService
         return MapearUsuario(usuario);
     }
 
-    private async Task<LoginResponse> RegistrarAsync(string email, string nome, string senha, TipoUsuario tipo, CancellationToken ct, string? descricaoPerfil = null)
+    private async Task<LoginResponse> RegistrarAsync(
+        string email,
+        string nome,
+        string senha,
+        TipoUsuario tipo,
+        CancellationToken ct,
+        string? descricaoPerfil = null)
     {
         var emailNormalizado = email.Trim();
         if (string.IsNullOrWhiteSpace(emailNormalizado))

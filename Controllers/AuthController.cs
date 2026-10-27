@@ -20,7 +20,9 @@ public class AuthController : ApiControllerBase
 
     [HttpPost("cadastro/cliente")]
     [AllowAnonymous]
-    public async Task<ActionResult<LoginResponse>> CadastrarCliente([FromBody] CadastroClienteRequest request, CancellationToken ct)
+    public async Task<ActionResult<LoginResponse>> CadastrarCliente(
+        [FromBody] CadastroClienteRequest request,
+        CancellationToken ct)
     {
         var resposta = await _authService.RegistrarClienteAsync(request, ct);
         return Created("/api/v1/auth/me", resposta);
@@ -28,7 +30,9 @@ public class AuthController : ApiControllerBase
 
     [HttpPost("cadastro/profissional")]
     [AllowAnonymous]
-    public async Task<ActionResult<LoginResponse>> CadastrarProfissional([FromBody] CadastroProfissionalRequest request, CancellationToken ct)
+    public async Task<ActionResult<LoginResponse>> CadastrarProfissional(
+        [FromBody] CadastroProfissionalRequest request,
+        CancellationToken ct)
     {
         var resposta = await _authService.RegistrarProfissionalAsync(request, ct);
         return Created("/api/v1/auth/me", resposta);
@@ -36,7 +40,9 @@ public class AuthController : ApiControllerBase
 
     [HttpPost("login")]
     [AllowAnonymous]
-    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request, CancellationToken ct)
+    public async Task<ActionResult<LoginResponse>> Login(
+        [FromBody] LoginRequest request,
+        CancellationToken ct)
     {
         var resposta = await _authService.LoginAsync(request, ct);
         return Ok(resposta);
@@ -46,6 +52,7 @@ public class AuthController : ApiControllerBase
     public async Task<ActionResult<UsuarioResumoResponse>> Me(CancellationToken ct)
     {
         var userIdRaw = User.FindFirstValue("sub") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         if (!int.TryParse(userIdRaw, out var userId) || userId <= 0)
             throw BusinessException.Proibido("NAO_AUTENTICADO", "Usuário não autenticado.");
 
