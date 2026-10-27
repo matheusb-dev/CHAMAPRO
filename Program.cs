@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Npgsql;
+using Chamapro.Api.Models.Enums;
+using Npgsql.NameTranslation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +30,11 @@ builder.Services
 builder.Services.AddDbContext<AppDbContext>(o =>
     o.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        npgsql => npgsql.EnableRetryOnFailure(3)
+        npgsql =>
+        {
+            npgsql.EnableRetryOnFailure(3);
+            npgsql.MapEnum<TipoUsuario>("tipo_usuario", nameTranslator: new NpgsqlNullNameTranslator());
+        }
     ));
 
 builder.Services.AddHttpContextAccessor();
