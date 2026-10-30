@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#111310">
+    <meta name="description" content="Acesse sua conta CHAMAPRO.">
+
+    <title>CHAMAPRO | Entrar</title>
+
+    <!-- Fonte -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Estilos compartilhados -->
+    <link rel="stylesheet" href="../../css/variables.css">
+    <link rel="stylesheet" href="../../css/global.css">
+    <link rel="stylesheet" href="../../css/components.css">
+
+    <!-- Estilo específico do login -->
+    <link rel="stylesheet" href="../../css/pages/autenticacao.css">
+</head>
+
+<body class="auth-page">
+
+    <main class="auth-container">
+
+        <!-- LADO ESQUERDO: APRESENTAÇÃO -->
+        <section class="auth-presentation">
+
+            <a href="../../index.html" class="brand">
+                <span class="brand-symbol">C</span>
+                <span class="brand-name">CHAMA<span>PRO</span></span>
+            </a>
+
+            <div class="presentation-content">
+
+                <span class="presentation-tag">
+                    <span class="tag-dot"></span>
+                    CONECTANDO QUEM PRECISA A QUEM RESOLVE
+                </span>
+
+                <h1>
+                    O profissional certo
+                    para o seu próximo
+                    <span>desafio.</span>
+                </h1>
+
+                <p>
+                    Encontre profissionais, solicite serviços e acompanhe
+                    seus chamados em um só lugar.
+                </p>
+
+                <div class="presentation-highlight">
+                    <div class="highlight-icon">
+                        <span>✦</span>
+                    </div>
+
+                    <div>
+                        <strong>Seu serviço. Sua escolha.</strong>
+                        <span>Praticidade e confiança em cada conexão.</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="presentation-footer">
+                <span>© 2026 CHAMAPRO</span>
+                <span>Conectando soluções.</span>
+            </div>
+
+            <div class="presentation-decoration decoration-one"></div>
+            <div class="presentation-decoration decoration-two"></div>
+
+        </section>
+
+
+        <!-- LADO DIREITO: FORMULÁRIO -->
+        <section class="auth-form-section">
+
+            <div class="auth-form-wrapper">
+
+                <div class="mobile-brand">
+                    <span class="brand-symbol">C</span>
+                    <span class="brand-name">CHAMA<span>PRO</span></span>
+                </div>
+
+                <div class="auth-heading">
+                    <span class="auth-eyebrow">BEM-VINDO DE VOLTA</span>
+
+                    <h2>Entre na sua conta</h2>
+
+                    <p>
+                        Informe seus dados para continuar.
+                    </p>
+                </div>
+
+
+                <form id="loginForm" class="auth-form">
+
+                    <!-- E-MAIL -->
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+
+                        <div class="input-wrapper">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24">
+                                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                                    <path d="m3 7 9 6 9-6"></path>
+                                </svg>
+                            </span>
+
+                            <input type="email"
+                                   id="email"
+                                   name="email"
+                                   placeholder="seuemail@exemplo.com"
+                                   autocomplete="email"
+                                   required>
+                        </div>
+                    </div>
+
+
+                    <!-- SENHA -->
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="password">Senha</label>
+
+                            <a href="#" class="forgot-password" id="forgotPassword">
+                                Esqueceu a senha?
+                            </a>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24">
+                                    <rect x="4" y="10" width="16" height="11" rx="2"></rect>
+                                    <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                                </svg>
+                            </span>
+
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   placeholder="Digite sua senha"
+                                   autocomplete="current-password"
+                                   required>
+
+                            <button type="button"
+                                    class="toggle-password"
+                                    id="togglePassword"
+                                    aria-label="Mostrar senha">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <!-- LEMBRAR ACESSO -->
+                    <div class="remember-row">
+                        <label class="remember-label">
+                            <input type="checkbox" id="remember" name="remember">
+                            <span class="custom-checkbox"></span>
+                            <span>Lembrar de mim</span>
+                        </label>
+                    </div>
+
+
+                    <!-- MENSAGEM -->
+                    <div class="auth-message"
+                         id="authMessage"
+                         role="status"
+                         aria-live="polite"></div>
+
+
+                    <!-- BOTÃO ENTRAR -->
+                    <button type="submit" class="login-button">
+                        <span>Entrar na minha conta</span>
+
+                        <svg viewBox="0 0 24 24">
+                            <path d="M5 12h14"></path>
+                            <path d="m12 5 7 7-7 7"></path>
+                        </svg>
+                    </button>
+
+                </form>
+
+
+                <!-- CADASTRO -->
+                <div class="signup-link">
+                    Ainda não tem uma conta?
+
+                    <a href="cadastro.html">Criar conta</a>
+                </div>
+
+
+                <!-- RODAPÉ -->
+                <div class="auth-bottom">
+                    <span>CHAMAPRO</span>
+                    <span>Uma nova forma de encontrar soluções.</span>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="../../js/pages/autenticacao.js" defer></script>
+
+</body>
+</html>
