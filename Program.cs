@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Npgsql;
+using Chamapro.Api.Models.Enums;
+using Npgsql.NameTranslation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,10 +27,19 @@ builder.Services
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(new JsonUpperCaseNamingPolicy()));
     });
 
+// --- BLOCO DE TESTE DE DEBUG ---
+var stringConexao = builder.Configuration.GetConnectionString("DefaultConnection");
+Console.WriteLine("\n---> A API ESTÁ A LER ESTA STRING: " + stringConexao + " <---\n");
+// -------------------------------
+
 builder.Services.AddDbContext<AppDbContext>(o =>
     o.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        npgsql => npgsql.EnableRetryOnFailure(3)
+        npgsql =>
+        {
+            npgsql.EnableRetryOnFailure(3);
+            npgsql.MapEnum<TipoUsuario>("tipo_usuario", nameTranslator: new NpgsqlNullNameTranslator());
+        }
     ));
 
 builder.Services.AddHttpContextAccessor();
@@ -103,4 +115,5 @@ app.UseAuthentication();
 app.UseMiddleware<UserActiveMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
+
 app.Run();

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Chamapro.Api.Models.Entities;
 using Chamapro.Api.Models.Enums;
+using Npgsql;
+using Npgsql.NameTranslation;
 
 namespace Chamapro.Api.Data;
 
@@ -26,6 +28,7 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.HasPostgresEnum<TipoUsuario>(name: "tipo_usuario", nameTranslator: new NpgsqlNullNameTranslator());
         modelBuilder.Entity<Usuario>().HasKey(x => x.Id);
         modelBuilder.Entity<Categoria>().HasKey(x => x.Id);
         modelBuilder.Entity<Profissional>().HasKey(x => x.Id);
