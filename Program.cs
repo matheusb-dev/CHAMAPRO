@@ -4,9 +4,14 @@ using Chamapro.Api.Common;
 using Chamapro.Api.Data;
 using Chamapro.Api.Extensions;
 using Chamapro.Api.Middlewares;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Npgsql;
+using Chamapro.Api.Models.Enums;
+using Npgsql.NameTranslation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,24 +27,61 @@ builder.Services
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(new JsonUpperCaseNamingPolicy()));
     });
 
+// --- BLOCO DE TESTE DE DEBUG ---
+var stringConexao = builder.Configuration.GetConnectionString("DefaultConnection");
+Console.WriteLine("\n---> A API ESTÁ A LER ESTA STRING: " + stringConexao + " <---\n");
+// -------------------------------
+
 builder.Services.AddDbContext<AppDbContext>(o =>
-    o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    o.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsql =>
+        {
+            npgsql.EnableRetryOnFailure(3);
+            npgsql.MapEnum<TipoUsuario>("tipo_usuario", nameTranslator: new NpgsqlNullNameTranslator());
+        }
+    ));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddServicesERepositories();
 
-if (builder.Environment.IsDevelopment())
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "CHAMAPRO-DEV-KEY-CHANGE-ME-2026-!@#";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "Chamapro.Api";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "Chamapro.Clients";
+
+builder.Services.AddAuthentication(options =>
 {
-    builder.Services
-        .AddAuthentication(DevAuthenticationDefaults.Scheme)
-        .AddScheme<AuthenticationSchemeOptions, DevAuthenticationHandler>(DevAuthenticationDefaults.Scheme, _ => { });
-}
-else
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
 {
-    builder.Services.AddAuthentication();
-}
-builder.Services.AddAuthorization();
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromMinutes(1),
+        NameClaimType = "sub",
+        RoleClaimType = System.Security.Claims.ClaimTypes.Role
+    };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ClienteOnly", policy => policy.RequireRole(Perfis.Cliente));
+    options.AddPolicy("ProfissionalOnly", policy => policy.RequireRole(Perfis.Profissional));
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole(Perfis.Admin));
+    options.AddPolicy("ClienteOuAdmin", policy => policy.RequireRole(Perfis.Cliente, Perfis.Admin));
+    options.AddPolicy("ProfissionalOuAdmin", policy => policy.RequireRole(Perfis.Profissional, Perfis.Admin));
+});
 
 var origens = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? Array.Empty<string>();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
@@ -50,12 +92,15 @@ builder.Services.AddOpenApi();
 var app = builder.Build();
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseMiddleware<LoginRateLimitMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseSwaggerUI(o => o.SwaggerEndpoint("/openapi/v1.json", "CHAMAPRO API v1"));
 }
+
+app.UseStaticFiles();
 
 var pastaPublica = Path.Combine(app.Environment.ContentRootPath, app.Configuration["Arquivos:PastaPublica"] ?? "uploads");
 Directory.CreateDirectory(pastaPublica);
@@ -67,6 +112,8 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseCors();
 app.UseAuthentication();
+app.UseMiddleware<UserActiveMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
+
 app.Run();
