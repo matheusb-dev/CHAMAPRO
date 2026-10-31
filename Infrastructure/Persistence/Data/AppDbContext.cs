@@ -23,12 +23,14 @@ public class AppDbContext : DbContext
     public DbSet<Agendamento> Agendamentos => Set<Agendamento>();
     public DbSet<Avaliacao> Avaliacoes => Set<Avaliacao>();
     public DbSet<VerificacaoProfissional> Verificacoes => Set<VerificacaoProfissional>();
+    public DbSet<Denuncia> Denuncias => Set<Denuncia>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasPostgresEnum<TipoUsuario>(name: "tipo_usuario", nameTranslator: new NpgsqlNullNameTranslator());
+
         modelBuilder.Entity<Usuario>().HasKey(x => x.Id);
         modelBuilder.Entity<Categoria>().HasKey(x => x.Id);
         modelBuilder.Entity<Profissional>().HasKey(x => x.Id);
@@ -38,6 +40,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Agendamento>().HasKey(x => x.Id);
         modelBuilder.Entity<Avaliacao>().HasKey(x => x.Id);
         modelBuilder.Entity<VerificacaoProfissional>().HasKey(x => x.Id);
+        modelBuilder.Entity<Denuncia>().HasKey(x => x.Id);
 
         modelBuilder.Entity<ProfissionalCategoria>()
             .HasKey(x => new { x.ProfissionalId, x.CategoriaId });
@@ -92,6 +95,18 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(x => x.ProfissionalId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Denuncia>()
+            .HasOne(x => x.Denunciante)
+            .WithMany()
+            .HasForeignKey(x => x.DenuncianteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Denuncia>()
+            .HasOne(x => x.Denunciado)
+            .WithMany()
+            .HasForeignKey(x => x.DenunciadoId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
