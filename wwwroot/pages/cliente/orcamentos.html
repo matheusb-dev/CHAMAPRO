@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#171816">
+    <meta name="description" content="Compare propostas e agende o atendimento no CHAMAPRO.">
+
+    <title>CHAMAPRO | Orçamentos e agenda</title>
+
+    <!-- Fonte -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Estilos compartilhados -->
+    <link rel="stylesheet" href="../../css/variables.css">
+    <link rel="stylesheet" href="../../css/global.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+
+    <!-- Estilo específico da tela -->
+    <link rel="stylesheet" href="../../css/pages/cliente-orcamentos.css">
+</head>
+
+<body class="app">
+
+    <!-- HEADER -->
+    <header class="app-header">
+
+        <a href="./painel.html" class="app-brand">
+            <strong>CHAMAPRO</strong>
+            <span>SERVIÇOS E PROFISSIONAIS AO SEU ALCANCE</span>
+        </a>
+
+        <label class="app-search">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M13.5 8.25C13.5 11.1495 11.1495 13.5 8.25 13.5C5.35051 13.5 3 11.1495 3 8.25C3 5.35051 5.35051 3 8.25 3C11.1495 3 13.5 5.35051 13.5 8.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 15L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <input type="search" placeholder="Buscar serviços, pedidos ou profissionais..." aria-label="Buscar">
+        </label>
+
+        <div class="app-account">
+            <button type="button" class="icon-button" aria-label="Notificações">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4.5 6C4.5 4.80653 4.97411 3.66193 5.81802 2.81802C6.66193 1.97411 7.80653 1.5 9 1.5C10.1935 1.5 11.3381 1.97411 12.182 2.81802C13.0259 3.66193 13.5 4.80653 13.5 6C13.5 11.25 15.75 12 15.75 12H2.25C2.25 12 4.5 11.25 4.5 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 15C7.5 15.3978 7.65804 15.7794 7.93934 16.0607C8.22064 16.342 8.60218 16.5 9 16.5C9.39782 16.5 9.77936 16.342 10.0607 16.0607C10.342 15.7794 10.5 15.3978 10.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+
+            <span class="app-avatar" data-usuario-iniciais>GM</span>
+
+            <div class="app-user">
+                <strong data-usuario-nome>Gabriel Mendes</strong>
+                <span>Minha conta</span>
+            </div>
+        </div>
+
+    </header>
+
+    <div class="app-body">
+
+        <!-- SIDEBAR -->
+        <nav class="app-sidebar" aria-label="Menu do cliente">
+
+            <span class="app-sidebar-role">CLIENTE</span>
+
+            <a href="./painel.html" class="app-nav-item">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2.25 8.25L9 2.25L15.75 8.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.75 7.5V15H14.25V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Início</span>
+            </a>
+
+            <a href="./orcamentos.html" class="app-nav-item active" aria-current="page">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M10.5 2.25H4.5V15.75H13.5V5.25L10.5 2.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.5 2.25V5.25H13.5M6.75 9.75H11.25M6.75 12.75H9.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Orçamentos</span>
+                <span class="nav-badge" id="badgeOrcamentos">2</span>
+            </a>
+
+            <a href="#agendamento" class="app-nav-item">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3.75 3.75H14.25C15.0784 3.75 15.75 4.42157 15.75 5.25V14.25C15.75 15.0784 15.0784 15.75 14.25 15.75H3.75C2.92157 15.75 2.25 15.0784 2.25 14.25V5.25C2.25 4.42157 2.92157 3.75 3.75 3.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.25 7.5H15.75M6 2.25V5.25M12 2.25V5.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Agendamentos</span>
+            </a>
+
+            <a href="#" class="app-nav-item">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 2.25L16.125 15H1.875L9 2.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7.5V10.5M9 12.75H9.0075" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Relatar problemas</span>
+            </a>
+
+            <a href="#" class="app-nav-item">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M12 6C12 7.65685 10.6569 9 9 9C7.34315 9 6 7.65685 6 6C6 4.34315 7.34315 3 9 3C10.6569 3 12 4.34315 12 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 15.75C3.75 12.75 6 11.25 9 11.25C12 11.25 14.25 12.75 15 15.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Meu perfil</span>
+            </a>
+
+        </nav>
+
+        <!-- CONTEÚDO -->
+        <main class="app-main">
+
+            <div class="page-head">
+                <span class="page-eyebrow">CONTRATAÇÃO</span>
+                <h1>Compare propostas e combine o atendimento</h1>
+                <p>Escolha o profissional que melhor atende às suas necessidades.</p>
+            </div>
+
+            <div class="demo-notice" id="demoNotice" hidden>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1.75L12.5416 11.6667H1.45825L7 1.75Z" stroke="currentColor" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 5.83337V8.16671M7 9.91671H7.00583" stroke="currentColor" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Exibindo dados de demonstração.</span>
+            </div>
+
+            <div class="orcamentos-content">
+
+                <!-- PROPOSTAS -->
+                <section class="propostas" aria-labelledby="tituloPropostas">
+
+                    <div class="propostas-header">
+                        <h2 class="panel-title" id="tituloPropostas">Propostas</h2>
+                        <span class="propostas-ordem">Ordenado por avaliação</span>
+                    </div>
+
+                    <div class="propostas-lista" id="listaPropostas">
+                        <p class="empty-state">Carregando propostas...</p>
+                    </div>
+
+                    <!-- WHATSAPP -->
+                    <div class="panel whatsapp-card">
+
+                        <span class="whatsapp-icone">
+                            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M19.25 11C19.2431 12.2486 18.9175 13.4746 18.3042 14.5621C17.6908 15.6496 16.81 16.5625 15.7451 17.2143C14.6802 17.8661 13.4665 18.2352 12.219 18.2867C10.9715 18.3381 9.73159 18.0702 8.61663 17.5084L3.66663 18.3334L4.58329 14.1167C4.17 12.1718 4.54625 10.1424 5.62927 8.47484C6.71229 6.80733 8.41337 5.63835 10.3583 5.22505C12.3032 4.81176 14.3327 5.18801 16.0002 6.27103C17.6677 7.35405 18.8367 9.05513 19.25 11Z" stroke="currentColor" stroke-width="1.83333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+
+                        <div class="whatsapp-texto">
+                            <strong>Converse diretamente pelo WhatsApp</strong>
+                            <span>Após a contratação, abra uma conversa para combinar os detalhes.</span>
+                        </div>
+
+                        <button type="button" class="app-btn" id="btnWhatsApp">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.3333 6.66663V2.66663H9.33325M13.3333 2.66663L7.33325 8.66663" stroke="currentColor" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 9.33333V12.6667C12 12.8435 11.9298 13.013 11.8048 13.1381C11.6798 13.2631 11.5102 13.3333 11.3334 13.3333H3.33341C3.1566 13.3333 2.98703 13.2631 2.86201 13.1381C2.73699 13.013 2.66675 12.8435 2.66675 12.6667V4.66667C2.66675 4.48986 2.73699 4.32029 2.86201 4.19526C2.98703 4.07024 3.1566 4 3.33341 4H6.66675" stroke="currentColor" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            Abrir WhatsApp
+                        </button>
+
+                    </div>
+
+                </section>
+
+                <!-- AGENDAMENTO -->
+                <section class="panel panel-lg agendamento" id="agendamento" aria-labelledby="tituloAgendamento">
+
+                    <h2 class="panel-title panel-title-lg" id="tituloAgendamento">Agendamento</h2>
+
+                    <form class="agendamento-form" id="formAgendamento" novalidate>
+
+                        <div class="field">
+                            <label for="dataAgendamento">Data escolhida</label>
+                            <div class="field-control has-icon">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.33333 3.33337H12.6667C13.403 3.33337 14 3.93033 14 4.66671V12.6667C14 13.4031 13.403 14 12.6667 14H3.33333C2.59695 14 2 13.4031 2 12.6667V4.66671C2 3.93033 2.59695 3.33337 3.33333 3.33337Z" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 6.66667H14M5.33333 2V4.66667M10.6667 2V4.66667" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <select id="dataAgendamento" class="select-data"></select>
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="horarioAgendamento">Horário</label>
+                            <div class="field-control has-icon">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2C11.3137 2 14 4.68629 14 8Z" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 4.66663V7.99996L10 9.33329" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <select id="horarioAgendamento">
+                                    <option value="08:00">08:00 – 10:00</option>
+                                    <option value="10:00">10:00 – 12:00</option>
+                                    <option value="14:00" selected>14:00 – 16:00</option>
+                                    <option value="16:00">16:00 – 18:00</option>
+                                </select>
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="app-btn app-btn-primary app-btn-block" id="btnConfirmarAgendamento">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.33325 8L6.66659 11.3333L12.6666 4.66663" stroke="currentColor" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            Confirmar agendamento
+                        </button>
+
+                        <p class="agendamento-aviso" id="avisoAgendamento">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1.75L12.5416 11.6667H1.45825L7 1.75Z" stroke="currentColor" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 5.83337V8.16671M7 9.91671H7.00583" stroke="currentColor" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span>Você pode remarcar até 24h antes do horário.</span>
+                        </p>
+
+                    </form>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="../../js/api.js"></script>
+    <script src="../../js/pages/cliente-orcamentos.js" defer></script>
+
+</body>
+</html>
