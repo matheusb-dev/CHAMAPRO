@@ -4,6 +4,6 @@ public enum StatusDenuncia
 {
     Pendente,
     EmAnalise,
-    Resolvida,
-    Arquivada
+    Resolvido,
+    Rejeitado
 }
