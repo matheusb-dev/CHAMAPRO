@@ -45,6 +45,17 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Usuario>().HasKey(x => x.Id);
         modelBuilder.Entity<Categoria>().HasKey(x => x.Id);
         modelBuilder.Entity<Profissional>().HasKey(x => x.Id);
+        modelBuilder.Entity<Profissional>(entity =>
+        {
+            entity.ToTable("profissionais", "public");
+
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.UsuarioId).HasColumnName("usuario_id");
+            entity.Property(x => x.DescricaoPerfil).HasColumnName("descricao_perfil");
+            entity.Property(x => x.PrecoMin).HasColumnName("preco_min");
+            entity.Property(x => x.PrecoMax).HasColumnName("preco_max");
+            entity.Property(x => x.MediaAvaliacao).HasColumnName("media_avaliacao");
+        });
         modelBuilder.Entity<AreaAtendimento>().HasKey(x => x.Id);
         modelBuilder.Entity<Pedido>().HasKey(x => x.Id);
         modelBuilder.Entity<Orcamento>().HasKey(x => x.Id);
