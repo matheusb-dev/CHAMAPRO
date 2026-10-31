@@ -1,0 +1,198 @@
+/* =========================================
+   CHAMAPRO - ADMINISTRADOR / GESTÃO
+   Arquivo: css/pages/admin-gestao.css
+========================================= */
+
+.admin-main {
+    gap: 24px;
+}
+
+/* =========================================
+   MÉTRICAS
+========================================= */
+
+.metricas {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.metrica {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 18px;
+    background: var(--app-card);
+    border-radius: 12px;
+}
+
+.metrica-rotulo {
+    color: var(--app-text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 16px;
+}
+
+.metrica-valor {
+    color: var(--app-text);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 30px;
+}
+
+.metrica-detalhe {
+    font-size: 11px;
+    line-height: 14px;
+}
+
+.texto-sucesso {
+    color: var(--app-success);
+}
+
+.texto-alerta {
+    color: var(--app-primary);
+}
+
+.texto-perigo {
+    color: var(--app-danger);
+}
+
+/* =========================================
+   VERIFICAÇÕES E DENÚNCIAS
+========================================= */
+
+.admin-content {
+    display: grid;
+    grid-template-columns: minmax(0, 736fr) minmax(300px, 380fr);
+    align-items: start;
+    gap: 24px;
+}
+
+.list-row .app-avatar {
+    width: 38px;
+    height: 38px;
+}
+
+.denuncia-row {
+    gap: 12px;
+    padding: 16px 0;
+}
+
+    .denuncia-row .denuncia-titulo {
+        flex: 1;
+        min-width: 0;
+        color: var(--app-text);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 18px;
+    }
+
+.denuncia-alta {
+    color: var(--app-danger);
+}
+
+.denuncia-normal {
+    color: var(--app-primary);
+}
+
+.denuncia-baixa {
+    color: var(--app-text-secondary);
+}
+
+/* =========================================
+   CHAMADOS POR CATEGORIA
+========================================= */
+
+.categorias {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.categorias-barras {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.categoria-barra {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+    .categoria-barra span {
+        display: flex;
+        justify-content: space-between;
+        color: var(--app-text);
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 16px;
+    }
+
+        .categoria-barra span small {
+            color: var(--app-text-secondary);
+            font-size: 12px;
+            font-weight: 400;
+        }
+
+.trilho {
+    height: 8px;
+    overflow: hidden;
+    background: var(--app-bg);
+    border-radius: 999px;
+}
+
+.preenchimento {
+    height: 100%;
+    background: var(--app-primary);
+    border-radius: 999px;
+    transition: width var(--transition-normal);
+}
+
+/* =========================================
+   MODAL DE ANÁLISE
+========================================= */
+
+.modal-topo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.modal-documento {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--app-border-soft);
+    font-size: 13px;
+}
+
+    .modal-documento a {
+        color: var(--app-primary);
+        font-weight: 700;
+    }
+
+/* =========================================
+   RESPONSIVIDADE
+========================================= */
+
+@media (max-width: 1100px) {
+    .admin-content {
+        grid-template-columns: 1fr;
+    }
+
+    .metricas,
+    .categorias-barras {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .metricas,
+    .categorias-barras {
+        grid-template-columns: 1fr;
+    }
+}
