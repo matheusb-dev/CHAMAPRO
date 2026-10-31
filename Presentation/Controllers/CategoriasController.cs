@@ -19,7 +19,6 @@ public class CategoriasController : ApiControllerBase
     public async Task<ActionResult<IReadOnlyList<CategoriaResponse>>> Listar(CancellationToken ct)
         => Ok(await _servico.ListarAsync(ct));
 
-    [AllowAnonymous]
     [HttpPost]
     [Authorize(Roles = Perfis.Admin)]
     public async Task<ActionResult<CategoriaResponse>> Criar([FromBody] CategoriaRequest request, CancellationToken ct)
@@ -28,7 +27,6 @@ public class CategoriasController : ApiControllerBase
         return Created($"/{ApiRotas.Prefixo}/categorias/{criada.Id}", criada);
     }
 
-    [AllowAnonymous]
     [HttpPut("{id:int}")]
     [Authorize(Roles = Perfis.Admin)]
     public async Task<ActionResult<CategoriaResponse>> Editar(int id, [FromBody] CategoriaRequest request, CancellationToken ct)
