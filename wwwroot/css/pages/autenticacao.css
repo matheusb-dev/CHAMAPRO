@@ -621,3 +621,372 @@
         font-size: 10px;
     }
 }
+
+
+
+
+
+/* =========================================
+   CHAMAPRO - CADASTRO
+   Complementos ao estilo original do login
+========================================= */
+
+/*
+   O cadastro reutiliza:
+   .auth-page
+   .auth-container
+   .auth-presentation
+   .brand
+   .presentation-content
+   .auth-form-section
+   .auth-form-wrapper
+   .auth-heading
+   .auth-form
+   .form-group
+   .input-wrapper
+   .login-button
+   .signup-link
+   .auth-bottom
+
+   Assim, fonte, logo, cores e alinhamento
+   seguem as mesmas regras do login.
+*/
+
+/* O formulário do cadastro é mais comprido.
+   Permite rolagem sem cortar o conteúdo. */
+
+.cadastro-page .auth-form-section {
+    padding-top: 42px;
+    padding-bottom: 42px;
+}
+
+.cadastro-page .cadastro-form-wrapper {
+    width: 100%;
+}
+
+/* TIPO DE CONTA */
+
+.cadastro-page .cadastro-tipo-grupo {
+    min-width: 0;
+    margin: 0 0 24px;
+    padding: 0;
+    border: 0;
+}
+
+    .cadastro-page .cadastro-tipo-grupo legend {
+        margin-bottom: 14px;
+        color: #e8eae5;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+.cadastro-page .cadastro-tipos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.cadastro-page .cadastro-tipo-card {
+    position: relative;
+    display: block;
+    min-width: 0;
+    cursor: pointer;
+}
+
+    /* Radio acessível, mas visualmente oculto */
+
+    .cadastro-page .cadastro-tipo-card input[type="radio"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+    }
+
+.cadastro-page .cadastro-tipo-conteudo {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 156px;
+    padding: 16px;
+    background: #20241f;
+    border: 1px solid #3a4038;
+    border-radius: 12px;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.cadastro-page .cadastro-tipo-card:hover
+.cadastro-tipo-conteudo {
+    border-color: #aa913e;
+    transform: translateY(-2px);
+}
+
+.cadastro-page .cadastro-tipo-card input:checked + .cadastro-tipo-conteudo {
+    background: #292a20;
+    border-color: #ffca28;
+    box-shadow: inset 0 0 0 1px #ffca28;
+}
+
+.cadastro-page .cadastro-tipo-card input:focus-visible + .cadastro-tipo-conteudo {
+    outline: 3px solid #ffca28;
+    outline-offset: 3px;
+}
+
+/* ÍCONES */
+
+.cadastro-page .cadastro-tipo-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 13px;
+    color: #ffca28;
+    background: #30362e;
+    border-radius: 10px;
+    font-size: 21px;
+}
+
+/* TEXTOS */
+
+.cadastro-page .cadastro-tipo-conteudo strong {
+    margin-bottom: 7px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.cadastro-page .cadastro-tipo-descricao {
+    color: #b0b7ab;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+/* INDICADOR SELECIONADO */
+
+.cadastro-page .cadastro-tipo-check {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 21px;
+    height: 21px;
+    color: #111310;
+    background: #ffca28;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    opacity: 0;
+}
+
+.cadastro-page .cadastro-tipo-card input:checked + .cadastro-tipo-conteudo
+.cadastro-tipo-check {
+    opacity: 1;
+}
+
+/* SENHAS LADO A LADO */
+
+.cadastro-page .cadastro-senhas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+    .cadastro-page .cadastro-senhas .form-group {
+        min-width: 0;
+    }
+
+    .cadastro-page .cadastro-senhas .input-wrapper {
+        min-width: 0;
+    }
+
+    .cadastro-page .cadastro-senhas input {
+        min-width: 0;
+        width: 100%;
+    }
+
+/* DICA */
+
+.cadastro-page .cadastro-dica {
+    margin: -5px 0 20px;
+    color: #969e94;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* MENSAGENS */
+
+.cadastro-page .cadastro-mensagem:empty {
+    display: none;
+}
+
+.cadastro-page .cadastro-mensagem.erro {
+    color: #f87171;
+}
+
+.cadastro-page .cadastro-mensagem.sucesso {
+    color: #4ade80;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 520px) {
+
+    .cadastro-page .cadastro-tipos {
+        gap: 10px;
+    }
+
+    .cadastro-page .cadastro-tipo-conteudo {
+        min-height: 160px;
+        padding: 12px;
+    }
+
+        .cadastro-page .cadastro-tipo-conteudo strong {
+            font-size: 12px;
+        }
+
+    .cadastro-page .cadastro-tipo-descricao {
+        font-size: 10px;
+    }
+
+    .cadastro-page .cadastro-senhas {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+
+@media (max-width: 360px) {
+
+    .cadastro-page .cadastro-tipos {
+        grid-template-columns: 1fr;
+    }
+
+    .cadastro-page .cadastro-tipo-conteudo {
+        min-height: 120px;
+    }
+}
+
+
+/* =========================================
+   CADASTRO - APROVEITAR ESPAÇO HORIZONTAL
+========================================= */
+
+/* Usar melhor a metade direita da tela */
+
+.cadastro-page .auth-form-section {
+    padding: 24px 36px;
+}
+
+/* Formulário mais largo */
+
+.cadastro-page .auth-form-wrapper {
+    width: 100%;
+    max-width: 560px;
+}
+
+/* Nome e e-mail lado a lado */
+
+.cadastro-page .cadastro-dados {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+/* Senhas lado a lado */
+
+.cadastro-page .cadastro-senhas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+    /* Campos sem ultrapassar as colunas */
+
+    .cadastro-page .cadastro-dados .form-group,
+    .cadastro-page .cadastro-senhas .form-group,
+    .cadastro-page .cadastro-dados .input-wrapper,
+    .cadastro-page .cadastro-senhas .input-wrapper {
+        min-width: 0;
+    }
+
+    .cadastro-page .cadastro-dados input,
+    .cadastro-page .cadastro-senhas input {
+        width: 100%;
+        min-width: 0;
+    }
+
+/* Cartões um pouco mais compactos */
+
+.cadastro-page .cadastro-tipo-conteudo {
+    min-height: 125px;
+    padding: 13px;
+}
+
+/* Menos espaço entre os elementos */
+
+.cadastro-page .auth-heading {
+    margin-bottom: 20px;
+}
+
+.cadastro-page .cadastro-tipo-grupo {
+    margin-bottom: 16px;
+}
+
+.cadastro-page .auth-form .form-group {
+    margin-bottom: 13px;
+}
+
+.cadastro-page .cadastro-dica {
+    margin: -2px 0 12px;
+}
+
+.cadastro-page .signup-link {
+    margin-top: 16px;
+}
+
+.cadastro-page .auth-bottom {
+    margin-top: 24px;
+}
+
+/* Responsividade */
+
+@media (max-width: 850px) {
+    .cadastro-page .auth-form-section {
+        padding: 32px 24px;
+    }
+}
+
+@media (max-width: 520px) {
+    .cadastro-page .auth-form-section {
+        padding: 28px 18px;
+    }
+
+    .cadastro-page .cadastro-dados,
+    .cadastro-page .cadastro-senhas {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+
+/* =====================================
+   MENSAGEM DE SUCESSO DO CADASTRO
+   ===================================== */
+
+.cadastro-page .cadastro-mensagem.sucesso.visible {
+    display: block;
+    padding: 13px 16px;
+    margin: 10px 0;
+    background-color: #20241e;
+    border: 1px solid #777d35;
+    border-left: 3px solid #e5c94b;
+    border-radius: 8px;
+    color: #f4e8a0;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: left;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+}

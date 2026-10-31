@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#111310">
+    <meta name="description"
+          content="Crie sua conta no CHAMAPRO.">
+
+    <title>CHAMAPRO | Criar conta</title>
+
+    <!-- MESMA FONTE DO LOGIN -->
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- ESTILOS -->
+    <link rel="stylesheet"
+          href="../../css/variables.css">
+
+    <link rel="stylesheet"
+          href="../../css/global.css">
+
+    <link rel="stylesheet"
+          href="../../css/components.css">
+
+    <link rel="stylesheet"
+          href="../../css/pages/autenticacao.css">
+</head>
+
+<body class="auth-page cadastro-page">
+
+    <main class="auth-container cadastro-container-login">
+
+        <!-- =====================================
+             LADO ESQUERDO - IGUAL AO LOGIN
+        ====================================== -->
+
+        <section class="auth-presentation">
+
+            <!-- LOGO -->
+            <a href="../../index.html" class="brand">
+
+                <span class="brand-symbol">C</span>
+
+                <span class="brand-name">
+                    CHAMA<span>PRO</span>
+                </span>
+
+            </a>
+
+            <!-- APRESENTAÇÃO -->
+            <div class="presentation-content">
+
+                <span class="presentation-tag">
+
+                    <span class="tag-dot"></span>
+
+                    CONECTANDO QUEM PRECISA A QUEM RESOLVE
+
+                </span>
+
+                <h1>
+                    O profissional certo
+                    para o seu próximo
+                    <span>desafio.</span>
+                </h1>
+
+                <p>
+                    Encontre profissionais, solicite serviços
+                    e acompanhe seus chamados em um só lugar.
+                </p>
+
+                <!-- DESTAQUE -->
+                <div class="presentation-highlight">
+
+                    <div class="highlight-icon">
+                        <span>✦</span>
+                    </div>
+
+                    <div>
+                        <strong>Seu serviço. Sua escolha.</strong>
+
+                        <span>
+                            Praticidade e confiança em cada conexão.
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- RODAPÉ ESQUERDO -->
+            <div class="presentation-footer">
+
+                <span>© 2026 CHAMAPRO</span>
+
+                <span>Conectando soluções.</span>
+
+            </div>
+
+            <!-- DECORAÇÕES -->
+            <div class="presentation-decoration decoration-one"
+                 aria-hidden="true"></div>
+
+            <div class="presentation-decoration decoration-two"
+                 aria-hidden="true"></div>
+
+        </section>
+
+        <!-- =====================================
+             LADO DIREITO - CADASTRO
+        ====================================== -->
+
+        <section class="auth-form-section">
+
+            <div class="auth-form-wrapper cadastro-form-wrapper">
+
+                <!-- LOGO MOBILE -->
+                <div class="mobile-brand">
+
+                    <span class="brand-symbol">C</span>
+
+                    <span class="brand-name">
+                        CHAMA<span>PRO</span>
+                    </span>
+
+                </div>
+
+                <!-- CABEÇALHO -->
+                <div class="auth-heading">
+
+                    <span class="auth-eyebrow">
+                        COMECE AGORA
+                    </span>
+
+                    <h2>Crie sua conta</h2>
+
+                    <p>
+                        Escolha como deseja usar o CHAMAPRO
+                        e preencha seus dados.
+                    </p>
+
+                </div>
+
+                <!-- FORMULÁRIO -->
+                <form id="cadastroForm"
+                      class="auth-form cadastro-form"
+                      novalidate>
+
+                    <!-- =====================================
+                         TIPO DE CONTA
+                    ====================================== -->
+
+                    <fieldset class="cadastro-tipo-grupo">
+
+                        <legend>
+                            Como deseja usar o CHAMAPRO?
+                        </legend>
+
+                        <div class="cadastro-tipos">
+
+                            <!-- CLIENTE -->
+                            <label class="cadastro-tipo-card">
+
+                                <input type="radio"
+                                       name="tipoConta"
+                                       value="cliente"
+                                       checked
+                                       required>
+
+                                <span class="cadastro-tipo-conteudo">
+
+                                    <span class="cadastro-tipo-icone"
+                                          aria-hidden="true">
+                                        ♙
+                                    </span>
+
+                                    <strong>Sou Cliente</strong>
+
+                                    <span class="cadastro-tipo-descricao">
+                                        Quero contratar profissionais
+                                        para realizar serviços.
+                                    </span>
+
+                                    <span class="cadastro-tipo-check"
+                                          aria-hidden="true">
+                                        ✓
+                                    </span>
+
+                                </span>
+
+                            </label>
+
+                            <!-- PROFISSIONAL -->
+                            <label class="cadastro-tipo-card">
+
+                                <input type="radio"
+                                       name="tipoConta"
+                                       value="profissional"
+                                       required>
+
+                                <span class="cadastro-tipo-conteudo">
+
+                                    <span class="cadastro-tipo-icone"
+                                          aria-hidden="true">
+                                        ⚒
+                                    </span>
+
+                                    <strong>Sou Profissional</strong>
+
+                                    <span class="cadastro-tipo-descricao">
+                                        Quero oferecer meus serviços
+                                        e receber chamados.
+                                    </span>
+
+                                    <span class="cadastro-tipo-check"
+                                          aria-hidden="true">
+                                        ✓
+                                    </span>
+
+                                </span>
+
+                            </label>
+
+                        </div>
+
+                    </fieldset>
+
+                    <!-- =====================================
+                         NOME E E-MAIL
+                    ====================================== -->
+
+                    <div class="cadastro-dados">
+
+                        <!-- NOME COMPLETO -->
+                        <div class="form-group">
+
+                            <label for="nome">
+                                Nome completo
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <!-- ÍCONE USUÁRIO -->
+                                <span class="input-icon"
+                                      aria-hidden="true">
+
+                                    <svg viewBox="0 0 24 24">
+                                        <circle cx="12"
+                                                cy="8"
+                                                r="4"></circle>
+
+                                        <path d="M4 21v-2a8 8 0 0 1 16 0v2"></path>
+                                    </svg>
+
+                                </span>
+
+                                <input type="text"
+                                       id="nome"
+                                       name="nome"
+                                       placeholder="Digite seu nome completo"
+                                       autocomplete="name"
+                                       maxlength="100"
+                                       required>
+
+                            </div>
+
+                        </div>
+
+                        <!-- E-MAIL -->
+                        <div class="form-group">
+
+                            <label for="email">
+                                E-mail
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <!-- ÍCONE ENVELOPE -->
+                                <span class="input-icon"
+                                      aria-hidden="true">
+
+                                    <svg viewBox="0 0 24 24">
+                                        <rect x="3"
+                                              y="5"
+                                              width="18"
+                                              height="14"
+                                              rx="2"></rect>
+
+                                        <path d="m3 7 9 6 9-6"></path>
+                                    </svg>
+
+                                </span>
+
+                                <input type="email"
+                                       id="email"
+                                       name="email"
+                                       placeholder="seuemail@exemplo.com"
+                                       autocomplete="email"
+                                       required>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- =====================================
+                         SENHAS
+                    ====================================== -->
+
+                    <div class="cadastro-senhas">
+
+                        <!-- SENHA -->
+                        <div class="form-group">
+
+                            <label for="senha">
+                                Senha
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <!-- ÍCONE CADEADO -->
+                                <span class="input-icon"
+                                      aria-hidden="true">
+
+                                    <svg viewBox="0 0 24 24">
+                                        <rect x="4"
+                                              y="10"
+                                              width="16"
+                                              height="11"
+                                              rx="2"></rect>
+
+                                        <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                                    </svg>
+
+                                </span>
+
+                                <input type="password"
+                                       id="senha"
+                                       name="senha"
+                                       placeholder="Crie uma senha"
+                                       autocomplete="new-password"
+                                       minlength="8"
+                                       required>
+
+                            </div>
+
+                        </div>
+
+                        <!-- CONFIRMAR SENHA -->
+                        <div class="form-group">
+
+                            <label for="confirmarSenha">
+                                Confirmar senha
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <!-- ÍCONE CADEADO -->
+                                <span class="input-icon"
+                                      aria-hidden="true">
+
+                                    <svg viewBox="0 0 24 24">
+                                        <rect x="4"
+                                              y="10"
+                                              width="16"
+                                              height="11"
+                                              rx="2"></rect>
+
+                                        <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                                    </svg>
+
+                                </span>
+
+                                <input type="password"
+                                       id="confirmarSenha"
+                                       name="confirmarSenha"
+                                       placeholder="Repita sua senha"
+                                       autocomplete="new-password"
+                                       minlength="8"
+                                       required>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- DICA -->
+                    <p class="cadastro-dica">
+                        A senha deve ter pelo menos 8 caracteres.
+                    </p>
+
+                    <!-- =====================================
+                         MENSAGENS DA API
+                    ====================================== -->
+
+                    <div id="cadastroMensagem"
+                         class="auth-message cadastro-mensagem"
+                         role="status"
+                         aria-live="polite"></div>
+
+                    <!-- =====================================
+                         BOTÃO DE CADASTRO
+                    ====================================== -->
+
+                    <button type="submit"
+                            id="cadastroSubmit"
+                            class="login-button">
+
+                        <span>Criar minha conta</span>
+
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+
+                            <path d="M5 12h14"></path>
+
+                            <path d="m12 5 7 7-7 7"></path>
+
+                        </svg>
+
+                    </button>
+
+                </form>
+
+                <!-- LINK PARA LOGIN -->
+                <div class="signup-link">
+
+                    Já tem uma conta?
+
+                    <a href="login.html">
+                        Entrar
+                    </a>
+
+                </div>
+
+                <!-- RODAPÉ DIREITO -->
+                <div class="auth-bottom">
+
+                    <span>CHAMAPRO</span>
+
+                    <span>
+                        Uma nova forma de encontrar soluções.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- JAVASCRIPT -->
+    <script src="../../js/pages/autenticacao.js"
+            defer></script>
+
+</body>
+</html>
