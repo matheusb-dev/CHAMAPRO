@@ -23,11 +23,22 @@ public class AppDbContext : DbContext
     public DbSet<Agendamento> Agendamentos => Set<Agendamento>();
     public DbSet<Avaliacao> Avaliacoes => Set<Avaliacao>();
     public DbSet<VerificacaoProfissional> Verificacoes => Set<VerificacaoProfissional>();
-    public DbSet<Denuncia> Denuncias => Set<Denuncia>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Usuario>().ToTable("usuarios");
+        modelBuilder.Entity<Categoria>().ToTable("categorias");
+        modelBuilder.Entity<Profissional>().ToTable("profissionais");
+        modelBuilder.Entity<ProfissionalCategoria>().ToTable("profissional_categorias");
+        modelBuilder.Entity<AreaAtendimento>().ToTable("areas_atendimento");
+        modelBuilder.Entity<Pedido>().ToTable("pedidos");
+        modelBuilder.Entity<PedidoDestinatario>().ToTable("pedido_destinatarios");
+        modelBuilder.Entity<Orcamento>().ToTable("orcamentos");
+        modelBuilder.Entity<Agendamento>().ToTable("agendamentos");
+        modelBuilder.Entity<Avaliacao>().ToTable("avaliacoes");
+        modelBuilder.Entity<VerificacaoProfissional>().ToTable("verificacoes_profissionais");
 
         modelBuilder.HasPostgresEnum<TipoUsuario>(name: "tipo_usuario", nameTranslator: new NpgsqlNullNameTranslator());
 
@@ -40,7 +51,6 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Agendamento>().HasKey(x => x.Id);
         modelBuilder.Entity<Avaliacao>().HasKey(x => x.Id);
         modelBuilder.Entity<VerificacaoProfissional>().HasKey(x => x.Id);
-        modelBuilder.Entity<Denuncia>().HasKey(x => x.Id);
 
         modelBuilder.Entity<ProfissionalCategoria>()
             .HasKey(x => new { x.ProfissionalId, x.CategoriaId });
@@ -96,17 +106,33 @@ public class AppDbContext : DbContext
             .HasForeignKey(x => x.ProfissionalId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Denuncia>()
-            .HasOne(x => x.Denunciante)
+        modelBuilder.Entity<Orcamento>()
+            .HasOne<Pedido>()
             .WithMany()
-            .HasForeignKey(x => x.DenuncianteId)
+            .HasForeignKey(x => x.PedidoId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Orcamento>()
+            .HasOne<Profissional>()
+            .WithMany()
+            .HasForeignKey(x => x.ProfissionalId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Denuncia>()
-            .HasOne(x => x.Denunciado)
+        modelBuilder.Entity<Orcamento>()
+            .Property(x => x.Valor)
+            .HasPrecision(10, 2);
+
+        modelBuilder.Entity<Agendamento>()
+            .HasOne<Pedido>()
             .WithMany()
-            .HasForeignKey(x => x.DenunciadoId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(x => x.PedidoId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Avaliacao>()
+            .HasOne<Pedido>()
+            .WithMany()
+            .HasForeignKey(x => x.PedidoId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }

@@ -51,3 +51,7 @@ dotnet run
 ```
 
 Use o host, a porta e o usuário fornecidos pela tela **Connect** do Supabase. Se usar o Session Pooler, substitua os parâmetros pelos valores exibidos pelo Supabase. Não compartilhe a senha.
+
+
+
+teste................

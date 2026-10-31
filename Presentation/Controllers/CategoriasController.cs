@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Chamapro.Api.Controllers;
 
-/// <summary>Endpoints 5 a 8: categorias (listagem pública; criar, editar e remover só ADMIN).</summary>
 [Route(ApiRotas.Prefixo + "/categorias")]
 public class CategoriasController : ApiControllerBase
 {
@@ -15,13 +14,12 @@ public class CategoriasController : ApiControllerBase
 
     public CategoriasController(ICategoriaService servico) => _servico = servico;
 
-    /// <summary>5 - GET /categorias: categorias ativas, ordenadas por nome.</summary>
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<IReadOnlyList<CategoriaResponse>>> Listar(CancellationToken ct)
         => Ok(await _servico.ListarAsync(ct));
 
-    /// <summary>6 - POST /categorias (ADMIN): 201 com a categoria criada.</summary>
+    [AllowAnonymous]
     [HttpPost]
     [Authorize(Roles = Perfis.Admin)]
     public async Task<ActionResult<CategoriaResponse>> Criar([FromBody] CategoriaRequest request, CancellationToken ct)
@@ -30,13 +28,12 @@ public class CategoriasController : ApiControllerBase
         return Created($"/{ApiRotas.Prefixo}/categorias/{criada.Id}", criada);
     }
 
-    /// <summary>7 - PUT /categorias/{id} (ADMIN): 200 com a categoria editada.</summary>
+    [AllowAnonymous]
     [HttpPut("{id:int}")]
     [Authorize(Roles = Perfis.Admin)]
     public async Task<ActionResult<CategoriaResponse>> Editar(int id, [FromBody] CategoriaRequest request, CancellationToken ct)
         => Ok(await _servico.AtualizarAsync(id, request, ct));
 
-    /// <summary>8 - DELETE /categorias/{id} (ADMIN): 204. Com vínculos, apenas inativa.</summary>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = Perfis.Admin)]
     public async Task<IActionResult> Remover(int id, CancellationToken ct)

@@ -7,10 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Chamapro.Api.Controllers;
 
-/// <summary>
-/// Endpoints 9 a 14: vitrine pública de profissionais (busca, perfil e avaliações)
-/// e edição do próprio perfil (só PROFISSIONAL).
-/// </summary>
 [Route(ApiRotas.Prefixo + "/profissionais")]
 public class ProfissionaisController : ApiControllerBase
 {
@@ -18,20 +14,16 @@ public class ProfissionaisController : ApiControllerBase
 
     public ProfissionaisController(IProfissionalService servico) => _servico = servico;
 
-    /// <summary>9 - GET /profissionais?categoriaId=&amp;cidade=: busca paginada (público).</summary>
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<RespostaPaginada<ProfissionalResumoResponse>>> Buscar(
         [FromQuery] BuscaProfissionaisQuery filtro, CancellationToken ct)
         => Ok(await _servico.BuscarAsync(filtro, ct));
-
-    /// <summary>10 - GET /profissionais/{id}: perfil público completo, sem e-mail nem telefone.</summary>
     [HttpGet("{id:int}")]
     [AllowAnonymous]
     public async Task<ActionResult<PerfilPublicoResponse>> ObterPerfil(int id, CancellationToken ct)
         => Ok(await _servico.ObterPerfilAsync(id, ct));
 
-    /// <summary>11 - GET /profissionais/{id}/avaliacoes: avaliações visíveis, paginadas (público).</summary>
     [HttpGet("{id:int}/avaliacoes")]
     [AllowAnonymous]
     public async Task<ActionResult<RespostaPaginada<AvaliacaoPublicaResponse>>> ListarAvaliacoes(
