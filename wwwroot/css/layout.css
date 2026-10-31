@@ -1,0 +1,697 @@
+/* =========================================
+   CHAMAPRO - LAYOUT DOS PAINÉIS
+   Arquivo: css/layout.css
+
+   Estrutura compartilhada das telas logadas
+   (header, sidebar, conteúdo) e componentes
+   do Figma "Versão Vitoria".
+========================================= */
+
+/* TOKENS DO FIGMA (escopo das telas de painel) */
+.app {
+    --app-bg: #171816;
+    --app-header: #20211D;
+    --app-sidebar: #1D1F1B;
+    --app-card: #242621;
+    --app-border: #474940;
+    --app-border-soft: rgba(71, 73, 64, 0.6);
+    --app-text: #F5F2E8;
+    --app-text-secondary: #B0B0A5;
+    --app-primary: #FFC928;
+    --app-primary-hover: #EAB51B;
+    --app-primary-soft: #3A3420;
+    --app-success: #8BCB67;
+    --app-danger: #E45D50;
+    --app-danger-soft: #3A2220;
+
+    min-height: 100vh;
+    background: var(--app-bg);
+    color: var(--app-text);
+    font-family: var(--font-primary);
+}
+
+.app svg {
+    flex-shrink: 0;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    height: 76px;
+    padding: 0 30px;
+    background: var(--app-header);
+}
+
+.app-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+    .app-brand strong {
+        color: var(--app-text);
+        font-size: 25px;
+        font-weight: 700;
+        line-height: 30px;
+    }
+
+    .app-brand span {
+        color: var(--app-primary);
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 12px;
+        white-space: nowrap;
+    }
+
+.app-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 460px;
+    max-width: 100%;
+    height: 44px;
+    padding: 0 18px;
+    color: var(--app-text-secondary);
+    background: var(--app-bg);
+    border: 1px solid var(--app-border);
+    border-radius: 999px;
+}
+
+    .app-search input {
+        min-height: 0;
+        padding: 0;
+        color: var(--app-text);
+        background: transparent;
+        border: none;
+        font-size: 14px;
+    }
+
+        .app-search input::placeholder {
+            color: var(--app-text-secondary);
+        }
+
+.app-account {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: var(--app-text);
+    background: transparent;
+    border: 1px solid var(--app-border);
+    border-radius: 999px;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+    .icon-button:hover {
+        background: var(--app-card);
+    }
+
+.app-user {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 16px;
+}
+
+    .app-user strong {
+        color: var(--app-text);
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .app-user span {
+        color: var(--app-text-secondary);
+        font-size: 12px;
+    }
+
+/* =========================================
+   AVATAR (iniciais)
+========================================= */
+
+.app-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    color: var(--app-bg);
+    background: var(--app-primary);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.app-avatar-soft {
+    color: var(--app-primary);
+    background: var(--app-primary-soft);
+}
+
+/* =========================================
+   CORPO, SIDEBAR E CONTEÚDO
+========================================= */
+
+.app-body {
+    display: flex;
+    min-height: calc(100vh - 76px);
+}
+
+.app-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+    width: 225px;
+    padding: 26px 12px;
+    background: var(--app-sidebar);
+}
+
+.app-sidebar-role {
+    padding: 0 14px 14px;
+    color: var(--app-text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.app-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    color: var(--app-text-secondary);
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 18px;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+    .app-nav-item:hover {
+        color: var(--app-text);
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .app-nav-item.active {
+        color: var(--app-primary);
+        background: var(--app-primary-soft);
+        font-weight: 700;
+    }
+
+    .app-nav-item span:first-of-type {
+        flex: 1;
+    }
+
+.nav-badge {
+    min-width: 21px;
+    padding: 2px 7px;
+    color: var(--app-bg);
+    background: var(--app-primary);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 14px;
+    text-align: center;
+}
+
+.app-main {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    flex: 1;
+    min-width: 0;
+    padding: 30px 40px 30px 35px;
+}
+
+    .app-main > * {
+        max-width: 1140px;
+    }
+
+/* =========================================
+   CABEÇALHO DA PÁGINA
+========================================= */
+
+.page-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.page-eyebrow {
+    color: var(--app-primary);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 14px;
+    letter-spacing: 0.02em;
+}
+
+.page-head h1 {
+    color: var(--app-text);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 40px;
+}
+
+.page-head p {
+    color: var(--app-text-secondary);
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 6px;
+    color: var(--app-text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+    .breadcrumb a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .breadcrumb a:hover {
+            color: var(--app-text);
+        }
+
+    .breadcrumb strong {
+        color: var(--app-text);
+    }
+
+/* =========================================
+   PAINÉIS / CARDS
+========================================= */
+
+.panel {
+    background: var(--app-card);
+    border: 1px solid transparent;
+    border-radius: 14px;
+    padding: 24px;
+}
+
+.panel-lg {
+    padding: 28px;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 8px;
+}
+
+.panel-title {
+    color: var(--app-text);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 22px;
+}
+
+.panel-title-lg {
+    font-size: 18px;
+    line-height: 24px;
+}
+
+.panel-link {
+    color: var(--app-text-secondary);
+    background: none;
+    border: none;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+    .panel-link:hover {
+        color: var(--app-text);
+    }
+
+/* Linha de lista com divisória (verificações, documentos, denúncias) */
+.list-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--app-border-soft);
+}
+
+    .list-row:last-child {
+        border-bottom: none;
+    }
+
+.list-row-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+    .list-row-info strong {
+        color: var(--app-text);
+        font-size: 14px;
+        line-height: 18px;
+    }
+
+    .list-row-info span {
+        color: var(--app-text-secondary);
+        font-size: 12px;
+        line-height: 16px;
+    }
+
+/* =========================================
+   TAGS
+========================================= */
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    color: var(--app-text-secondary);
+    background: var(--app-bg);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 14px;
+    white-space: nowrap;
+}
+
+.tag-success {
+    color: var(--app-success);
+    background: var(--app-bg);
+}
+
+.tag-warning {
+    color: var(--app-primary);
+    background: var(--app-primary-soft);
+}
+
+.tag-danger {
+    color: var(--app-danger);
+    background: var(--app-danger-soft);
+}
+
+/* =========================================
+   BOTÕES
+========================================= */
+
+.app-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 12px 18px;
+    color: var(--app-text);
+    background: transparent;
+    border: 1px solid var(--app-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 16px;
+    white-space: nowrap;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+    .app-btn:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--app-text-secondary);
+    }
+
+.app-btn-primary {
+    color: var(--app-bg);
+    background: var(--app-primary);
+    border-color: var(--app-primary);
+}
+
+    .app-btn-primary:hover:not(:disabled) {
+        background: var(--app-primary-hover);
+        border-color: var(--app-primary-hover);
+    }
+
+.app-btn-sm {
+    min-height: 38px;
+    padding: 10px 16px;
+    font-size: 12px;
+}
+
+.app-btn-block {
+    width: 100%;
+}
+
+/* =========================================
+   CAMPOS
+========================================= */
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+    .field > label {
+        margin: 0;
+        color: var(--app-text-secondary);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px;
+    }
+
+.field-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+    .field-control > svg {
+        position: absolute;
+        pointer-events: none;
+    }
+
+        .field-control > svg:first-child {
+            left: 17px;
+            color: var(--app-primary);
+        }
+
+        .field-control > svg:last-child {
+            right: 17px;
+            color: var(--app-text-secondary);
+        }
+
+    .field-control select,
+    .field-control input,
+    .field-control textarea {
+        min-height: 46px;
+        padding: 13px 16px;
+        color: var(--app-text);
+        background: var(--app-bg);
+        border: 1px solid var(--app-border);
+        border-radius: 10px;
+        font-size: 14px;
+        line-height: 18px;
+        appearance: none;
+    }
+
+    .field-control textarea {
+        min-height: 96px;
+    }
+
+        .field-control textarea::placeholder {
+            color: var(--app-text-secondary);
+        }
+
+    .field-control.has-icon select,
+    .field-control.has-icon input {
+        padding-left: 43px;
+    }
+
+    .field-control select {
+        padding-right: 43px;
+        cursor: pointer;
+    }
+
+        .field-control select:focus,
+        .field-control input:focus,
+        .field-control textarea:focus {
+            border-color: var(--app-primary);
+        }
+
+/* =========================================
+   ESTRELAS
+========================================= */
+
+.stars {
+    display: inline-flex;
+    gap: 2px;
+    color: var(--app-primary);
+}
+
+    .stars .star-off {
+        display: inline-flex;
+        color: var(--app-border);
+    }
+
+/* =========================================
+   AVISOS E FEEDBACK
+========================================= */
+
+.demo-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    color: var(--app-text-secondary);
+    background: var(--app-card);
+    border: 1px dashed var(--app-border);
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+    .demo-notice[hidden] {
+        display: none;
+    }
+
+.empty-state {
+    padding: 24px 0;
+    color: var(--app-text-secondary);
+    font-size: 13px;
+    text-align: center;
+}
+
+.toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    max-width: 360px;
+    padding: 14px 18px;
+    color: var(--app-text);
+    background: var(--app-card);
+    border: 1px solid var(--app-border);
+    border-left: 4px solid var(--app-primary);
+    border-radius: 10px;
+    box-shadow: var(--shadow-dropdown);
+    font-size: 13px;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+    .toast.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .toast.toast-success {
+        border-left-color: var(--app-success);
+    }
+
+    .toast.toast-error {
+        border-left-color: var(--app-danger);
+    }
+
+/* =========================================
+   MODAL
+========================================= */
+
+.modal {
+    width: min(480px, calc(100% - 32px));
+    margin: auto;
+    padding: 0;
+    color: var(--app-text);
+    background: var(--app-card);
+    border: 1px solid var(--app-border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-dropdown);
+}
+
+    .modal::backdrop {
+        background: rgba(0, 0, 0, 0.6);
+    }
+
+.modal-conteudo {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 24px;
+}
+
+.modal-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* =========================================
+   RESPONSIVIDADE
+========================================= */
+
+@media (max-width: 1100px) {
+    .app-search {
+        width: 320px;
+    }
+}
+
+@media (max-width: 860px) {
+    .app-header {
+        padding: 0 16px;
+    }
+
+    .app-search,
+    .app-user {
+        display: none;
+    }
+
+    .app-body {
+        flex-direction: column;
+    }
+
+    .app-sidebar {
+        flex-direction: row;
+        width: 100%;
+        padding: 10px 16px;
+        overflow-x: auto;
+    }
+
+    .app-sidebar-role {
+        display: none;
+    }
+
+    .app-nav-item {
+        flex-shrink: 0;
+    }
+
+    .app-main {
+        padding: 24px 16px;
+    }
+
+    .page-head h1 {
+        font-size: 26px;
+        line-height: 32px;
+    }
+
+    .modal-acoes {
+        flex-direction: column-reverse;
+    }
+}
