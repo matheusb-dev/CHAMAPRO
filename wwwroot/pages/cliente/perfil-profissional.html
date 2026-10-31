@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#171816">
+    <meta name="description" content="Perfil profissional e avaliações de clientes no CHAMAPRO.">
+
+    <title>CHAMAPRO | Perfil profissional</title>
+
+    <!-- Fonte -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Estilos compartilhados -->
+    <link rel="stylesheet" href="../../css/variables.css">
+    <link rel="stylesheet" href="../../css/global.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+
+    <!-- Estilo específico da tela -->
+    <link rel="stylesheet" href="../../css/pages/cliente-perfil-profissional.css">
+</head>
+
+<body class="app">
+
+    <!-- HEADER -->
+    <header class="app-header">
+
+        <a href="./painel.html" class="app-brand">
+            <strong>CHAMAPRO</strong>
+            <span>SERVIÇOS E PROFISSIONAIS AO SEU ALCANCE</span>
+        </a>
+
+        <label class="app-search">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M13.5 8.25C13.5 11.1495 11.1495 13.5 8.25 13.5C5.35051 13.5 3 11.1495 3 8.25C3 5.35051 5.35051 3 8.25 3C11.1495 3 13.5 5.35051 13.5 8.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 15L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <input type="search" placeholder="Buscar serviços, pedidos ou profissionais..." aria-label="Buscar">
+        </label>
+
+        <div class="app-account">
+            <button type="button" class="icon-button" aria-label="Notificações">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4.5 6C4.5 4.80653 4.97411 3.66193 5.81802 2.81802C6.66193 1.97411 7.80653 1.5 9 1.5C10.1935 1.5 11.3381 1.97411 12.182 2.81802C13.0259 3.66193 13.5 4.80653 13.5 6C13.5 11.25 15.75 12 15.75 12H2.25C2.25 12 4.5 11.25 4.5 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 15C7.5 15.3978 7.65804 15.7794 7.93934 16.0607C8.22064 16.342 8.60218 16.5 9 16.5C9.39782 16.5 9.77936 16.342 10.0607 16.0607C10.342 15.7794 10.5 15.3978 10.5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+
+            <span class="app-avatar" data-usuario-iniciais>GM</span>
+
+            <div class="app-user">
+                <strong data-usuario-nome>Gabriel Mendes</strong>
+                <span>Minha conta</span>
+            </div>
+        </div>
+
+    </header>
+
+    <div class="app-body">
+
+        <!-- SIDEBAR -->
+        <nav class="app-sidebar" aria-label="Menu do cliente">
+
+            <span class="app-sidebar-role">CLIENTE</span>
+
+            <a href="./painel.html" class="app-nav-item">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2.25 8.25L9 2.25L15.75 8.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.75 7.5V15H14.25V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Início</span>
+            </a>
+
+            <a href="./orcamentos.html" class="app-nav-item active">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M10.5 2.25H4.5V15.75H13.5V5.25L10.5 2.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.5 2.25V5.25H13.5M6.75 9.75H11.25M6.75 12.75H9.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Orçamentos</span>
+                <span class="nav-badge">2</span>
+            </a>
+
+            <a href="./orcamentos.html#agendamento" class="app-nav-item">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3.75 3.75H14.25C15.0784 3.75 15.75 4.42157 15.75 5.25V14.25C15.75 15.0784 15.0784 15.75 14.25 15.75H3.75C2.92157 15.75 2.25 15.0784 2.25 14.25V5.25C2.25 4.42157 2.92157 3.75 3.75 3.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.25 7.5H15.75M6 2.25V5.25M12 2.25V5.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Agendamentos</span>
+            </a>
+
+            <a href="#" class="app-nav-item">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 2.25L16.125 15H1.875L9 2.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7.5V10.5M9 12.75H9.0075" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Relatar problemas</span>
+            </a>
+
+            <a href="#" class="app-nav-item">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M12 6C12 7.65685 10.6569 9 9 9C7.34315 9 6 7.65685 6 6C6 4.34315 7.34315 3 9 3C10.6569 3 12 4.34315 12 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 15.75C3.75 12.75 6 11.25 9 11.25C12 11.25 14.25 12.75 15 15.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Meu perfil</span>
+            </a>
+
+        </nav>
+
+        <!-- CONTEÚDO -->
+        <main class="app-main">
+
+            <div class="page-head">
+                <nav class="breadcrumb" aria-label="Caminho">
+                    <a href="./orcamentos.html">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M11.0833 7H2.91663M6.41663 3.5L2.91663 7L6.41663 10.5" stroke="currentColor" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Orçamentos
+                    </a>
+                    <span aria-hidden="true">›</span>
+                    <strong id="breadcrumbNome">Perfil de Carlos Mendes</strong>
+                </nav>
+                <span class="page-eyebrow">PERFIL PROFISSIONAL</span>
+                <h1 id="tituloNome">Carlos Mendes</h1>
+                <p>Conheça a experiência, as qualificações e as avaliações antes de contratar.</p>
+            </div>
+
+            <div class="demo-notice" id="demoNotice" hidden>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1.75L12.5416 11.6667H1.45825L7 1.75Z" stroke="currentColor" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 5.83337V8.16671M7 9.91671H7.00583" stroke="currentColor" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Exibindo dados de demonstração.</span>
+            </div>
+
+            <div class="perfil-content">
+
+                <!-- PERFIL -->
+                <section class="panel panel-lg perfil-card" aria-labelledby="perfilNome">
+
+                    <div class="perfil-identificacao">
+
+                        <span class="app-avatar perfil-avatar" id="perfilAvatar">CM</span>
+
+                        <div class="perfil-info">
+                            <div class="perfil-nome">
+                                <h2 id="perfilNome">Carlos Mendes</h2>
+                                <span class="tag tag-success" id="tagVerificado">
+                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    VERIFICADO
+                                </span>
+                            </div>
+
+                            <div class="perfil-avaliacao">
+                                <span class="stars" id="perfilEstrelas"></span>
+                                <span id="perfilNota">4,9 · 37 avaliações</span>
+                            </div>
+
+                            <div class="perfil-local">
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 12.25C7 12.25 2.91663 8.75 2.91663 5.83333C2.91663 4.75037 3.34683 3.71175 4.11261 2.94598C4.87838 2.18021 5.91699 1.75 7 1.75C8.08293 1.75 9.12154 2.18021 9.88731 2.94598C10.6531 3.71175 11.0833 4.75037 11.0833 5.83333C11.0833 8.75 7 12.25 7 12.25Z" stroke="currentColor" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.45829 5.83333C8.45829 6.63875 7.80537 7.29167 7 7.29167C6.19454 7.29167 5.54163 6.63875 5.54163 5.83333C5.54163 5.02792 6.19454 4.375 7 4.375C7.80537 4.375 8.45829 5.02792 8.45829 5.83333Z" stroke="currentColor" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span id="perfilLocal">Maringá · Hidráulica e manutenção</span>
+                            </div>
+                        </div>
+
+                        <button type="button" class="icon-button perfil-favoritar" id="btnFavoritar" aria-pressed="false" aria-label="Favoritar profissional">
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 15C9 15 3.75 11.625 3.75 7.5C3.75689 6.89364 3.94743 6.30353 4.29648 5.80756C4.64554 5.3116 5.13671 4.93307 5.70525 4.7219C6.27378 4.51074 6.89296 4.47684 7.48115 4.62469C8.06933 4.77254 8.59889 5.09519 9 5.55009C9.40111 5.09519 9.93067 4.77254 10.5189 4.62469C11.107 4.47684 11.7262 4.51074 12.2948 4.7219C12.8633 4.93307 13.3545 5.3116 13.7035 5.80756C14.0526 6.30353 14.2431 6.89364 14.25 7.5C14.25 11.625 9 15 9 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+
+                    </div>
+
+                    <p class="perfil-descricao" id="perfilDescricao">
+                        Atendimento residencial, manutenção preventiva e reparos com orçamento transparente.
+                    </p>
+
+                    <div class="perfil-secao">
+                        <span class="perfil-secao-titulo">ÁREAS DE ATUAÇÃO</span>
+                        <div class="chips" id="perfilAreas">
+                            <span class="chip">Hidráulica</span>
+                            <span class="chip">Instalação</span>
+                            <span class="chip">Manutenção</span>
+                        </div>
+                    </div>
+
+                    <div class="perfil-secao perfil-disponibilidade">
+                        <div class="perfil-horario">
+                            <span class="perfil-secao-titulo">DISPONIBILIDADE</span>
+                            <span class="perfil-horario-valor">
+                                <span class="ponto-online" aria-hidden="true"></span>
+                                Hoje · 10h às 18h
+                            </span>
+                        </div>
+
+                        <a href="./criar-chamado.html" class="app-btn app-btn-primary" id="btnSolicitar">
+                            Solicitar orçamento
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.33325 8H12.6666M8.66659 12L12.6666 8L8.66659 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </a>
+                    </div>
+
+                </section>
+
+                <!-- AVALIAÇÕES -->
+                <section class="panel panel-lg avaliacoes-card" aria-labelledby="tituloAvaliacoes">
+
+                    <h2 class="panel-title" id="tituloAvaliacoes">Avaliações de clientes</h2>
+
+                    <div class="avaliacoes-nota">
+                        <strong id="notaGrande">4,9</strong>
+                        <div class="avaliacoes-nota-detalhe">
+                            <span class="stars" id="notaEstrelas"></span>
+                            <span id="notaTotal">37 avaliações verificadas</span>
+                        </div>
+                    </div>
+
+                    <div id="listaAvaliacoes"></div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="../../js/api.js"></script>
+    <script src="../../js/pages/cliente-perfil-profissional.js" defer></script>
+
+</body>
+</html>

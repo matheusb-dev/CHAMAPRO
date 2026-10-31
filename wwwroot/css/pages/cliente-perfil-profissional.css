@@ -1,0 +1,242 @@
+/* =========================================
+   CHAMAPRO - PERFIL PROFISSIONAL E AVALIAÇÃO
+   Arquivo: css/pages/cliente-perfil-profissional.css
+========================================= */
+
+.perfil-content {
+    display: grid;
+    grid-template-columns: minmax(0, 736fr) minmax(300px, 380fr);
+    align-items: start;
+    gap: 24px;
+}
+
+/* =========================================
+   CARD DO PERFIL
+========================================= */
+
+.perfil-card {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.perfil-identificacao {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.perfil-avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 26px;
+}
+
+.perfil-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.perfil-nome {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+    .perfil-nome h2 {
+        color: var(--app-text);
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 28px;
+    }
+
+.perfil-avaliacao {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--app-text);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+}
+
+.perfil-local {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--app-text-secondary);
+    font-size: 13px;
+    line-height: 16px;
+}
+
+.perfil-favoritar {
+    width: 44px;
+    height: 44px;
+    align-self: center;
+}
+
+    .perfil-favoritar[aria-pressed="true"] {
+        color: var(--app-danger);
+        border-color: var(--app-danger);
+    }
+
+        .perfil-favoritar[aria-pressed="true"] path {
+            fill: currentColor;
+        }
+
+.perfil-descricao {
+    color: var(--app-text);
+    font-size: 15px;
+    line-height: 23px;
+}
+
+.perfil-secao {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid var(--app-border-soft);
+}
+
+.perfil-secao-titulo {
+    color: var(--app-text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 14px;
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip {
+    padding: 8px 14px;
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+}
+
+.perfil-disponibilidade {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.perfil-horario {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.perfil-horario-valor {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--app-text);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 18px;
+}
+
+.ponto-online {
+    width: 8px;
+    height: 8px;
+    background: var(--app-success);
+    border-radius: 999px;
+}
+
+/* =========================================
+   AVALIAÇÕES
+========================================= */
+
+.avaliacoes-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.avaliacoes-nota {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0 18px;
+    border-bottom: 1px solid var(--app-border-soft);
+}
+
+    .avaliacoes-nota strong {
+        color: var(--app-text);
+        font-size: 44px;
+        font-weight: 700;
+        line-height: 48px;
+    }
+
+.avaliacoes-nota-detalhe {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--app-text-secondary);
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.avaliacao {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--app-border-soft);
+}
+
+    .avaliacao:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+.avaliacao-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+    .avaliacao-topo strong {
+        color: var(--app-text);
+        font-size: 14px;
+        line-height: 18px;
+    }
+
+.avaliacao p {
+    color: var(--app-text-secondary);
+    font-size: 13px;
+    line-height: 19px;
+}
+
+/* =========================================
+   RESPONSIVIDADE
+========================================= */
+
+@media (max-width: 1100px) {
+    .perfil-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .perfil-identificacao {
+        flex-wrap: wrap;
+    }
+
+    .perfil-disponibilidade {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
