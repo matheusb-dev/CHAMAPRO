@@ -3,7 +3,7 @@
 ## Repositório e Supabase
 
 - Branch de trabalho: `feat/telas-05-a-08-versao-vitoria`. A branch `main` não foi usada nem alterada.
-- Sem push: as alterações ficam locais e serão registradas em commits organizados nesta branch.
+- Sem push. Commits locais: `fe8a146` (API/persistência), `446d344` (telas), `24b96b0` (testes/documentação).
 - Novo projeto Supabase: `chamapro-dev`, região São Paulo, referência `eqxkrwkgixhchizdheux`.
 - Migrações aplicadas ao projeto novo: `chamapro_schema_v2` a `chamapro_schema_v5`.
 - Verificação remota: 17 tabelas públicas encontradas e RLS habilitado em todas; as nove categorias iniciais foram inseridas; índices de FK faltantes foram adicionados pela v4; privilégios de `PUBLIC`, `anon` e `authenticated` foram revogados pela v5.
