@@ -111,3 +111,4 @@ A distribuição de chamados usa compatibilidade por categoria, cidade, bairro, 
 ## Segurança e credenciais
 
 Os arquivos `appsettings*.json` não devem conter senhas ou chaves. Uma credencial de banco já apareceu no histórico público do repositório; trate-a como comprometida e rotacione-a no projeto antigo. A configuração atual do código foi limpa, mas o histórico remoto não pode ser apagado por esta branch.
+"# fsddsdsg" 
