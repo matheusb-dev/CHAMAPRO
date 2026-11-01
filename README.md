@@ -87,7 +87,7 @@ dotnet build Chamapro.Api.slnx --no-restore
 dotnet run --project Tests/Chamapro.Tests/Chamapro.Tests.csproj
 ```
 
-Os testes locais cobrem transições de chamados e validação de denúncias. Ainda não há testes de integração com PostgreSQL, autenticação HTTP ou fluxo completo de cliente a avaliação. Execute-os após conectar a nova base de desenvolvimento.
+Os testes locais cobrem transições de chamados, validação de denúncias, disponibilidade de preço em rascunho e conversão de horário. Ainda não há testes de integração com PostgreSQL, autenticação HTTP ou fluxo completo de cliente a avaliação. Execute-os após conectar a nova base de desenvolvimento.
 
 ## Endpoints principais
 
@@ -103,6 +103,10 @@ Os testes locais cobrem transições de chamados e validação de denúncias. Ai
 | Administração | `/admin/usuarios`, `/admin/pedidos`, `/admin/relatorios`, `/admin/auditoria`, `/verificacoes` e `/denuncias` |
 
 As rotas protegidas usam `Authorization: Bearer <JWT>`. A API verifica papel, conta ativa e propriedade/participação antes de permitir alterações.
+
+O cadastro profissional começa em `pages/autenticacao/cadastro.html` e segue para o assistente `pages/trabalhador/cadastro-profissional.html`: profissão e serviços, regiões atendidas, preços e disponibilidade; a etapa final acompanha a verificação em `pages/trabalhador/verificacao.html`. Cada etapa salva os dados por meio da API. O painel profissional exibe o estado incompleto e permite retomar a configuração. Documentos são opcionais quando a atividade não exige comprovação.
+
+A distribuição de chamados usa compatibilidade por categoria, cidade, bairro, situação da conta, aprovação de identidade e disponibilidade. A distância máxima declarada pelo profissional fica no perfil; um filtro de raio geográfico depende de coordenadas para os endereços e de uma fonte de geocodificação, ainda não configuradas.
 
 ## Segurança e credenciais
 
