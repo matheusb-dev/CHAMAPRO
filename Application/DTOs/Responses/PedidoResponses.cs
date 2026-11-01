@@ -41,11 +41,11 @@ public record PedidoDetalheResponse(
     IReadOnlyList<string> FotoUrls,
     StatusPedido Status,
     DateTime CriadoEm,
-    string? NomeCliente,                        // só o primeiro nome, e só para o profissional
+    string? NomeCliente,
     int? ProfissionalId,
     IReadOnlyList<DestinatarioResponse> Destinatarios,
     OrcamentoResponse? OrcamentoAceito,
-    OrcamentoResponse? MeuOrcamento,            // só para o profissional
+    OrcamentoResponse? MeuOrcamento,
     AgendamentoResumoResponse? Agendamento,
     AvaliacaoResumoResponse? Avaliacao,
     bool CancelamentoTardio,

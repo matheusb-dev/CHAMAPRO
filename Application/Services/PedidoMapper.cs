@@ -4,7 +4,6 @@ using Chamapro.Api.Models.Enums;
 
 namespace Chamapro.Api.Services;
 
-/// <summary>Conversão Entity -> DTO do módulo. As entities nunca saem na resposta.</summary>
 public static class PedidoMapper
 {
     public static PedidoCriadoResponse ToCriadoResponse(this Pedido p)
@@ -17,7 +16,6 @@ public static class PedidoMapper
                 ? null
                 : p.Destinatarios.FirstOrDefault(d => d.ProfissionalId == profissionalId)?.Situacao);
 
-    /// <summary>ehCliente = true: visão do cliente dono. Senão, visão do profissional destinatário (só a própria situação).</summary>
     public static PedidoDetalheResponse ToDetalhe(this Pedido p, bool ehCliente, int? profissionalId)
     {
         var destinatarios = (ehCliente ? p.Destinatarios : p.Destinatarios.Where(d => d.ProfissionalId == profissionalId))
@@ -48,10 +46,25 @@ public static class PedidoMapper
             : new AvaliacaoResumoResponse(p.Avaliacao.Id, p.Avaliacao.Nota, p.Avaliacao.Comentario);
 
         return new PedidoDetalheResponse(
-            p.Id, p.Titulo, p.Descricao, p.CategoriaId, p.Categoria.Nome, p.Cidade, p.Bairro,
-            p.FotoUrls, p.Status, p.CriadoEm, nomeCliente, p.ProfissionalId,
-            destinatarios, orcamentoAceito, meuOrcamento, agendamento, avaliacao,
-            p.CancelamentoTardio, p.MotivoCancelamento);
+            p.Id,
+            p.Titulo,
+            p.Descricao,
+            p.CategoriaId,
+            p.Categoria.Nome,
+            p.Cidade,
+            p.Bairro,
+            p.FotoUrls,
+            p.Status,
+            p.CriadoEm,
+            nomeCliente,
+            p.ProfissionalId,
+            destinatarios,
+            orcamentoAceito,
+            meuOrcamento,
+            agendamento,
+            avaliacao,
+            p.CancelamentoTardio,
+            p.MotivoCancelamento);
     }
 
     public static OrcamentoResponse ToResponse(this Orcamento o, string? aviso = null)

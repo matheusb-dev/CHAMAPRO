@@ -14,13 +14,11 @@ public class Pedido
     public List<string> FotoUrls { get; set; } = new();
     public StatusPedido Status { get; set; } = StatusPedido.Pendente;
 
-    /// <summary>Profissional escolhido (preenchido quando o cliente aceita um orçamento).</summary>
     public int? ProfissionalId { get; set; }
 
-    // Cancelamento
-    public int? CanceladoPorId { get; set; }          // null = cancelado pelo sistema
+    public int? CanceladoPorId { get; set; }
     public string? MotivoCancelamento { get; set; }
-    public bool CancelamentoTardio { get; set; }      // RN11: 24 h ou menos antes do serviço
+    public bool CancelamentoTardio { get; set; }
     public DateTime? CanceladoEm { get; set; }
 
     public DateTime CriadoEm { get; set; } = DateTime.UtcNow;
