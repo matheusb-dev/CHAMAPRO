@@ -122,18 +122,28 @@ public class ProfissionalRepository : IProfissionalRepository
     {
         var p = await _db.Profissionais.AsNoTracking()
             .Include(x => x.Usuario)
-            .Include(x => x.Categorias)
+            .Include(x => x.Categorias).ThenInclude(x => x.Categoria)
             .Include(x => x.Areas)
             .Include(x => x.Disponibilidade)
             .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.UsuarioId == usuarioId && x.Usuario.Ativo, ct);
         if (p is null) return null;
 
+        var cadastroCompleto = !string.IsNullOrWhiteSpace(p.DescricaoPerfil)
+            && p.Categorias.Any(c => c.Categoria.Ativa)
+            && p.Categorias.Where(c => c.Categoria.Ativa)
+                .All(c => (c.FaixaPrecoMin ?? p.PrecoMin).HasValue
+                    && (c.FaixaPrecoMax ?? p.PrecoMax).HasValue)
+            && p.Areas.Count > 0
+            && p.Disponibilidade.Count > 0
+            && p.DistanciaMaxKm > 0
+            && (p.AtendeDomicilio || p.AtendeEstabelecimento);
         var verificacao = await _db.Verificacoes.AsNoTracking()
             .Where(v => v.ProfissionalId == p.Id)
             .OrderByDescending(v => v.CriadoEm)
             .Select(v => (string?)v.Status.ToString())
-            .FirstOrDefaultAsync(ct) ?? "CadastroIncompleto";
+            .FirstOrDefaultAsync(ct)
+            ?? (cadastroCompleto ? "AguardandoVerificacao" : "CadastroIncompleto");
 
         return new ProfissionalMeuPerfilResponse(
             p.Id, p.Usuario.Nome, p.Usuario.Telefone, p.DescricaoPerfil,
@@ -141,8 +151,8 @@ public class ProfissionalRepository : IProfissionalRepository
             p.Categorias.Select(c => new ServicoProfissionalRequest
             {
                 CategoriaId = c.CategoriaId,
-                FaixaPrecoMin = c.FaixaPrecoMin ?? p.PrecoMin ?? 0,
-                FaixaPrecoMax = c.FaixaPrecoMax ?? p.PrecoMax ?? 0
+                FaixaPrecoMin = c.FaixaPrecoMin ?? p.PrecoMin,
+                FaixaPrecoMax = c.FaixaPrecoMax ?? p.PrecoMax
             }).ToList(),
             p.Areas.Select(a => new AreaAtendimentoRequest { Cidade = a.Cidade, Bairro = a.Bairro }).ToList(),
             p.Disponibilidade.OrderBy(d => d.DiaSemana).ThenBy(d => d.HoraInicio)

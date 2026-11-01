@@ -571,6 +571,27 @@ document.addEventListener("DOMContentLoaded", () => {
                     // CADASTRO REALIZADO
                     // =====================================
 
+                    if (tipo === "profissional") {
+                        if (!resultado?.token || !resultado?.usuario) {
+                            mostrarMensagemCadastro(
+                                "A conta foi criada, mas não foi possível iniciar a configuração do perfil. Entre com seu e-mail e conclua o cadastro profissional."
+                            );
+                            return;
+                        }
+
+                        sessionStorage.setItem("chamapro_token", resultado.token);
+                        sessionStorage.setItem("chamapro_usuario", JSON.stringify(resultado.usuario));
+                        sessionStorage.setItem("chamapro_expira_em", resultado.expiraEm || "");
+                        mostrarMensagemCadastro(
+                            "Conta criada! Vamos configurar seu perfil profissional.",
+                            "sucesso"
+                        );
+                        cadastroSubmit.disabled = true;
+                        cadastroSubmit.textContent = "Abrindo configuração…";
+                        window.location.replace("../trabalhador/cadastro-profissional.html");
+                        return;
+                    }
+
                     mostrarMensagemCadastro(
                         "✓ Conta criada com sucesso! Você será redirecionado para o login.",
                         "sucesso"

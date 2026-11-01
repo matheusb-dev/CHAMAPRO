@@ -10,6 +10,7 @@
         PROFISSIONAL: [
             ["Painel", "/pages/trabalhador/painel.html"],
             ["Fila de chamados", "/pages/trabalhador/fila-chamados.html"],
+            ["Cadastro profissional", "/pages/trabalhador/cadastro-profissional.html"],
             ["Meu perfil", "/pages/trabalhador/perfil.html"],
             ["Verificação", "/pages/trabalhador/verificacao.html"]
         ],

@@ -147,7 +147,7 @@
         });
         document.getElementById("serviceAreaForm").addEventListener("submit", async event => {
             event.preventDefault();
-            const servicos = [...document.getElementById("categoryIds").selectedOptions].map(option => { const id = option.value; const min = document.querySelector(`[data-price-min="${id}"]`).value; const max = document.querySelector(`[data-price-max="${id}"]`).value; return { categoriaId: Number(id), faixaPrecoMin: min ? Number(min) : 0, faixaPrecoMax: max ? Number(max) : 0 }; });
+            const servicos = [...document.getElementById("categoryIds").selectedOptions].map(option => { const id = option.value; const min = document.querySelector(`[data-price-min="${id}"]`).value; const max = document.querySelector(`[data-price-max="${id}"]`).value; return { categoriaId: Number(id), faixaPrecoMin: min ? Number(min) : null, faixaPrecoMax: max ? Number(max) : null }; });
             const areas = document.getElementById("areas").value.split(/\r?\n/).map(line => line.trim()).filter(Boolean).map(line => { const [cidade,bairro] = line.split("|"); return { cidade: cidade.trim(), bairro: bairro?.trim() || null }; });
             const disponibilidade = [...document.querySelectorAll("[data-day-enabled]:checked")].map(toggle => { const day = toggle.dataset.dayEnabled; return { diaSemana: Number(day), horaInicio: document.querySelector(`[data-day-start="${day}"]`).value, horaFim: document.querySelector(`[data-day-end="${day}"]`).value, atendeImediato: document.querySelector(`[data-day-immediate="${day}"]`).checked, atendeAgendado: document.querySelector(`[data-day-scheduled="${day}"]`).checked }; });
             try {

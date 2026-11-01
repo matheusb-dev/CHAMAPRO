@@ -32,7 +32,8 @@ public record ClientePerfilResponse(int Id, string Nome, string Email, string? T
 
 public record PainelProfissionalResponse(
     int NovosChamados, int ChamadosAceitos, int OrcamentosEnviados, int AgendamentosFuturos,
-    int ServicosEmAndamento, int ServicosConcluidos, decimal MediaAvaliacao, string StatusVerificacao);
+    int ServicosEmAndamento, int ServicosConcluidos, decimal MediaAvaliacao, string StatusVerificacao,
+    bool CadastroCompleto);
 
 public record AgendamentoListaResponse(
     int Id, int PedidoId, string Titulo, DateTime DataHora, string StatusAgendamento, string StatusPedido,

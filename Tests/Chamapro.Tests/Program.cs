@@ -11,6 +11,7 @@ var testes = new (string Nome, Action Executar)[]
     ("transição inválida retorna erro de negócio", TestarTransicaoInvalida),
     ("denúncia rejeita campos fora dos limites", TestarValidacaoDenuncia),
     ("denúncia aceita campos válidos", TestarDenunciaValida),
+    ("serviço profissional aceita preço adiado e rejeita faixa parcial", TestarFaixaPrecoServico),
     ("agenda converte UTC para horário de Brasília", TestarFusoHorario)
 };
 
@@ -88,6 +89,23 @@ static void TestarFusoHorario()
     var local = HorarioBrasil.ParaLocal(new DateTime(2026, 1, 15, 15, 0, 0, DateTimeKind.Utc));
     Exigir(local.Hour == 12 && local.DayOfWeek == DayOfWeek.Thursday,
         "15:00 UTC deveria corresponder a 12:00 na quinta-feira em Brasília");
+}
+
+static void TestarFaixaPrecoServico()
+{
+    var rascunho = new ServicoProfissionalRequest { CategoriaId = 1 };
+    Exigir(Validar(rascunho), "a categoria sem preço deveria ser salva como rascunho");
+
+    var faixaParcial = new ServicoProfissionalRequest { CategoriaId = 1, FaixaPrecoMin = 100 };
+    Exigir(!Validar(faixaParcial), "a validação aceitou uma faixa com apenas um preço");
+
+    var faixaCompleta = new ServicoProfissionalRequest
+    {
+        CategoriaId = 1,
+        FaixaPrecoMin = 100,
+        FaixaPrecoMax = 250
+    };
+    Exigir(Validar(faixaCompleta), "a validação rejeitou uma faixa de preço completa");
 }
 
 static bool Validar(object modelo)

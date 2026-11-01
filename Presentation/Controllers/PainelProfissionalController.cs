@@ -28,7 +28,20 @@ public sealed class PainelProfissionalController : ApiControllerBase
     {
         var profissional = await _db.Profissionais.AsNoTracking()
             .Where(p => p.UsuarioId == _user.Id)
-            .Select(p => new { p.Id, p.MediaAvaliacao })
+            .Select(p => new
+            {
+                p.Id,
+                p.MediaAvaliacao,
+                CadastroCompleto = p.DescricaoPerfil.Trim() != ""
+                    && p.Categorias.Any(c => c.Categoria.Ativa)
+                    && p.Categorias.Where(c => c.Categoria.Ativa)
+                        .All(c => (c.FaixaPrecoMin ?? p.PrecoMin) != null
+                            && (c.FaixaPrecoMax ?? p.PrecoMax) != null)
+                    && p.Areas.Any()
+                    && p.Disponibilidade.Any()
+                    && p.DistanciaMaxKm > 0
+                    && (p.AtendeDomicilio || p.AtendeEstabelecimento)
+            })
             .FirstOrDefaultAsync(ct)
             ?? throw BusinessException.NaoEncontrado("PERFIL_NAO_ENCONTRADO", "Perfil profissional não encontrado.");
 
@@ -54,9 +67,10 @@ public sealed class PainelProfissionalController : ApiControllerBase
             .Where(v => v.ProfissionalId == profissional.Id)
             .OrderByDescending(v => v.CriadoEm)
             .Select(v => v.Status.ToString())
-            .FirstOrDefaultAsync(ct) ?? "CadastroIncompleto";
+            .FirstOrDefaultAsync(ct)
+            ?? (profissional.CadastroCompleto ? "AguardandoVerificacao" : "CadastroIncompleto");
 
         return Ok(new PainelProfissionalResponse(novos, aceitos, orcamentos, agendamentos,
-            emAndamento, concluidos, profissional.MediaAvaliacao, statusVerificacao));
+            emAndamento, concluidos, profissional.MediaAvaliacao, statusVerificacao, profissional.CadastroCompleto));
     }
 }

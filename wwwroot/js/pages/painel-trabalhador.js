@@ -1,7 +1,11 @@
 (() => {
     const C = window.Chamapro;
     const safe = C.escaparHtml;
-    const statusText = value => String(value || "").replaceAll("_", " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+    const statusText = value => {
+        const raw = String(value || "");
+        const labels = { CADASTROINCOMPLETO: "Cadastro incompleto", AGUARDANDOVERIFICACAO: "Aguardando verificação", PENDENTE: "Aguardando verificação", EMANALISE: "Em análise", DOCUMENTACAOPENDENTE: "Documentação pendente", REJEITADO: "Reprovado" };
+        return labels[raw.toUpperCase()] || raw.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replaceAll("_", " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+    };
     const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
     const toLocalInput = value => {
         const date = new Date(value);
@@ -22,6 +26,7 @@
             set("servicesCompleted", painel.servicosConcluidos);
             set("averageRating", C.formatarNota(painel.mediaAvaliacao));
             set("verificationStatus", statusText(painel.statusVerificacao));
+            document.getElementById("onboardingPrompt").hidden = Boolean(painel.cadastroCompleto);
 
             if (!agendamentos.length) {
                 list.innerHTML = '<p class="empty-state">Você ainda não tem agendamentos ativos.</p>';
