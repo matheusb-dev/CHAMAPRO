@@ -1,408 +1,107 @@
 # CHAMAPRO
 
-Sistema completo de plataforma de serviços para conectar clientes e profissionais, com fluxo de pedidos, orçamentos, agendamentos, avaliações, autenticação, painel administrativo e integração com banco de dados.
+Marketplace web para conectar clientes a profissionais de serviços. O repositório contém uma API ASP.NET Core, páginas HTML/CSS/JavaScript e scripts PostgreSQL para Supabase.
 
-## Visão geral
+## Situação
 
-O CHAMAPRO é uma aplicação web para contratação de serviços, desenvolvida com arquitetura em camadas e comunicação entre frontend, API e banco de dados. A solução foi construída em .NET com ASP.NET Core, utilizando PostgreSQL no Supabase e autenticação JWT para controle de acesso por perfil.
+O sistema está em desenvolvimento na branch `feat/telas-05-a-08-versao-vitoria`. O projeto Supabase `chamapro-dev` foi criado na região São Paulo e recebeu as migrações v2, v3 e v4. A base está vazia de contas e chamados de exemplo; contém apenas a taxonomia inicial de categorias. O projeto Supabase antigo `chamapro` não foi alterado.
 
-O sistema permite:
-- cadastro de clientes e profissionais
-- autenticação e autorização por roles
-- busca de profissionais por categoria e localização
-- criação de pedidos e orçamentos
-- seleção de profissional por orçamento
-- agendamento de serviços
-- avaliação da prestação de serviço
-- verificação do perfil profissional
-- painel administrativo para gestão do sistema
-- documentação de endpoints via Swagger
+O build e os testes locais de regras e validação passam. Ainda falta executar a aplicação contra o banco com uma credencial configurada localmente e validar os fluxos completos de ponta a ponta.
 
----
+Não considere o sistema pronto para produção antes de configurar e validar o banco, SMTP, origens CORS, HTTPS e armazenamento persistente de arquivos.
 
-## Status do projeto
+## Funcionalidades implementadas
 
-Status atual: concluído e entregue.
+- Cadastro de cliente e profissional, login JWT, papéis e bloqueio de conta.
+- Perfil de cliente e profissional, categorias, regiões, preços e disponibilidade semanal.
+- Criação de chamados imediatos ou agendados, direcionamento manual ou automático a até cinco profissionais compatíveis.
+- Fila de chamados, interesse/recusa, orçamentos, contratação, agenda, remarcação, cancelamento e conclusão.
+- Contato via WhatsApp após contratação, quando habilitado pelo destinatário.
+- Verificação profissional com aprovação administrativa e documentos privados protegidos por dono.
+- Avaliações de serviços concluídos, favoritos, notificações persistidas e denúncias.
+- Painel administrativo para usuários, chamados, categorias, verificações, denúncias e relatórios.
 
-### ✅ Implementado
-- API REST em ASP.NET Core
-- Controllers, Services, Repositories e DTOs
-- Entities e modelagem completa do domínio
-- Entity Framework Core com PostgreSQL
-- AppDbContext com mapeamento das entidades
-- Chaves primárias e chaves compostas
-- Autenticação JWT
-- Controle de acesso por perfil
-- Hash de senha com BCrypt
-- Tratamento centralizado de erros
-- Swagger/OpenAPI
-- Banco PostgreSQL no Supabase
-- Scripts de criação, seed e testes
-- DER e documentação técnica
-- Frontend web responsivo
-- Fluxos de login, cadastro, cliente, profissional e admin
-- Validação de regras de negócio
-- Documentação técnica final do projeto
-- Versionamento com Git
+Notificações dentro do sistema funcionam com dados no PostgreSQL. E-mail e notificações push não estão configurados. Recuperação de senha e confirmação de e-mail também não estão implementadas.
 
----
+## Arquitetura
 
-## Arquitetura da solução
+- `Domain/`: entidades e enums.
+- `Application/`: DTOs, serviços e regras do fluxo.
+- `Infrastructure/`: Entity Framework Core, PostgreSQL, repositórios, rotinas e scripts SQL.
+- `Presentation/`: controllers, middlewares e endpoints HTTP.
+- `wwwroot/`: páginas, estilos e JavaScript da aplicação.
+- `Tests/Chamapro.Tests/`: testes locais autocontidos, executados com `dotnet run`.
 
-O CHAMAPRO segue uma arquitetura em camadas:
+API versionada em `/api/v1`. Swagger fica em `/swagger` no ambiente `Development`.
 
-- Frontend: interface web para usuários
-- API: camada de regras de negócio e endpoints
-- Banco de dados: persistência e consultas
+## Requisitos
 
-### Camadas da API
-- Controllers: recebem as requisições HTTP
-- Services: aplicam regras de negócio
-- Repositories: acessam o banco via Entity Framework
-- Entities: representam tabelas do banco
-- DTOs: definem contratos de entrada e saída
-- Middlewares: tratam erros, autenticação e contexto do usuário
-- Data: AppDbContext e configurações do banco
+- .NET SDK 10.
+- PostgreSQL 15+ ou projeto Supabase.
+- Credenciais do banco e uma chave JWT com no mínimo 32 bytes.
 
----
+## Configurar e executar
 
-## Tecnologias utilizadas
+Na raiz do repositório, configure segredos locais com User Secrets:
 
-### Backend
-- C#
-- .NET
-- ASP.NET Core
-- Entity Framework Core
-- PostgreSQL
-- Supabase
-- JWT
-- BCrypt.Net-Next
-
-### Frontend
-- HTML
-- CSS
-- JavaScript
-- Interface responsiva
-
-### Documentação
-- Swagger UI
-- OpenAPI
-- Documentação técnica em Markdown
-
----
-
-## Estrutura do projeto
-
-```text
-CHAMAPRO/
-├── Application/
-├── Domain/
-├── Infrastructure/
-├── Presentation/
-├── Controllers/
-├── Services/
-├── Repositories/
-├── Models/
-│   ├── Entities/
-│   └── Enums/
-├── DTOs/
-│   ├── Requests/
-│   └── Responses/
-├── Data/
-│   ├── Configurations/
-│   └── AppDbContext.cs
-├── Common/
-├── Middlewares/
-├── Database/
-│   ├── chamapro_schema_v2.sql
-│   ├── chamapro_seed_teste.sql
-│   ├── chamapro_testes_sql.sql
-│   └── DER.md
-├── wwwroot/
-├── Program.cs
-├── appsettings.json
-├── appsettings.Development.json
-├── Chamapro.Api.csproj
-├── Chamapro.Api.slnx
-├── README.md
-├── README-ESQUELETO.md
-├── ARQUITETURA_EM_CAMADAS.md
-├── .gitignore
-├── .gitattributes
-├── Testes/
-└── Properties/
+```powershell
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=<host>;Port=5432;Database=postgres;Username=<usuario>;Password=<senha>"
+dotnet user-secrets set "Jwt:Key" "<segredo aleatorio com pelo menos 32 bytes>"
+dotnet user-secrets set "Bootstrap:AdminEmail" "<e-mail do primeiro administrador>"
+dotnet user-secrets set "Bootstrap:AdminPassword" "<senha inicial aleatoria com pelo menos 16 caracteres>"
 ```
 
----
+Ou defina as variáveis `ConnectionStrings__DefaultConnection` e `Jwt__Key`. Não coloque valores reais em arquivos versionados.
 
-## Funcionalidades do sistema
+```powershell
+dotnet restore Chamapro.Api.slnx
+dotnet build Chamapro.Api.slnx
+dotnet run --project Chamapro.Api.csproj
+```
 
-### Autenticação
-- Cadastro de usuários
-- Login
-- Geração de token JWT
-- Controle de acesso por role
-- Proteção de endpoints
-- Validação de usuário autenticado
-- Perfil de cliente, profissional e administrador
+O servidor precisa de uma conexão PostgreSQL válida para as operações da API. As origens permitidas pelo CORS devem ser ajustadas em configuração para o ambiente de execução.
 
-### Cliente
-- cadastro e edição de dados
-- navegação por profissionais
-- envio de pedidos
-- acompanhamento de status
-- visualização de orçamentos
-- confirmação de agendamento
-- avaliação de serviços
+## Banco de dados
 
-### Profissional
-- perfil público e profissional
-- definição de categorias atendidas
-- definição de áreas de atendimento
-- visualização de pedidos recebidos
-- envio de orçamento
-- aceitação de agenda e disponibilidade
-- avaliação recebida
+Para uma instalação nova, execute na ordem:
 
-### Admin
-- gerenciamento de categorias
-- gestão de usuários e perfis
-- monitoramento de pedidos
-- controle geral do sistema
-- validação administrativa
+1. `Infrastructure/Persistence/Database/chamapro_schema_v2.sql`
+2. `Infrastructure/Persistence/Database/chamapro_schema_v3.sql`
+3. `Infrastructure/Persistence/Database/chamapro_schema_v4.sql`
+4. `Infrastructure/Persistence/Database/chamapro_schema_v5.sql`
 
-### Banco de dados
-- tabelas criadas conforme modelagem
-- relacionamentos mapeados no EF Core
-- índices e restrições definidas
-- scripts de seed e testes
+A migração v3 é incremental sobre o esquema v2. Ela cria as tabelas e colunas adicionais, índices e RLS. A API acessa o PostgreSQL pelo servidor; não exponha as tabelas diretamente pela chave pública do Supabase. Os documentos de verificação ficam fora da pasta estática, com registro de propriedade no banco. Imagens de perfil e portfólio são públicas.
 
----
+A v3 insere somente a taxonomia inicial de serviços, sem usuários ou chamados fictícios. A v4 adiciona índices para as chaves estrangeiras dos pedidos. A v5 revoga privilégios de tabela e sequência de `PUBLIC`, `anon` e `authenticated`, inclusive para futuras tabelas criadas pelo papel `postgres`. RLS continua habilitado em todas as tabelas públicas e não há policies de acesso direto pelo PostgREST: o modelo atual acessa a base pela API privada. O administrador inicial é criado uma única vez pela API quando `Bootstrap:AdminEmail` e `Bootstrap:AdminPassword` estão configurados; a senha é armazenada com BCrypt e não é alterada em inicializações seguintes. Remova as duas configurações de bootstrap depois da criação.
 
-## Modelagem do banco
+Os arquivos são atualmente salvos no disco local da aplicação (`uploads` e `uploads-privado`, configuráveis). Para múltiplas instâncias ou publicação com disco efêmero, configure armazenamento durável e privado antes da produção.
 
-A modelagem do sistema foi criada para suportar:
-- usuários
-- profissionais
-- categorias
-- áreas de atendimento
-- pedidos
-- destinatários do pedido
-- orçamentos
-- agendamentos
-- avaliações
-- verificações de profissional
+`chamapro_seed_teste.sql` é apenas para bases de teste descartáveis. `chamapro_testes_sql.sql` contém consultas de diagnóstico; revise os resultados manualmente.
 
-Principais entidades:
-- Usuario
-- Categoria
-- Profissional
-- ProfissionalCategoria
-- AreaAtendimento
-- Pedido
-- PedidoDestinatario
-- Orcamento
-- Agendamento
-- Avaliacao
-- VerificacaoProfissional
+## Testes
 
----
+```powershell
+dotnet build Chamapro.Api.slnx --no-restore
+dotnet run --project Tests/Chamapro.Tests/Chamapro.Tests.csproj
+```
+
+Os testes locais cobrem transições de chamados e validação de denúncias. Ainda não há testes de integração com PostgreSQL, autenticação HTTP ou fluxo completo de cliente a avaliação. Execute-os após conectar a nova base de desenvolvimento.
 
 ## Endpoints principais
 
-### Autenticação
-- POST /api/v1/auth/login
-- POST /api/v1/auth/register
-- POST /api/v1/auth/cliente/register
-- POST /api/v1/auth/profissional/register
+| Área | Rotas |
+|---|---|
+| Autenticação | `POST /auth/cadastro/cliente`, `POST /auth/cadastro/profissional`, `POST /auth/login`, `GET /auth/me` |
+| Clientes | `GET/PUT /clientes/me` |
+| Profissionais | `GET /profissionais`, `GET /profissionais/{id}`, `GET /profissionais/{id}/avaliacoes`, `GET/PUT /profissionais/me`, `PUT /profissionais/me/servicos`, `/areas`, `/disponibilidade` |
+| Chamados | `GET/POST /pedidos`, `GET /pedidos/{id}`, `POST /pedidos/{id}/aceitar`, `/recusar`, `/cancelar`, `PATCH /pedidos/{id}/status` |
+| Orçamentos | `POST /pedidos/{id}/orcamentos`, `GET /pedidos/{id}/orcamentos`, `POST /orcamentos/{id}/aceitar`, `/recusar` |
+| Agendamentos | `POST /agendamentos`, `GET /agendamentos/{pedidoId}`, `PUT /agendamentos/{id}`, `PATCH /agendamentos/{id}/status` |
+| Avaliações e marketplace | `GET /avaliacoes/pendentes`, `POST /avaliacoes`, favoritos, notificações e denúncias em `/favoritos`, `/notificacoes` e `/denuncias` |
+| Administração | `/admin/usuarios`, `/admin/pedidos`, `/admin/relatorios`, `/verificacoes` e `/denuncias` |
 
-### Categorias
-- GET /api/v1/categorias
-- POST /api/v1/categorias
-- PUT /api/v1/categorias/{id}
-- DELETE /api/v1/categorias/{id}
+As rotas protegidas usam `Authorization: Bearer <JWT>`. A API verifica papel, conta ativa e propriedade/participação antes de permitir alterações.
 
-### Profissionais
-- GET /api/v1/profissionais
-- GET /api/v1/profissionais/{id}
-- PUT /api/v1/profissionais/perfil
-- POST /api/v1/profissionais/servicos
-- POST /api/v1/profissionais/areas
+## Segurança e credenciais
 
-### Pedidos
-- GET /api/v1/pedidos
-- POST /api/v1/pedidos
-- PUT /api/v1/pedidos/{id}/status
-- POST /api/v1/pedidos/{id}/cancelar
-
-### Orçamentos
-- GET /api/v1/orcamentos
-- POST /api/v1/orcamentos
-- PUT /api/v1/orcamentos/{id}/aceitar
-- PUT /api/v1/orcamentos/{id}/recusar
-
-### Agendamentos
-- GET /api/v1/agendamentos
-- POST /api/v1/agendamentos
-- PUT /api/v1/agendamentos/{id}
-
-### Avaliações
-- GET /api/v1/avaliacoes
-- POST /api/v1/avaliacoes
-
-### Verificações
-- GET /api/v1/verificacoes
-- POST /api/v1/verificacoes
-- PUT /api/v1/verificacoes/{id}
-
-### Administração
-- GET /api/v1/admin
-- endpoints administrativos de gestão e relatórios
-
----
-
-## Autenticação e autorização
-
-O sistema utiliza JWT e perfis de acesso.
-
-### Perfis
-- CLIENTE
-- PROFISSIONAL
-- ADMIN
-
-### Segurança
-- senhas armazenadas com hash BCrypt
-- tokens gerados com expiração definida
-- endpoints protegidos por [Authorize]
-- acesso administrativo restrito a usuários com role ADMIN
-- regras de negócio verificando autorização do usuário autenticado
-
----
-
-## Banco e persistência
-
-### Banco utilizado
-- PostgreSQL hospedado no Supabase
-
-### Técnicas adotadas
-- Entity Framework Core
-- LINQ
-- mapeamento com DbContext
-- relacionamento entre entidades
-- chave primária e composta
-- scripts de seed e testes
-
-### Arquivos do banco
-- Database/chamapro_schema_v2.sql
-- Database/chamapro_seed_teste.sql
-- Database/chamapro_testes_sql.sql
-- Database/DER.md
-
----
-
-## Frontend
-
-O frontend do CHAMAPRO foi desenvolvido para oferecer uma experiência web responsiva com fluxos principais para:
-- login
-- cadastro
-- cliente
-- profissional
-- administração
-
-Arquivos principais:
-- wwwroot/login.html
-- wwwroot/cadastro.html
-- wwwroot/admin.html
-- wwwroot/styles.css
-- wwwroot/app.js
-
----
-
-## Como executar o projeto
-
-### Requisitos
-- .NET SDK instalado
-- PostgreSQL configurado ou acesso ao Supabase
-- Editor de código ou Visual Studio
-- Git
-
-### Passos
-1. Clone o repositório
-2. Configure a string de conexão do banco
-3. Ajuste as variáveis de ambiente ou secrets locais
-4. Execute o restore
-5. Compile e rode a aplicação
-
-```bash
-dotnet restore
-dotnet build
-dotnet run
-```
-
-### Ambiente de desenvolvimento
-O projeto pode ser acessado via:
-- Swagger em `/swagger`
-- API em `/api/v1/...`
-
----
-
-## Configuração do ambiente
-
-As configurações do projeto ficam em:
-- appsettings.json
-- appsettings.Development.json
-
-É recomendado armazenar dados sensíveis em:
-- User Secrets
-- Variáveis de ambiente
-- Configuração do ambiente local
-
----
-
-## Testes e validação
-
-O projeto foi validado com:
-- testes de modelagem de dados
-- testes SQL
-- validação de autenticação
-- validação de regras de negócio
-- validação de estrutura do banco
-- testes de endpoints e respostas
-
-### Evidências de testes
-- scripts de testes incluídos na pasta Database
-- fluxo principal de autenticação validado
-- schema principal do banco validado
-- estruturas e relacionamentos do domínio validados
-
----
-
-## Controle de versão
-
-O projeto foi versionado com Git e mantém histórico de evolução técnica do sistema.
-
----
-
-## Documentação
-
-A documentação do projeto está disponível em:
-- README.md
-- README-ESQUELETO.md
-- ARQUITETURA_EM_CAMADAS.md
-- Database/DER.md
-- Database/chamapro_schema_v2.sql
-- Database/chamapro_testes_sql.sql
-
----
-
-## Conclusão
-
-O CHAMAPRO foi desenvolvido com foco em arquitetura limpa, modular e escalável, com API em .NET, banco em PostgreSQL, autenticação JWT e frontend inicial integrado.
-
-O projeto atende aos requisitos previstos para uma plataforma de marketplace de serviços, com fluxo principal de cliente, profissional e administração funcionando dentro da estrutura planejada.
-
----
-
-## Licença
-
-Este projeto foi desenvolvido para fins acadêmicos e de apresentação de desenvolvimento de software.
+Os arquivos `appsettings*.json` não devem conter senhas ou chaves. Uma credencial de banco já apareceu no histórico público do repositório; trate-a como comprometida e rotacione-a no projeto antigo. A configuração atual do código foi limpa, mas o histórico remoto não pode ser apagado por esta branch.

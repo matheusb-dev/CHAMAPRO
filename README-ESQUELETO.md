@@ -7,6 +7,7 @@ Projeto `Chamapro.Api` (net10.0). Requer SDK 10 e Visual Studio 2026.
 1. Configure a string de conexão (nunca no repositório):
    ```
    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=...;Port=5432;Database=postgres;Username=...;Password=..."
+   dotnet user-secrets set "Jwt:Key" "<chave aleatoria com pelo menos 32 bytes>"
    ```
 2. `dotnet run` (ambiente Development). O Swagger UI fica em `/swagger`.
 3. Teste o login de desenvolvimento:
