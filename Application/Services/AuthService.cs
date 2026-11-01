@@ -19,6 +19,7 @@ public interface IAuthService
 
 public class AuthService : IAuthService
 {
+    private static readonly string HashSenhaDesconhecida = BCrypt.Net.BCrypt.HashPassword("chamapro-dummy-login-password");
     private readonly AppDbContext _context;
     private readonly ITokenService _tokenService;
 
@@ -40,7 +41,10 @@ public class AuthService : IAuthService
         var email = NormalizarEmail(request.Email);
         var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email.ToLower() == email, ct);
         if (usuario is null || !usuario.Ativo)
+        {
+            BCrypt.Net.BCrypt.Verify(request.Senha, HashSenhaDesconhecida);
             throw BusinessException.Proibido("CREDENCIAIS_INVALIDADAS", "E-mail ou senha inválidos.");
+        }
 
         var senhaValida = BCrypt.Net.BCrypt.Verify(request.Senha, usuario.SenhaHash);
         if (!senhaValida)
