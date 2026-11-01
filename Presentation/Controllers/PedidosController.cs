@@ -1,77 +1,59 @@
 using Chamapro.Api.Common;
+using Chamapro.Api.Data;
 using Chamapro.Api.DTOs.Requests;
 using Chamapro.Api.DTOs.Responses;
+using Chamapro.Api.Models.Entities;
+using Chamapro.Api.Models.Enums;
+using Chamapro.Api.Repositories;
 using Chamapro.Api.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 
 namespace Chamapro.Api.Controllers;
 
-/// <summary>Central de solicitações (endpoints 18 a 24). Sem regra de negócio: recebe, chama o Service e devolve o HTTP certo.</summary>
-[ApiController]
-[Route("api/v1/pedidos")]
+[Route(ApiRotas.Prefixo + "/pedidos")]
 [Authorize]
-public class PedidosController : ControllerBase
+public class PedidosController : ApiControllerBase
 {
-    private readonly IPedidoService _service;
+    private readonly AppDbContext _context;
+    private readonly IPedidoRepository _pedidoRepository;
 
-    public PedidosController(IPedidoService service) => _service = service;
-
-    /// <summary>18 - Cria o pedido e envia a 1 a 5 profissionais.</summary>
-    [HttpPost]
-    [Authorize(Roles = "CLIENTE")]
-    [ProducesResponseType(typeof(PedidoCriadoResponse), StatusCodes.Status201Created)]
-    public async Task<ActionResult<PedidoCriadoResponse>> Criar([FromBody] PedidoCriarRequest request)
+    public PedidosController(AppDbContext context, IPedidoRepository pedidoRepository)
     {
-        var response = await _service.CriarAsync(request);
-        return CreatedAtAction(nameof(Obter), new { id = response.Id }, response);
+        _context = context;
+        _pedidoRepository = pedidoRepository;
     }
 
-    /// <summary>19 - Lista os pedidos criados (cliente) ou recebidos (profissional).</summary>
     [HttpGet]
-    [Authorize(Roles = "CLIENTE,PROFISSIONAL")]
-    public async Task<ActionResult<PagedResponse<PedidoResumoResponse>>> Listar([FromQuery] PedidoListarQuery query)
-        => Ok(await _service.ListarAsync(query));
+    public async Task<ActionResult<IEnumerable<PedidoResumoResponse>>> ListarAsync(
+        [FromQuery] int? clienteId,
+        [FromQuery] int? profissionalId,
+        [FromQuery] StatusPedido? status,
+        [FromQuery] int pagina = 1,
+        [FromQuery] int tamanho = 10,
+        CancellationToken ct = default)
+    {
+        var (itens, total) = await _pedidoRepository.ListarAsync(clienteId, profissionalId, status, pagina, tamanho);
 
-    /// <summary>20 - Detalhe do pedido (cliente dono ou profissional destinatário).</summary>
+        var response = itens
+            .Select(p => p.ToResumo(profissionalId))
+            .ToList();
+
+        return Ok(new { itens = response, total });
+    }
+
     [HttpGet("{id:int}")]
-    [Authorize(Roles = "CLIENTE,PROFISSIONAL")]
-    public async Task<ActionResult<PedidoDetalheResponse>> Obter(int id)
-        => Ok(await _service.ObterAsync(id));
-
-    /// <summary>21 - Profissional aceita atender o pedido (libera o envio de orçamento).</summary>
-    [HttpPost("{id:int}/aceitar")]
-    [Authorize(Roles = "PROFISSIONAL")]
-    public async Task<IActionResult> Aceitar(int id)
+    public async Task<ActionResult<PedidoDetalheResponse>> ObterAsync(int id, CancellationToken ct)
     {
-        await _service.AceitarAsync(id);
-        return NoContent();
-    }
+        var pedido = await _pedidoRepository.ObterDetalheAsync(id);
 
-    /// <summary>22 - Profissional recusa o pedido (motivo opcional).</summary>
-    [HttpPost("{id:int}/recusar")]
-    [Authorize(Roles = "PROFISSIONAL")]
-    public async Task<IActionResult> Recusar(
-        int id, [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] PedidoRecusarRequest? request)
-    {
-        await _service.RecusarAsync(id, request);
-        return NoContent();
-    }
+        if (pedido is null)
+            return NotFound();
 
-    /// <summary>23 - Cliente dono ou profissional escolhido cancela o pedido.</summary>
-    [HttpPost("{id:int}/cancelar")]
-    [Authorize(Roles = "CLIENTE,PROFISSIONAL")]
-    public async Task<IActionResult> Cancelar(int id, [FromBody] PedidoCancelarRequest request)
-    {
-        await _service.CancelarAsync(id, request);
-        return NoContent();
-    }
+        var ehCliente = pedido.ClienteId == UsuarioLogadoId;
+        var profissionalId = await _pedidoRepository.ObterProfissionalIdPorUsuarioAsync(UsuarioLogadoId);
 
-    /// <summary>24 - Profissional escolhido marca EM_ANDAMENTO ou CONCLUIDO.</summary>
-    [HttpPatch("{id:int}/status")]
-    [Authorize(Roles = "PROFISSIONAL")]
-    public async Task<ActionResult<PedidoDetalheResponse>> AtualizarStatus(int id, [FromBody] PedidoStatusRequest request)
-        => Ok(await _service.AtualizarStatusAsync(id, request));
+        return Ok(pedido.ToDetalhe(ehCliente, profissionalId));
+    }
 }

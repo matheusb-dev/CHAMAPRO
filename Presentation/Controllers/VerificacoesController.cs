@@ -14,21 +14,32 @@ namespace Chamapro.Api.Controllers;
 public class VerificacoesController : ApiControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly ICurrentUser _currentUser;
 
-    public VerificacoesController(AppDbContext context, ICurrentUser currentUser)
+    public VerificacoesController(AppDbContext context)
     {
         _context = context;
-        _currentUser = currentUser;
     }
 
     [HttpPost]
     [Authorize(Roles = Perfis.Profissional)]
-    public async Task<ActionResult<VerificacaoResponse>> Solicitar([FromBody] VerificacaoDocumentosRequest request, CancellationToken ct)
+    public async Task<ActionResult<VerificacaoResponse>> Solicitar(
+        [FromBody] VerificacaoDocumentosRequest request,
+        CancellationToken ct)
     {
-        var profissional = await _context.Profissionais.FirstOrDefaultAsync(p => p.UsuarioId == _currentUser.Id, ct);
+        if (UsuarioLogadoId <= 0)
+            throw BusinessException.Invalido("USUARIO_NAO_AUTENTICADO", "Usuário não autenticado.");
+
+        var profissional = await _context.Profissionais
+            .FirstOrDefaultAsync(p => p.UsuarioId == UsuarioLogadoId, ct);
+
         if (profissional is null)
             throw BusinessException.NaoEncontrado("PERFIL_NAO_ENCONTRADO", "Perfil profissional não encontrado.");
+
+        if (string.IsNullOrWhiteSpace(request.TipoDocumento))
+            throw BusinessException.Invalido("TIPO_DOCUMENTO_INVALIDO", "Tipo de documento inválido.");
+
+        if (string.IsNullOrWhiteSpace(request.UrlDocumento))
+            throw BusinessException.Invalido("URL_DOCUMENTO_INVALIDA", "URL do documento inválida.");
 
         var verificacao = new VerificacaoProfissional
         {
@@ -79,9 +90,14 @@ public class VerificacoesController : ApiControllerBase
 
     [HttpPatch("{id:int}/avaliar")]
     [Authorize(Roles = Perfis.Admin)]
-    public async Task<ActionResult<VerificacaoResponse>> Avaliar(int id, [FromBody] VerificacaoAvaliacaoRequest request, CancellationToken ct)
+    public async Task<ActionResult<VerificacaoResponse>> Avaliar(
+        int id,
+        [FromBody] VerificacaoAvaliacaoRequest request,
+        CancellationToken ct)
     {
-        var verificacao = await _context.Verificacoes.FirstOrDefaultAsync(v => v.Id == id, ct);
+        var verificacao = await _context.Verificacoes
+            .FirstOrDefaultAsync(v => v.Id == id, ct);
+
         if (verificacao is null)
             throw BusinessException.NaoEncontrado("VERIFICACAO_NAO_ENCONTRADA", "Verificação não encontrada.");
 
@@ -90,14 +106,16 @@ public class VerificacoesController : ApiControllerBase
 
         if (request.Aprovado)
         {
-            var profissional = await _context.Profissionais.FirstOrDefaultAsync(p => p.Id == verificacao.ProfissionalId, ct);
+            var profissional = await _context.Profissionais
+                .FirstOrDefaultAsync(p => p.Id == verificacao.ProfissionalId, ct);
+
             if (profissional is not null)
             {
-                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == profissional.UsuarioId, ct);
+                var usuario = await _context.Usuarios
+                    .FirstOrDefaultAsync(u => u.Id == profissional.UsuarioId, ct);
+
                 if (usuario is not null)
-                {
                     usuario.IdentidadeVerificada = true;
-                }
             }
         }
 
