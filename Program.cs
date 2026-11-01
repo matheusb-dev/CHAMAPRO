@@ -1,21 +1,16 @@
-
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Collections.Generic;
-
 using Chamapro.Api.Common;
 using Chamapro.Api.Data;
 using Chamapro.Api.Extensions;
 using Chamapro.Api.Middlewares;
 using Chamapro.Api.Models.Enums;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-
 using Npgsql;
 using Npgsql.NameTranslation;
 
@@ -66,9 +61,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // ======================================================
 
 builder.Services.AddHttpContextAccessor();
-
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
-
 builder.Services.AddServicesERepositories();
 
 // ======================================================
@@ -177,7 +170,7 @@ builder.Services.AddCors(options =>
 });
 
 // ======================================================
-// SWAGGER / SWASHBUCKLE 10.3.1
+// SWAGGER / SWASHBUCKLE
 // ======================================================
 
 builder.Services.AddEndpointsApiExplorer();
@@ -221,7 +214,6 @@ var app = builder.Build();
 // ======================================================
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
-
 app.UseMiddleware<LoginRateLimitMiddleware>();
 
 // ======================================================

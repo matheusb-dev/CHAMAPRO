@@ -1,6 +1,5 @@
 namespace Chamapro.Api.Common;
 
-/// <summary>Nomes dos perfis (roles) usados em [Authorize(Roles = ...)] e nas claims.</summary>
 public static class Perfis
 {
     public const string Cliente = "CLIENTE";

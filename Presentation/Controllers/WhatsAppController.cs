@@ -37,28 +37,6 @@ public class WhatsAppController : ApiControllerBase
         });
     }
 
-    [HttpGet("contato/profissional/{profissionalId:int}")]
-    [Authorize]
-    public async Task<ActionResult<WhatsAppContatoResponse>> GetContatoPorProfissional(
-        int profissionalId,
-        CancellationToken ct)
-    {
-        var profissional = await _context.Profissionais
-            .Include(p => p.Usuario)
-            .FirstOrDefaultAsync(x => x.Id == profissionalId, ct);
-
-        if (profissional is null)
-            throw BusinessException.NaoEncontrado("PROFISSIONAL_NAO_ENCONTRADO", "Profissional não encontrado.");
-
-        return Ok(new WhatsAppContatoResponse
-        {
-            UsuarioId = profissional.Usuario.Id,
-            Telefone = profissional.Usuario.Telefone,
-            WhatsAppAtivo = profissional.Usuario.WhatsAppAtivo,
-            MensagemInicialWhatsApp = profissional.Usuario.MensagemInicialWhatsApp
-        });
-    }
-
     [HttpPost("contato/{usuarioId:int}/configurar")]
     [Authorize]
     public async Task<ActionResult<WhatsAppContatoResponse>> ConfigurarContato(
