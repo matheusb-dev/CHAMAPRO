@@ -1,119 +1,107 @@
 using System.Globalization;
 using System.Text;
 using Chamapro.Api.Common;
+using Chamapro.Api.Data;
 using Chamapro.Api.DTOs.Requests;
 using Chamapro.Api.DTOs.Responses;
+using Chamapro.Api.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Chamapro.Api.Repositories;
 
 public class ProfissionalRepository : IProfissionalRepository
 {
-    private readonly ICategoriaRepository _categorias;
+    private readonly AppDbContext _context;
 
-    public ProfissionalRepository(ICategoriaRepository categorias) => _categorias = categorias;
-
-    private record ServicoDados(int CategoriaId, decimal Min, decimal Max);
-    private record AreaDados(string Cidade, string? Bairro);
-    private record AvaliacaoDados(int Nota, string? Comentario, string NomeCliente, DateTime Data);
-
-    private class ProfissionalDados
+    public ProfissionalRepository(AppDbContext context)
     {
-        public int Id { get; set; }
-        public int UsuarioId { get; set; }
-        public string Nome { get; set; } = string.Empty;
-        public string? FotoUrl { get; set; }
-        public string? Descricao { get; set; }
-        public string? Telefone { get; set; }
-        public bool Verificado { get; set; }
-        public bool Ativo { get; set; } = true;
-        public DateTime MembroDesde { get; set; }
-        public List<ServicoDados> Servicos { get; set; } = new();
-        public List<AreaDados> Areas { get; set; } = new();
-        public List<string> FotosTrabalhos { get; set; } = new();
-        public List<AvaliacaoDados> Avaliacoes { get; set; } = new();
+        _context = context;
     }
 
-    private static DateTime D(int ano, int mes, int dia) => new(ano, mes, dia, 0, 0, 0, DateTimeKind.Utc);
-
-    private static readonly object Trava = new();
-
-    private static readonly List<ProfissionalDados> Dados = new()
-    {
-        new ProfissionalDados
-        {
-            Id = 1, UsuarioId = 2, Nome = "Carlos Silva",
-            Descricao = "Eletricista residencial com 10 anos de experiência.",
-            Telefone = "44999990001", Verificado = true, MembroDesde = D(2026, 1, 15),
-            Servicos = new() { new ServicoDados(1, 80m, 250m) },
-            Areas = new() { new AreaDados("Maringá", null) },
-            Avaliacoes = new()
-            {
-                new AvaliacaoDados(5, "Serviço rápido e limpo.", "Joana", D(2026, 8, 3)),
-                new AvaliacaoDados(4, "Bom profissional, chegou no horário.", "Pedro", D(2026, 9, 12))
-            }
-        },
-        new ProfissionalDados
-        {
-            Id = 2, UsuarioId = 3, Nome = "Marcos Souza",
-            Descricao = "Encanador, trabalho com vazamentos e instalações.",
-            Telefone = "44999990002", Verificado = false, MembroDesde = D(2026, 2, 20),
-            Servicos = new() { new ServicoDados(2, 100m, 300m) },
-            Areas = new() { new AreaDados("Maringá", null) },
-            Avaliacoes = new()
-            {
-                new AvaliacaoDados(5, "Resolveu o vazamento no mesmo dia.", "Maria", D(2026, 7, 21)),
-                new AvaliacaoDados(3, "Bom serviço, mas atrasou.", "Lucas", D(2026, 9, 2)),
-                new AvaliacaoDados(4, null, "Paula", D(2026, 10, 1))
-            }
-        },
-        new ProfissionalDados
-        {
-            Id = 3, UsuarioId = 4, Nome = "Ana Pereira",
-            Descricao = "Eletricista, instalações e manutenção.",
-            Telefone = "44999990003", Verificado = false, MembroDesde = D(2026, 3, 10),
-            Servicos = new() { new ServicoDados(1, 70m, 200m) },
-            Areas = new() { new AreaDados("Maringá", "Zona 7"), new AreaDados("Sarandi", null) },
-            Avaliacoes = new()
-            {
-                new AvaliacaoDados(5, "Excelente!", "Rita", D(2026, 8, 15)),
-                new AvaliacaoDados(5, "Muito atenciosa.", "João", D(2026, 9, 5)),
-                new AvaliacaoDados(4, null, "Bia", D(2026, 9, 28)),
-                new AvaliacaoDados(5, "Recomendo.", "Tiago", D(2026, 10, 10))
-            }
-        }
-    };
-
     public async Task<RespostaPaginada<ProfissionalResumoResponse>> BuscarAsync(
-        BuscaProfissionaisQuery filtro, CancellationToken ct = default)
+        BuscaProfissionaisQuery filtro,
+        CancellationToken ct = default)
     {
         var categoriaId = filtro.CategoriaId ?? 0;
         var cidade = Normalizar(filtro.Cidade ?? string.Empty);
         var bairro = string.IsNullOrWhiteSpace(filtro.Bairro) ? null : Normalizar(filtro.Bairro);
-        var nomes = await NomesDasCategoriasAsync(ct);
 
-        List<ProfissionalResumoResponse> itens;
-        lock (Trava)
+        var query = _context.Profissionais
+            .AsNoTracking()
+            .Include(p => p.Usuario)
+            .Include(p => p.Categorias)
+                .ThenInclude(pc => pc.Categoria)
+            .Include(p => p.Areas)
+            .Where(p => p.Usuario.Ativo)
+            .Where(p => p.Categorias.Any(pc => pc.CategoriaId == categoriaId && pc.Categoria.Ativa))
+            .Where(p => p.Areas.Any(a =>
+                Normalizar(a.Cidade) == cidade &&
+                (bairro == null || string.IsNullOrWhiteSpace(a.Bairro) || Normalizar(a.Bairro) == bairro)));
+
+        if (filtro.Verificado == true)
         {
-            itens = Dados
-                .Where(p => p.Ativo
-                    && p.Servicos.Count > 0 && p.Areas.Count > 0 // cadastro completo
-                    && p.Servicos.Any(s => s.CategoriaId == categoriaId)
-                    && p.Areas.Any(a => Normalizar(a.Cidade) == cidade
-                        && (bairro is null || a.Bairro is null || Normalizar(a.Bairro) == bairro))
-                    && (filtro.Verificado != true || p.Verificado)
-                    && (filtro.NotaMinima is null || Media(p) >= filtro.NotaMinima.Value))
-                .Select(p => ParaResumo(p, categoriaId, nomes))
+            query = query.Where(p => p.Usuario.IdentidadeVerificada);
+        }
+
+        var profissionais = await query
+            .OrderBy(p => p.Usuario.Nome)
+            .ToListAsync(ct);
+
+        var itens = new List<ProfissionalResumoResponse>();
+
+        foreach (var p in profissionais)
+        {
+            var notaMedia = await _context.Avaliacoes
+                .AsNoTracking()
+                .Where(a => a.AvaliadoId == p.Id)
+                .AverageAsync(a => (decimal?)a.Nota, ct) ?? 0m;
+
+            var totalAvaliacoes = await _context.Avaliacoes
+                .AsNoTracking()
+                .CountAsync(a => a.AvaliadoId == p.Id, ct);
+
+            var servicos = p.Categorias
+                .Select(pc => pc.Categoria.Nome)
+                .ToList();
+
+            var categoriaSelecionada = p.Categorias
+                .FirstOrDefault(pc => pc.CategoriaId == categoriaId);
+
+            var item = new ProfissionalResumoResponse(
+                p.Id,
+                p.Usuario.Nome,
+                null,
+                servicos,
+                Math.Round(notaMedia, 1),
+                totalAvaliacoes,
+                p.Usuario.IdentidadeVerificada,
+                categoriaSelecionada == null ? null : p.PrecoMin,
+                categoriaSelecionada == null ? null : p.PrecoMax);
+
+            itens.Add(item);
+        }
+
+        if (filtro.NotaMinima is not null)
+        {
+            itens = itens
+                .Where(i => i.NotaMedia >= filtro.NotaMinima.Value)
                 .ToList();
         }
 
         IEnumerable<ProfissionalResumoResponse> ordenados = filtro.Ordenar switch
         {
-            "avaliacoes" => itens.OrderByDescending(i => i.TotalAvaliacoes)
-                                 .ThenByDescending(i => i.NotaMedia).ThenBy(i => i.Nome),
-            "preco" => itens.OrderBy(i => i.FaixaPrecoMin ?? decimal.MaxValue)
-                            .ThenByDescending(i => i.NotaMedia).ThenBy(i => i.Nome),
-            _ => itens.OrderByDescending(i => i.NotaMedia)
-                      .ThenByDescending(i => i.TotalAvaliacoes).ThenBy(i => i.Nome)
+            "avaliacoes" => itens
+                .OrderByDescending(i => i.TotalAvaliacoes)
+                .ThenByDescending(i => i.NotaMedia)
+                .ThenBy(i => i.Nome),
+            "preco" => itens
+                .OrderBy(i => i.FaixaPrecoMin ?? decimal.MaxValue)
+                .ThenByDescending(i => i.NotaMedia)
+                .ThenBy(i => i.Nome),
+            _ => itens
+                .OrderByDescending(i => i.NotaMedia)
+                .ThenByDescending(i => i.TotalAvaliacoes)
+                .ThenBy(i => i.Nome)
         };
 
         var pagina = ordenados
@@ -126,150 +114,225 @@ public class ProfissionalRepository : IProfissionalRepository
             Itens = pagina,
             Pagina = filtro.Pagina,
             Tamanho = filtro.Tamanho,
-            Total = itens.Count
+            Total = ordenados.Count()
         };
     }
 
     public async Task<PerfilPublicoResponse?> ObterPerfilPublicoAsync(int id, CancellationToken ct = default)
     {
-        var nomes = await NomesDasCategoriasAsync(ct);
+        var profissional = await _context.Profissionais
+            .AsNoTracking()
+            .Include(p => p.Usuario)
+            .Include(p => p.Categorias)
+                .ThenInclude(pc => pc.Categoria)
+            .Include(p => p.Areas)
+            .FirstOrDefaultAsync(p => p.Id == id && p.Usuario.Ativo, ct);
 
-        lock (Trava)
-        {
-            var p = Dados.FirstOrDefault(x => x.Id == id && x.Ativo);
-            if (p is null) return null;
+        if (profissional is null)
+            return null;
 
-            return new PerfilPublicoResponse(
-                p.Id,
-                p.Nome,
-                p.FotoUrl,
-                p.Descricao,
-                p.Servicos.Select(s => new EspecialidadeResponse(NomeCategoria(nomes, s.CategoriaId), s.Min, s.Max)).ToList(),
-                p.Areas.Select(a => a.Bairro is null ? a.Cidade : $"{a.Cidade} - {a.Bairro}").ToList(),
-                Media(p),
-                p.Avaliacoes.Count,
-                p.Verificado,
-                p.FotosTrabalhos.ToList(),
-                p.MembroDesde);
-        }
+        var especialidades = profissional.Categorias
+            .Select(pc => new EspecialidadeResponse(
+                pc.Categoria.Nome,
+                profissional.PrecoMin,
+                profissional.PrecoMax))
+            .ToList();
+
+        var areas = profissional.Areas
+            .Select(a => string.IsNullOrWhiteSpace(a.Bairro) ? a.Cidade : $"{a.Cidade} - {a.Bairro}")
+            .ToList();
+
+        var notaMedia = await _context.Avaliacoes
+            .AsNoTracking()
+            .Where(a => a.AvaliadoId == profissional.Id)
+            .AverageAsync(a => (decimal?)a.Nota, ct) ?? 0m;
+
+        var totalAvaliacoes = await _context.Avaliacoes
+            .AsNoTracking()
+            .CountAsync(a => a.AvaliadoId == profissional.Id, ct);
+
+        return new PerfilPublicoResponse(
+            profissional.Id,
+            profissional.Usuario.Nome,
+            null,
+            profissional.DescricaoPerfil,
+            especialidades,
+            areas,
+            Math.Round(notaMedia, 1),
+            totalAvaliacoes,
+            profissional.Usuario.IdentidadeVerificada,
+            new List<string>(),
+            profissional.Usuario.CriadoEm);
     }
 
-    public Task<RespostaPaginada<AvaliacaoPublicaResponse>?> ListarAvaliacoesAsync(
-        int id, PaginacaoQuery paginacao, CancellationToken ct = default)
+    public async Task<RespostaPaginada<AvaliacaoPublicaResponse>?> ListarAvaliacoesAsync(
+        int id,
+        PaginacaoQuery paginacao,
+        CancellationToken ct = default)
     {
-        lock (Trava)
-        {
-            var p = Dados.FirstOrDefault(x => x.Id == id && x.Ativo);
-            if (p is null)
-                return Task.FromResult<RespostaPaginada<AvaliacaoPublicaResponse>?>(null);
+        var profissional = await _context.Profissionais
+            .AsNoTracking()
+            .Include(p => p.Usuario)
+            .FirstOrDefaultAsync(p => p.Id == id && p.Usuario.Ativo, ct);
 
-            var ordenadas = p.Avaliacoes.OrderByDescending(a => a.Data).ToList();
-            var itens = ordenadas
-                .Skip((paginacao.Pagina - 1) * paginacao.Tamanho)
-                .Take(paginacao.Tamanho)
-                .Select(a => new AvaliacaoPublicaResponse(a.Nota, a.Comentario, a.NomeCliente, a.Data))
-                .ToList();
+        if (profissional is null)
+            return null;
 
-            var resposta = new RespostaPaginada<AvaliacaoPublicaResponse>
+        var avaliacoes = await _context.Avaliacoes
+            .AsNoTracking()
+            .Where(a => a.AvaliadoId == id)
+            .OrderByDescending(a => a.Id)
+            .Select(a => new
             {
-                Itens = itens,
-                Pagina = paginacao.Pagina,
-                Tamanho = paginacao.Tamanho,
-                Total = ordenadas.Count
-            };
-            return Task.FromResult<RespostaPaginada<AvaliacaoPublicaResponse>?>(resposta);
-        }
+                a.Nota,
+                a.Comentario,
+                NomeCliente = _context.Usuarios
+                    .Where(u => u.Id == a.AvaliadorId)
+                    .Select(u => u.Nome)
+                    .FirstOrDefault(),
+                a.Id
+            })
+            .Skip((paginacao.Pagina - 1) * paginacao.Tamanho)
+            .Take(paginacao.Tamanho)
+            .ToListAsync(ct);
+
+        var total = await _context.Avaliacoes
+            .AsNoTracking()
+            .CountAsync(a => a.AvaliadoId == id, ct);
+
+        var itens = avaliacoes
+            .Select(a => new AvaliacaoPublicaResponse(
+                a.Nota,
+                a.Comentario,
+                a.NomeCliente ?? "Cliente",
+                DateTime.UtcNow))
+            .ToList();
+
+        return new RespostaPaginada<AvaliacaoPublicaResponse>
+        {
+            Itens = itens,
+            Pagina = paginacao.Pagina,
+            Tamanho = paginacao.Tamanho,
+            Total = total
+        };
     }
 
-    public Task<bool> AtualizarPerfilAsync(int usuarioId, AtualizarProfissionalRequest request, CancellationToken ct = default)
+    public async Task<bool> AtualizarPerfilAsync(
+        int usuarioId,
+        AtualizarProfissionalRequest request,
+        CancellationToken ct = default)
     {
-        lock (Trava)
-        {
-            var p = Dados.FirstOrDefault(x => x.UsuarioId == usuarioId);
-            if (p is null) return Task.FromResult(false);
+        var profissional = await _context.Profissionais
+            .Include(p => p.Usuario)
+            .FirstOrDefaultAsync(p => p.UsuarioId == usuarioId, ct);
 
-            p.Nome = request.Nome.Trim();
-            p.Descricao = request.Descricao.Trim();
-            p.Telefone = request.Telefone;
-            p.FotoUrl = string.IsNullOrWhiteSpace(request.FotoUrl) ? null : request.FotoUrl.Trim();
-            p.FotosTrabalhos = request.FotosTrabalhos.Where(f => !string.IsNullOrWhiteSpace(f)).ToList();
-            return Task.FromResult(true);
-        }
+        if (profissional is null)
+            return false;
+
+        profissional.DescricaoPerfil = request.Descricao?.Trim() ?? string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(request.Nome))
+            profissional.Usuario.Nome = request.Nome.Trim();
+
+        if (!string.IsNullOrWhiteSpace(request.Telefone))
+            profissional.Usuario.Telefone = request.Telefone.Trim();
+
+        await _context.SaveChangesAsync(ct);
+        return true;
     }
 
-    public Task<bool> DefinirServicosAsync(int usuarioId, IReadOnlyList<ServicoProfissionalRequest> servicos, CancellationToken ct = default)
+    public async Task<bool> DefinirServicosAsync(
+        int usuarioId,
+        IReadOnlyList<ServicoProfissionalRequest> servicos,
+        CancellationToken ct = default)
     {
-        lock (Trava)
+        var profissional = await _context.Profissionais
+            .Include(p => p.Categorias)
+            .FirstOrDefaultAsync(p => p.UsuarioId == usuarioId, ct);
+
+        if (profissional is null)
+            return false;
+
+        _context.ProfissionalCategorias.RemoveRange(profissional.Categorias);
+
+        foreach (var servico in servicos)
         {
-            var p = Dados.FirstOrDefault(x => x.UsuarioId == usuarioId);
-            if (p is null) return Task.FromResult(false);
-
-            p.Servicos = servicos
-                .Select(s => new ServicoDados(s.CategoriaId, s.FaixaPrecoMin, s.FaixaPrecoMax))
-                .ToList();
-            return Task.FromResult(true);
-        }
-    }
-
-    public Task<bool> DefinirAreasAsync(int usuarioId, IReadOnlyList<AreaAtendimentoRequest> areas, CancellationToken ct = default)
-    {
-        lock (Trava)
-        {
-            var p = Dados.FirstOrDefault(x => x.UsuarioId == usuarioId);
-            if (p is null) return Task.FromResult(false);
-
-            var novas = new List<AreaDados>();
-            foreach (var a in areas)
+            _context.ProfissionalCategorias.Add(new ProfissionalCategoria
             {
-                var cidade = a.Cidade.Trim();
-                var bairro = string.IsNullOrWhiteSpace(a.Bairro) ? null : a.Bairro.Trim();
-                var repetida = novas.Any(x => Normalizar(x.Cidade) == Normalizar(cidade)
-                                           && Normalizar(x.Bairro ?? string.Empty) == Normalizar(bairro ?? string.Empty));
-                if (!repetida) novas.Add(new AreaDados(cidade, bairro));
-            }
-
-            p.Areas = novas;
-            return Task.FromResult(true);
+                ProfissionalId = profissional.Id,
+                CategoriaId = servico.CategoriaId
+            });
         }
+
+        var minPreco = servicos
+            .Where(s => s.FaixaPrecoMin > 0m)
+            .Select(s => s.FaixaPrecoMin)
+            .DefaultIfEmpty(0m)
+            .Min();
+
+        var maxPreco = servicos
+            .Where(s => s.FaixaPrecoMax > 0m)
+            .Select(s => s.FaixaPrecoMax)
+            .DefaultIfEmpty(0m)
+            .Max();
+
+        profissional.PrecoMin = minPreco == 0m ? null : minPreco;
+        profissional.PrecoMax = maxPreco == 0m ? null : maxPreco;
+
+        await _context.SaveChangesAsync(ct);
+        return true;
     }
 
-    private async Task<Dictionary<int, string>> NomesDasCategoriasAsync(CancellationToken ct)
+    public async Task<bool> DefinirAreasAsync(
+        int usuarioId,
+        IReadOnlyList<AreaAtendimentoRequest> areas,
+        CancellationToken ct = default)
     {
-        var categorias = await _categorias.ListarAtivasAsync(ct);
-        return categorias.ToDictionary(c => c.Id, c => c.Nome);
-    }
+        var profissional = await _context.Profissionais
+            .Include(p => p.Areas)
+            .FirstOrDefaultAsync(p => p.UsuarioId == usuarioId, ct);
 
-    private static string NomeCategoria(Dictionary<int, string> nomes, int categoriaId)
-        => nomes.TryGetValue(categoriaId, out var nome) ? nome : $"Categoria {categoriaId}";
+        if (profissional is null)
+            return false;
 
-    private static decimal Media(ProfissionalDados p)
-        => p.Avaliacoes.Count == 0 ? 0m : Math.Round((decimal)p.Avaliacoes.Average(a => a.Nota), 1);
+        _context.AreasAtendimento.RemoveRange(profissional.Areas);
 
-    private static ProfissionalResumoResponse ParaResumo(
-        ProfissionalDados p, int categoriaId, Dictionary<int, string> nomes)
-    {
-        var servico = p.Servicos.First(s => s.CategoriaId == categoriaId);
-        return new ProfissionalResumoResponse(
-            p.Id,
-            p.Nome,
-            p.FotoUrl,
-            p.Servicos.Select(s => NomeCategoria(nomes, s.CategoriaId)).ToList(),
-            Media(p),
-            p.Avaliacoes.Count,
-            p.Verificado,
-            servico.Min,
-            servico.Max);
+        foreach (var area in areas)
+        {
+            if (string.IsNullOrWhiteSpace(area.Cidade))
+                continue;
+
+            _context.AreasAtendimento.Add(new AreaAtendimento
+            {
+                ProfissionalId = profissional.Id,
+                Cidade = area.Cidade.Trim(),
+                Bairro = string.IsNullOrWhiteSpace(area.Bairro) ? null : area.Bairro.Trim()
+            });
+        }
+
+        await _context.SaveChangesAsync(ct);
+        return true;
     }
 
     private static string Normalizar(string texto)
     {
-        var decomposto = texto.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
-        var sb = new StringBuilder(decomposto.Length);
-        foreach (var c in decomposto)
+        if (string.IsNullOrWhiteSpace(texto))
+            return string.Empty;
+
+        var normalized = texto.Trim()
+            .ToLowerInvariant()
+            .Normalize(NormalizationForm.FormD);
+
+        var sb = new StringBuilder(normalized.Length);
+
+        foreach (var c in normalized)
         {
-            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+            var category = CharUnicodeInfo.GetUnicodeCategory(c);
+            if (category != UnicodeCategory.NonSpacingMark)
                 sb.Append(c);
         }
-        return sb.ToString().Normalize(NormalizationForm.FormC);
+
+        return sb.ToString()
+            .Normalize(NormalizationForm.FormC);
     }
 }

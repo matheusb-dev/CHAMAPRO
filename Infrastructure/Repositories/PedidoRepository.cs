@@ -25,6 +25,11 @@ public class PedidoRepository : IPedidoRepository
             .Select(p => (int?)p.Id)
             .FirstOrDefaultAsync();
 
+    public Task<Profissional?> ObterProfissionalPorIdAsync(int profissionalId)
+        => _db.Set<Profissional>()
+            .Include(p => p.Usuario)
+            .FirstOrDefaultAsync(p => p.Id == profissionalId);
+
     public Task<bool> CategoriaExisteAsync(int categoriaId)
         => _db.Set<Categoria>().AsNoTracking().AnyAsync(c => c.Id == categoriaId);
 

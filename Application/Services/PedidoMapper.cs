@@ -59,11 +59,18 @@ public static class PedidoMapper
         => new(o.Id, o.PedidoId, o.ProfissionalId, o.Valor, o.PrazoEstimado, o.Condicoes, o.ValidoAte, o.Status, aviso);
 
     public static OrcamentoComProfissionalResponse ToComProfissional(this Orcamento o, DateTime agora)
-        => new(o.Id, o.PedidoId, o.Valor, o.PrazoEstimado, o.Condicoes, o.ValidoAte,
+        => new(
+            o.Id,
+            o.PedidoId,
+            o.Valor,
+            o.PrazoEstimado,
+            o.Condicoes,
+            o.ValidoAte,
             Expirado: o.Status == StatusOrcamento.Enviado && o.ValidoAte <= agora,
             o.Status,
             new ProfissionalOrcamentoResponse(
                 o.Profissional.Id,
+                o.Profissional.UsuarioId,
                 o.Profissional.Usuario.Nome,
                 o.Profissional.MediaAvaliacao,
                 o.Profissional.Usuario.IdentidadeVerificada));

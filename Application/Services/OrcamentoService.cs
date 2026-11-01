@@ -92,7 +92,32 @@ public class OrcamentoService : IOrcamentoService
         var agora = DateTime.UtcNow;
         var orcamentos = await _orcamentos.ListarDoPedidoAsync(pedidoId);
 
-        return orcamentos.Select(o => o.ToComProfissional(agora)).ToList();
+        var resposta = new List<OrcamentoComProfissionalResponse>();
+
+        foreach (var o in orcamentos)
+        {
+            var profissional = await _pedidos.ObterProfissionalPorIdAsync(o.ProfissionalId);
+
+            resposta.Add(new OrcamentoComProfissionalResponse(
+                o.Id,
+                o.PedidoId,
+                o.Valor,
+                o.PrazoEstimado,
+                o.Condicoes,
+                o.ValidoAte,
+                o.ValidoAte < agora,
+                o.Status,
+                new ProfissionalOrcamentoResponse(
+                    o.ProfissionalId,
+                    profissional?.UsuarioId ?? 0,
+                    profissional?.Usuario?.Nome ?? "Profissional",
+                    profissional?.MediaAvaliacao ?? 0m,
+                    profissional?.Usuario?.IdentidadeVerificada ?? false
+                )
+            ));
+        }
+
+        return resposta;
     }
 
     // ---------------------------------------------------------------- POST /orcamentos/{id}/aceitar
@@ -101,7 +126,6 @@ public class OrcamentoService : IOrcamentoService
     {
         var pedidoId = await _orcamentos.ObterPedidoIdAsync(orcamentoId) ?? throw PedidoErros.OrcamentoNaoEncontrado();
 
-        // Tudo na mesma transação: orçamento escolhido, demais orçamentos, destinatários e pedido.
         await using (var tx = await _pedidos.IniciarTransacaoAsync())
         {
             await _pedidos.BloquearAsync(pedidoId);
