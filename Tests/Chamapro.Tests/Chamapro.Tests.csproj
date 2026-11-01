@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Compile Include="..\..\Application\Common\BusinessException.cs" Link="Source\BusinessException.cs" />
+    <Compile Include="..\..\Application\DTOs\Requests\DenunciaCriarRequest.cs" Link="Source\DenunciaCriarRequest.cs" />
+    <Compile Include="..\..\Application\DTOs\Requests\ServicoProfissionalRequest.cs" Link="Source\ServicoProfissionalRequest.cs" />
+    <Compile Include="..\..\Application\Services\PedidoErros.cs" Link="Source\PedidoErros.cs" />
+    <Compile Include="..\..\Application\Services\PedidoTransicoes.cs" Link="Source\PedidoTransicoes.cs" />
+    <Compile Include="..\..\Domain\Enums\EnumJson.cs" Link="Source\EnumJson.cs" />
+    <Compile Include="..\..\Domain\Enums\StatusPedido.cs" Link="Source\StatusPedido.cs" />
+    <Compile Include="..\..\Domain\Time\HorarioBrasil.cs" Link="Source\HorarioBrasil.cs" />
+  </ItemGroup>
+</Project>

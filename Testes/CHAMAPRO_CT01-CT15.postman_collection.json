@@ -1,0 +1,1101 @@
+{
+ "info": {
+  "name": "CHAMAPRO — CT-01 a CT-15",
+  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+  "description": "Rode a pasta 'Setup' e depois 'Casos de teste' (Runner, na ordem). Nenhum resultado foi executado pelo autor da coleção."
+ },
+ "variable": [
+  {
+   "key": "baseUrl",
+   "value": "http://localhost:5000/api/v1"
+  },
+  {
+   "key": "emailCliente",
+   "value": "cliente@chamapro.com"
+  },
+  {
+   "key": "senhaCliente",
+   "value": "PREENCHER"
+  },
+  {
+   "key": "emailProf",
+   "value": "profissional@chamapro.com"
+  },
+  {
+   "key": "senhaProf",
+   "value": "PREENCHER"
+  },
+  {
+   "key": "emailAdmin",
+   "value": "admin@chamapro.com"
+  },
+  {
+   "key": "senhaAdmin",
+   "value": "PREENCHER"
+  },
+  {
+   "key": "categoriaId",
+   "value": "1"
+  },
+  {
+   "key": "profissionalId",
+   "value": "1"
+  },
+  {
+   "key": "cidade",
+   "value": "São Paulo"
+  },
+  {
+   "key": "pedidoConcluidoId",
+   "value": ""
+  },
+  {
+   "key": "tokenCliente",
+   "value": ""
+  },
+  {
+   "key": "tokenProf",
+   "value": ""
+  },
+  {
+   "key": "tokenAdmin",
+   "value": ""
+  },
+  {
+   "key": "pedidoId",
+   "value": ""
+  },
+  {
+   "key": "orcamentoId",
+   "value": ""
+  },
+  {
+   "key": "pedidoPendenteId",
+   "value": ""
+  }
+ ],
+ "item": [
+  {
+   "name": "Setup",
+   "item": [
+    {
+     "name": "Login cliente (seed)",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/auth/login",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "auth",
+        "login"
+       ]
+      },
+      "description": "Setup: login Cliente. Guarda o token em tokenCliente.",
+      "auth": {
+       "type": "noauth"
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"email\": \"{{emailCliente}}\",\n  \"senha\": \"{{senhaCliente}}\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+         "if (pm.response.code < 300) pm.collectionVariables.set('tokenCliente', pm.response.json().token);"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "Login profissional (seed)",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/auth/login",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "auth",
+        "login"
+       ]
+      },
+      "description": "Setup: login Prof. Guarda o token em tokenProf.",
+      "auth": {
+       "type": "noauth"
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"email\": \"{{emailProf}}\",\n  \"senha\": \"{{senhaProf}}\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+         "if (pm.response.code < 300) pm.collectionVariables.set('tokenProf', pm.response.json().token);"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "Login admin (seed)",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/auth/login",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "auth",
+        "login"
+       ]
+      },
+      "description": "Setup: login Admin. Guarda o token em tokenAdmin.",
+      "auth": {
+       "type": "noauth"
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"email\": \"{{emailAdmin}}\",\n  \"senha\": \"{{senhaAdmin}}\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+         "if (pm.response.code < 300) pm.collectionVariables.set('tokenAdmin', pm.response.json().token);"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "Setup: pedido extra PENDENTE (para CT-14)",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/pedidos",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "pedidos"
+       ]
+      },
+      "description": "Cria um pedido que ficará PENDENTE.",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenCliente}}",
+         "type": "string"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"categoriaId\": \"{{categoriaId}}\",\n  \"titulo\": \"Trocar chuveiro eletrico\",\n  \"descricao\": \"O chuveiro parou de esquentar a agua.\",\n  \"cidade\": \"{{cidade}}\",\n  \"bairro\": \"Centro\",\n  \"fotoUrls\": [],\n  \"profissionalIds\": [\n    \"{{profissionalId}}\"\n  ]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+         "if (pm.response.code < 300) pm.collectionVariables.set('pedidoPendenteId', pm.response.json().id);"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Casos de teste",
+   "item": [
+    {
+     "name": "CT-01 — Cadastrar cliente com e-mail novo",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/auth/cadastro/cliente",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "auth",
+        "cadastro",
+        "cliente"
+       ]
+      },
+      "description": "Perfil: público. Esperado: 201.",
+      "auth": {
+       "type": "noauth"
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"nome\": \"Cliente Teste\",\n  \"email\": \"ct{{$timestamp}}@teste.com\",\n  \"senha\": \"Senha1234\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+         "pm.test('devolve token', () => pm.expect(pm.response.json().token).to.be.a('string'));"
+        ]
+       }
+      },
+      {
+       "listen": "prerequest",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.collectionVariables.set('emailNovo','ct'+Date.now()+'@teste.com');"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-02 — Cadastrar e-mail já existente",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/auth/cadastro/cliente",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "auth",
+        "cadastro",
+        "cliente"
+       ]
+      },
+      "description": "Perfil: público. Esperado: 409 EMAIL_JA_CADASTRADO.",
+      "auth": {
+       "type": "noauth"
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"nome\": \"Cliente Exemplo\",\n  \"email\": \"{{emailCliente}}\",\n  \"senha\": \"Senha1234\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+         "pm.test('codigo', () => pm.expect(pm.response.json().codigo).to.eql('EMAIL_JA_CADASTRADO'));"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-03 — Login com credenciais corretas",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/auth/login",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "auth",
+        "login"
+       ]
+      },
+      "description": "Perfil: público. Esperado: 200 + JWT.",
+      "auth": {
+       "type": "noauth"
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"email\": \"{{emailCliente}}\",\n  \"senha\": \"{{senhaCliente}}\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+         "pm.test('JWT', () => pm.expect(pm.response.json().token.split('.').length).to.eql(3));"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-04 — Login com senha incorreta",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/auth/login",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "auth",
+        "login"
+       ]
+      },
+      "description": "Perfil: público. Esperado (PDF): 401 CREDENCIAIS_INVALIDAS. ATENÇÃO: o backend atual devolve 403 (AuthService usa BusinessException.Proibido); este teste deve falhar até o backend ser corrigido.",
+      "auth": {
+       "type": "noauth"
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"email\": \"{{emailCliente}}\",\n  \"senha\": \"senha-errada-123\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-05 — Buscar Eletricista na região",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/profissionais?categoriaId={{categoriaId}}&cidade={{cidade}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "profissionais"
+       ],
+       "query": [
+        {
+         "key": "categoriaId",
+         "value": "{{categoriaId}}"
+        },
+        {
+         "key": "cidade",
+         "value": "{{cidade}}"
+        }
+       ]
+      },
+      "description": "Perfil: público. Esperado: lista filtrada { itens, pagina, tamanho, total }. O PDF cita Maringá; o seed só tem São Paulo (ajuste a variável cidade).",
+      "auth": {
+       "type": "noauth"
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+         "const j=pm.response.json();",
+         "pm.test('formato paginado', () => { pm.expect(j.itens).to.be.an('array'); pm.expect(j).to.have.keys(['itens','pagina','tamanho','total']); });"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-06 — Criar pedido válido",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/pedidos",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "pedidos"
+       ]
+      },
+      "description": "Perfil: CLIENTE. Esperado: 201 com status PENDENTE.",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenCliente}}",
+         "type": "string"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"categoriaId\": \"{{categoriaId}}\",\n  \"titulo\": \"Trocar chuveiro eletrico\",\n  \"descricao\": \"O chuveiro parou de esquentar a agua.\",\n  \"cidade\": \"{{cidade}}\",\n  \"bairro\": \"Centro\",\n  \"fotoUrls\": [],\n  \"profissionalIds\": [\n    \"{{profissionalId}}\"\n  ]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+         "pm.test('PENDENTE', () => pm.expect(pm.response.json().status).to.eql('PENDENTE'));",
+         "if (pm.response.code < 300) pm.collectionVariables.set('pedidoId', pm.response.json().id);"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-07 — Pedido com descrição vazia",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/pedidos",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "pedidos"
+       ]
+      },
+      "description": "Perfil: CLIENTE. Esperado: 400 (campo descricao).",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenCliente}}",
+         "type": "string"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"categoriaId\": \"{{categoriaId}}\",\n  \"titulo\": \"Trocar chuveiro eletrico\",\n  \"descricao\": \"\",\n  \"cidade\": \"{{cidade}}\",\n  \"bairro\": \"Centro\",\n  \"fotoUrls\": [],\n  \"profissionalIds\": [\n    \"{{profissionalId}}\"\n  ]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+         "pm.test('erro em descricao', () => pm.expect(JSON.stringify(pm.response.json().erros)).to.include('descricao'));"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "Setup: profissional aceita o pedido (RN05)",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/pedidos/{{pedidoId}}/aceitar",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "pedidos",
+        "{{pedidoId}}",
+        "aceitar"
+       ]
+      },
+      "description": "Pré-condição de CT-08. Esperado: 204.",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenProf}}",
+         "type": "string"
+        }
+       ]
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-08 — Profissional envia orçamento válido",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/pedidos/{{pedidoId}}/orcamentos",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "pedidos",
+        "{{pedidoId}}",
+        "orcamentos"
+       ]
+      },
+      "description": "Perfil: PROFISSIONAL. Esperado: 201. (Tabela do PDF diz 'pendente'; seção 3.4.5 e o backend usam ENVIADO.)",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenProf}}",
+         "type": "string"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"valor\": 180.0,\n  \"prazoEstimado\": \"2 horas\",\n  \"condicoes\": \"Material incluso\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+         "pm.test('ENVIADO', () => pm.expect(pm.response.json().situacao).to.eql('ENVIADO'));",
+         "if (pm.response.code < 300) pm.collectionVariables.set('orcamentoId', pm.response.json().id);"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-09 — Cliente tenta enviar orçamento",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/pedidos/{{pedidoId}}/orcamentos",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "pedidos",
+        "{{pedidoId}}",
+        "orcamentos"
+       ]
+      },
+      "description": "Perfil: CLIENTE. Esperado: 403.",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenCliente}}",
+         "type": "string"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"valor\": 100,\n  \"prazoEstimado\": \"1 dia\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-10 — Cliente aceita orçamento",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/orcamentos/{{orcamentoId}}/aceitar",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "orcamentos",
+        "{{orcamentoId}}",
+        "aceitar"
+       ]
+      },
+      "description": "Perfil: CLIENTE dono. Esperado: 200, pedido ACEITO (demais orçamentos NAO_ESCOLHIDO).",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenCliente}}",
+         "type": "string"
+        }
+       ]
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+         "pm.test('pedido ACEITO', () => pm.expect(pm.response.json().status).to.eql('ACEITO'));"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-11 — Agendar para data futura",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/pedidos/{{pedidoId}}/agendamento",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "pedidos",
+        "{{pedidoId}}",
+        "agendamento"
+       ]
+      },
+      "description": "Perfil: CLIENTE. Esperado: 201 (e, após POST /agendamentos/{id}/confirmar, pedido AGENDADO). PENDENTE NO BACKEND: endpoint ainda não existe (404).",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenCliente}}",
+         "type": "string"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"dataHora\": \"{{dataFutura}}\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+        ]
+       }
+      },
+      {
+       "listen": "prerequest",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.collectionVariables.set('dataFutura', new Date(Date.now()+3*864e5).toISOString());"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-12 — Agendar para data passada",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/pedidos/{{pedidoId}}/agendamento",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "pedidos",
+        "{{pedidoId}}",
+        "agendamento"
+       ]
+      },
+      "description": "Perfil: CLIENTE. Esperado (PDF): 400 'Data deve ser futura'. PENDENTE NO BACKEND: endpoint inexistente.",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenCliente}}",
+         "type": "string"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"dataHora\": \"2020-01-01T10:00:00Z\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 400', () => pm.response.to.have.status(400));"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-13 — Avaliar pedido concluído",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/pedidos/{{pedidoConcluidoId}}/avaliacao",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "pedidos",
+        "{{pedidoConcluidoId}}",
+        "avaliacao"
+       ]
+      },
+      "description": "Perfil: CLIENTE dono. Esperado: 201 e média recalculada. Precisa da variável pedidoConcluidoId (pedido CONCLUIDO do cliente). PENDENTE NO BACKEND: endpoint inexistente.",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenCliente}}",
+         "type": "string"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"nota\": 5,\n  \"comentario\": \"Ótimo serviço\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-14 — Avaliar pedido pendente",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/pedidos/{{pedidoPendenteId}}/avaliacao",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "pedidos",
+        "{{pedidoPendenteId}}",
+        "avaliacao"
+       ]
+      },
+      "description": "Perfil: CLIENTE. Esperado (tabela do PDF): 400. A seção 3.4.7 cita 422 PEDIDO_NAO_CONCLUIDO — o PDF é inconsistente. PENDENTE NO BACKEND: endpoint inexistente.",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenCliente}}",
+         "type": "string"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"nota\": 4\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 400', () => pm.response.to.have.status(400));"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "name": "CT-15 — Profissional tenta alterar o próprio selo",
+     "request": {
+      "method": "PATCH",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/verificacoes/1/avaliar",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "verificacoes",
+        "1",
+        "avaliar"
+       ]
+      },
+      "description": "Perfil: PROFISSIONAL. Esperado: 403. Usa a rota real do backend (PATCH /verificacoes/{id}/avaliar, só ADMIN); o PDF prevê PATCH /admin/profissionais/{id}/verificacao, que não existe.",
+      "auth": {
+       "type": "bearer",
+       "bearer": [
+        {
+         "key": "token",
+         "value": "{{tokenProf}}",
+         "type": "string"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"aprovado\": true\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      }
+     },
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

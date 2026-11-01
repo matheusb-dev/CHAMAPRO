@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+*.user
+uploads/
+uploads-privado/
+private-uploads/
+appsettings.Local.json
