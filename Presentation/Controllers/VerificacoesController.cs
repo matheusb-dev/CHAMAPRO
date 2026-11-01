@@ -18,14 +18,16 @@ public class VerificacoesController : ApiControllerBase
     private readonly ICurrentUser _currentUser;
     private readonly INotificacaoService _notificacoes;
     private readonly IArquivoService _arquivos;
+    private readonly IAuditoriaAdminService _auditoria;
 
     public VerificacoesController(AppDbContext context, ICurrentUser currentUser, INotificacaoService notificacoes,
-        IArquivoService arquivos)
+        IArquivoService arquivos, IAuditoriaAdminService auditoria)
     {
         _context = context;
         _currentUser = currentUser;
         _notificacoes = notificacoes;
         _arquivos = arquivos;
+        _auditoria = auditoria;
     }
 
     [HttpPost]
@@ -133,6 +135,7 @@ public class VerificacoesController : ApiControllerBase
         if (novoStatus == StatusVerificacao.Suspenso && verificacao.Status != StatusVerificacao.Aprovado)
             throw BusinessException.Regra("VERIFICACAO_NAO_APROVADA", "Somente um profissional aprovado pode ter a verificação suspensa.");
 
+        var statusAnterior = verificacao.Status;
         verificacao.Status = novoStatus;
         verificacao.Observacao = request.Observacao ?? verificacao.Observacao;
 
@@ -151,6 +154,10 @@ public class VerificacoesController : ApiControllerBase
             _notificacoes.Adicionar(profissional.UsuarioId, "verificacao_atualizada", "Status da verificação atualizado",
                 $"Sua verificação foi marcada como {novoStatus}.", new { verificacaoId = verificacao.Id, status = novoStatus.ToString() });
         }
+
+        if (statusAnterior != novoStatus)
+            _auditoria.Registrar(_currentUser.Id, "VERIFICACAO_AVALIADA", "VERIFICACAO_PROFISSIONAL", verificacao.Id,
+                statusAnterior.ToString(), novoStatus.ToString());
 
         await _context.SaveChangesAsync(ct);
 

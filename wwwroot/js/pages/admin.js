@@ -4,6 +4,45 @@
     const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
     const error = (container, e) => { container.innerHTML = `<p class="empty-state">${safe(e.message)}</p>`; };
 
+    function prepararAuditoria() {
+        const orders = document.getElementById("adminOrders")?.closest("section");
+        const content = document.querySelector(".app-content");
+        if (!content) return null;
+
+        const section = document.createElement("section");
+        section.className = "app-card";
+        section.style.marginTop = "20px";
+        const heading = document.createElement("h2");
+        heading.textContent = "Atividade administrativa";
+        const list = document.createElement("div");
+        list.id = "adminAudit";
+        list.className = "app-stack";
+        list.innerHTML = '<p class="empty-state">Carregando histórico…</p>';
+        section.append(heading, list);
+        if (orders) orders.after(section); else content.append(section);
+        return list;
+    }
+
+    const auditList = prepararAuditoria();
+
+    function prepararRelatorioProfissionais() {
+        const grid = document.getElementById("categoryReport")?.closest(".app-grid-two");
+        if (!grid) return null;
+        const card = document.createElement("article");
+        card.className = "app-card";
+        const heading = document.createElement("h2");
+        heading.textContent = "Profissionais mais avaliados";
+        const list = document.createElement("div");
+        list.id = "topRatedProfessionals";
+        list.className = "app-stack";
+        list.innerHTML = '<p class="empty-state">Carregando…</p>';
+        card.append(heading, list);
+        grid.append(card);
+        return list;
+    }
+
+    const topRatedList = prepararRelatorioProfissionais();
+
     async function loadMetrics() {
         const data = await C.api("/admin/relatorios");
         set("metricUsers", data.usuarios); set("metricClients", `${data.clientes} clientes`);
@@ -11,6 +50,9 @@
         set("metricOrders", data.chamados); set("metricOrderStates", `${data.chamadosConcluidos} concluídos · ${data.chamadosCancelados} cancelados`);
         const cats = document.getElementById("categoryReport");
         cats.innerHTML = data.categoriasMaisSolicitadas.length ? data.categoriasMaisSolicitadas.map(c => `<div class="app-row"><strong>${safe(c.categoria)}</strong><span>${c.chamados} chamados</span></div>`).join("") : '<p class="empty-state">Ainda não há chamados por categoria.</p>';
+        if (topRatedList) topRatedList.innerHTML = data.profissionaisMaisAvaliados?.length
+            ? data.profissionaisMaisAvaliados.map(p => `<div class="app-row"><strong>${safe(p.nome)}</strong><span>${C.formatarNota(p.media)} · ${p.avaliacoes} avaliações</span></div>`).join("")
+            : '<p class="empty-state">Ainda não há avaliações.</p>';
     }
     async function loadVerifications() {
         const list = document.getElementById("verificationList");
@@ -59,6 +101,34 @@
             list.innerHTML = items.length ? items.slice(0,50).map(p => `<div class="app-row"><div><strong>#${p.id} · ${safe(p.titulo)}</strong><div class="app-muted">${safe(p.categoria)} · ${safe(p.clienteNome)} · ${safe([p.cidade,p.bairro].filter(Boolean).join(" · "))}</div></div><span class="badge badge-info">${safe(p.status)}</span></div>`).join("") : '<p class="empty-state">Ainda não há chamados.</p>';
         } catch (e) { error(list, e); }
     }
+    async function loadAudit() {
+        if (!auditList) return;
+        try {
+            const items = await C.api("/admin/auditoria?limite=50");
+            auditList.replaceChildren();
+            if (!items.length) {
+                const empty = document.createElement("p");
+                empty.className = "empty-state";
+                empty.textContent = "Nenhuma ação administrativa registrada.";
+                auditList.append(empty);
+                return;
+            }
+
+            for (const item of items) {
+                const row = document.createElement("article");
+                row.className = "app-row";
+                const text = document.createElement("div");
+                const title = document.createElement("strong");
+                title.textContent = `${item.acao} · ${item.entidade} #${item.entidadeId}`;
+                const detail = document.createElement("div");
+                detail.className = "app-muted";
+                detail.textContent = `${item.adminNome} · ${item.estadoAnterior || "—"} → ${item.estadoNovo || "—"} · ${C.formatarData(item.criadoEm)}`;
+                text.append(title, detail);
+                row.append(text);
+                auditList.append(row);
+            }
+        } catch (e) { error(auditList, e); }
+    }
     async function loadCategories() {
         const list = document.getElementById("categoryList");
         try {
@@ -84,6 +154,6 @@
         document.getElementById("searchUsers").addEventListener("click", loadUsers);
         document.getElementById("userSearch").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); loadUsers(); } });
         configureCategories();
-        Promise.allSettled([loadMetrics(), loadVerifications(), loadReports(), loadUsers(), loadOrders(), loadCategories()]);
+        Promise.allSettled([loadMetrics(), loadVerifications(), loadReports(), loadUsers(), loadOrders(), loadCategories(), loadAudit()]);
     });
 })();

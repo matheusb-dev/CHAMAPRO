@@ -4,6 +4,7 @@ using Chamapro.Api.DTOs.Requests;
 using Chamapro.Api.DTOs.Responses;
 using Chamapro.Api.Models.Entities;
 using Chamapro.Api.Models.Enums;
+using Chamapro.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,11 +17,13 @@ public class AdminController : ApiControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ICurrentUser _currentUser;
+    private readonly IAuditoriaAdminService _auditoria;
 
-    public AdminController(AppDbContext context, ICurrentUser currentUser)
+    public AdminController(AppDbContext context, ICurrentUser currentUser, IAuditoriaAdminService auditoria)
     {
         _context = context;
         _currentUser = currentUser;
+        _auditoria = auditoria;
     }
 
     [HttpGet("usuarios")]
@@ -119,6 +122,27 @@ public class AdminController : ApiControllerBase
         return Ok(pedidos);
     }
 
+    [HttpGet("auditoria")]
+    public async Task<ActionResult<List<AdminAuditoriaResponse>>> ListarAuditoria(
+        [FromQuery] string? entidade, [FromQuery] int? entidadeId, [FromQuery] int limite = 50, CancellationToken ct = default)
+    {
+        IQueryable<AuditoriaAdmin> consulta = _context.AuditoriasAdmin.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(entidade))
+            consulta = consulta.Where(a => a.Entidade == entidade.Trim().ToUpperInvariant());
+        if (entidadeId.HasValue)
+            consulta = consulta.Where(a => a.EntidadeId == entidadeId.Value);
+
+        var quantidade = Math.Clamp(limite, 1, 200);
+        var itens = await (from auditoria in consulta
+                           join admin in _context.Usuarios.AsNoTracking() on auditoria.AdminId equals admin.Id
+                           orderby auditoria.CriadoEm descending
+                           select new AdminAuditoriaResponse(
+                               auditoria.Id, auditoria.AdminId, admin.Nome, auditoria.Acao, auditoria.Entidade,
+                               auditoria.EntidadeId, auditoria.EstadoAnterior, auditoria.EstadoNovo, auditoria.CriadoEm))
+            .Take(quantidade).ToListAsync(ct);
+        return Ok(itens);
+    }
+
     [HttpPatch("pedidos/{id:int}/status")]
     public async Task<ActionResult<AdminPedidoStatusResponse>> AlterarStatusPedido(int id, [FromBody] PedidoStatusRequest request, CancellationToken ct)
     {
@@ -138,6 +162,8 @@ public class AdminController : ApiControllerBase
             PedidoId = pedido.Id, AtorId = _currentUser.Id, StatusAnterior = statusAnterior.ToString(),
             StatusNovo = novoStatus.ToString(), Detalhe = "Status alterado pela administração.", CriadoEm = DateTime.UtcNow
         });
+        _auditoria.Registrar(_currentUser.Id, "STATUS_ALTERADO", "PEDIDO", pedido.Id,
+            statusAnterior.ToString(), novoStatus.ToString());
         await _context.SaveChangesAsync(ct);
         return Ok(new AdminPedidoStatusResponse(pedido.Id, pedido.Status));
     }
@@ -161,7 +187,13 @@ public class AdminController : ApiControllerBase
         if (usuario is null)
             throw BusinessException.NaoEncontrado("USUARIO_NAO_ENCONTRADO", "Usuário não encontrado.");
 
+        var statusAnterior = usuario.Ativo;
+        if (statusAnterior == ativo)
+            return new NoContentResult();
+
         usuario.Ativo = ativo;
+        _auditoria.Registrar(_currentUser.Id, ativo ? "USUARIO_ATIVADO" : "USUARIO_BLOQUEADO", "USUARIO", usuario.Id,
+            statusAnterior ? "ATIVO" : "BLOQUEADO", ativo ? "ATIVO" : "BLOQUEADO");
         await _context.SaveChangesAsync(ct);
         return NoContent();
     }

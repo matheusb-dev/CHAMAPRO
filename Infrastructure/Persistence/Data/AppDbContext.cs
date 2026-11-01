@@ -29,6 +29,7 @@ public class AppDbContext : DbContext
     public DbSet<DisponibilidadeProfissional> DisponibilidadesProfissionais => Set<DisponibilidadeProfissional>();
     public DbSet<ArquivoPrivado> ArquivosPrivados => Set<ArquivoPrivado>();
     public DbSet<HistoricoPedido> HistoricosPedidos => Set<HistoricoPedido>();
+    public DbSet<AuditoriaAdmin> AuditoriasAdmin => Set<AuditoriaAdmin>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,6 +52,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<DisponibilidadeProfissional>().ToTable("disponibilidade_profissional");
         modelBuilder.Entity<ArquivoPrivado>().ToTable("arquivos_privados");
         modelBuilder.Entity<HistoricoPedido>().ToTable("historico_pedidos");
+        modelBuilder.Entity<AuditoriaAdmin>().ToTable("auditoria_admin");
 
         modelBuilder.HasPostgresEnum<TipoUsuario>(name: "tipo_usuario", nameTranslator: new NpgsqlNullNameTranslator());
         modelBuilder.HasPostgresEnum<StatusPedido>(name: "status_pedido", nameTranslator: new NpgsqlNullNameTranslator());
@@ -84,6 +86,9 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<DisponibilidadeProfissional>().HasKey(x => new { x.ProfissionalId, x.DiaSemana, x.HoraInicio });
         modelBuilder.Entity<ArquivoPrivado>().HasKey(x => x.NomeArquivo);
         modelBuilder.Entity<HistoricoPedido>().HasKey(x => x.Id);
+        modelBuilder.Entity<AuditoriaAdmin>().HasKey(x => x.Id);
+        modelBuilder.Entity<AuditoriaAdmin>()
+            .HasOne<Usuario>().WithMany().HasForeignKey(x => x.AdminId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<DisponibilidadeProfissional>()
             .HasOne(x => x.Profissional).WithMany(p => p.Disponibilidade)
             .HasForeignKey(x => x.ProfissionalId).OnDelete(DeleteBehavior.Cascade);

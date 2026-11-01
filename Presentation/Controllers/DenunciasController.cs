@@ -17,12 +17,15 @@ public class DenunciasController : ApiControllerBase
     private readonly AppDbContext _context;
     private readonly ICurrentUser _currentUser;
     private readonly INotificacaoService _notificacoes;
+    private readonly IAuditoriaAdminService _auditoria;
 
-    public DenunciasController(AppDbContext context, ICurrentUser currentUser, INotificacaoService notificacoes)
+    public DenunciasController(AppDbContext context, ICurrentUser currentUser, INotificacaoService notificacoes,
+        IAuditoriaAdminService auditoria)
     {
         _context = context;
         _currentUser = currentUser;
         _notificacoes = notificacoes;
+        _auditoria = auditoria;
     }
 
     [HttpPost]
@@ -178,11 +181,15 @@ public class DenunciasController : ApiControllerBase
             || !Enum.IsDefined(novoStatus) || novoStatus == StatusDenuncia.Pendente)
             throw BusinessException.Invalido("STATUS_INVALIDO", "Use EmAnalise, Resolvido ou Rejeitado.");
 
+        var statusAnterior = denuncia.Status;
         denuncia.Status = novoStatus;
         denuncia.ObservacaoAdmin = request.Observacao ?? denuncia.ObservacaoAdmin;
         denuncia.AtualizadoEm = DateTime.UtcNow;
         _notificacoes.Adicionar(denuncia.DenuncianteId, "denuncia_atualizada", "Sua denúncia foi atualizada",
             $"A denúncia #{denuncia.Id} foi marcada como {novoStatus}.", new { denunciaId = denuncia.Id, status = novoStatus.ToString() });
+        if (statusAnterior != novoStatus)
+            _auditoria.Registrar(_currentUser.Id, "DENUNCIA_RESOLVIDA", "DENUNCIA", denuncia.Id,
+                statusAnterior.ToString(), novoStatus.ToString());
 
         await _context.SaveChangesAsync(ct);
 
