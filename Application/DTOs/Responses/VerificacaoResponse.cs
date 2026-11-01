@@ -7,6 +7,6 @@ public class VerificacaoResponse
     public string TipoDocumento { get; set; } = string.Empty;
     public string UrlDocumento { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    public DateTime CriadoEm { get; set; }
+    public DateTime CriadoEm { get; set; } = DateTime.UtcNow;
     public string? Observacao { get; set; }
 }
