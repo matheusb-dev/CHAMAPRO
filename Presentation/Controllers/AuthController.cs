@@ -50,6 +50,26 @@ public class AuthController : ApiControllerBase
         return Ok(resposta);
     }
 
+    [HttpPost("recuperar-senha")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SolicitarRecuperacaoSenha(
+        [FromBody] SolicitarRecuperacaoSenhaRequest request,
+        CancellationToken ct)
+    {
+        await _authService.SolicitarRecuperacaoSenhaAsync(request, ct);
+        return Ok(new { mensagem = "Se houver uma conta ativa com esse e-mail, enviaremos as instruções de recuperação." });
+    }
+
+    [HttpPost("redefinir-senha")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RedefinirSenha(
+        [FromBody] RedefinirSenhaRequest request,
+        CancellationToken ct)
+    {
+        await _authService.RedefinirSenhaAsync(request, ct);
+        return NoContent();
+    }
+
     [HttpGet("me")]
     public async Task<ActionResult<UsuarioResumoResponse>> Me(CancellationToken ct)
     {

@@ -11,7 +11,9 @@ public class LembreteAgendamentoBackgroundService : BackgroundService
     private readonly ILogger<LembreteAgendamentoBackgroundService> _logger;
 
     public LembreteAgendamentoBackgroundService(
-        IServiceScopeFactory escopos, IConfiguration config, ILogger<LembreteAgendamentoBackgroundService> logger)
+        IServiceScopeFactory escopos,
+        IConfiguration config,
+        ILogger<LembreteAgendamentoBackgroundService> logger)
     {
         _escopos = escopos;
         _config = config;
@@ -20,13 +22,19 @@ public class LembreteAgendamentoBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (string.IsNullOrWhiteSpace(_config["Email:Host"]))
+        var host = _config["Email:Host"];
+
+        if (string.IsNullOrWhiteSpace(host))
         {
-            _logger.LogWarning("Rotina de e-mails desativada: SMTP não foi configurado.");
+            _logger.LogInformation(
+                "Rotina de e-mails desativada: SMTP não configurado. Isso é esperado em ambiente de desenvolvimento.");
             return;
         }
 
-        var minutos = int.TryParse(_config["Rotinas:LembreteIntervaloMinutos"], out var m) && m > 0 ? m : 15;
+        var minutos = int.TryParse(_config["Rotinas:LembreteIntervaloMinutos"], out var m) && m > 0
+            ? m
+            : 15;
+
         using var timer = new PeriodicTimer(TimeSpan.FromMinutes(minutos));
 
         try
@@ -51,7 +59,10 @@ public class LembreteAgendamentoBackgroundService : BackgroundService
             var email = escopo.ServiceProvider.GetRequiredService<IEmailService>();
 
             var agora = DateTime.UtcNow;
-            var lembretes = await repositorio.ListarAgendamentosParaLembreteAsync(agora, agora.AddHours(24), ct);
+            var lembretes = await repositorio.ListarAgendamentosParaLembreteAsync(
+                agora,
+                agora.AddHours(24),
+                ct);
 
             foreach (var lembrete in lembretes)
             {
@@ -83,7 +94,9 @@ public class LembreteAgendamentoBackgroundService : BackgroundService
             }
 
             if (lembretes.Count > 0)
+            {
                 _logger.LogInformation("Rotina de lembretes: {Total} agendamento(s) processado(s).", lembretes.Count);
+            }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

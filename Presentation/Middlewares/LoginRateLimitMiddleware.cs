@@ -53,6 +53,8 @@ public class LoginRateLimitMiddleware
         var limite = path.StartsWithSegments("/api/v1/auth/login", StringComparison.OrdinalIgnoreCase) ? 5
             : path.StartsWithSegments("/api/v1/auth/cadastro/cliente", StringComparison.OrdinalIgnoreCase)
                 || path.StartsWithSegments("/api/v1/auth/cadastro/profissional", StringComparison.OrdinalIgnoreCase) ? 3
+            : path.StartsWithSegments("/api/v1/auth/recuperar-senha", StringComparison.OrdinalIgnoreCase) ? 3
+            : path.StartsWithSegments("/api/v1/auth/redefinir-senha", StringComparison.OrdinalIgnoreCase) ? 10
             : 0;
         if (limite == 0)
         {

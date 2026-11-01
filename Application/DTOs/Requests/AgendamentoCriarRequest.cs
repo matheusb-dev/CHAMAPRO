@@ -1,3 +1,4 @@
+
 namespace Chamapro.Api.DTOs.Requests;
 
 public class AgendamentoCriarRequest
