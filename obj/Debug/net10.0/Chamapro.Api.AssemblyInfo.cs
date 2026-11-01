@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Chamapro.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+01b5577227fb7ebc7e928fb7f6165fed457b12c3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e54032beeaefc930577fde9bce57c3e799b1d7d5")]
 [assembly: System.Reflection.AssemblyProductAttribute("Chamapro.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Chamapro.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
