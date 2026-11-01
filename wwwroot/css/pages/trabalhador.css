@@ -1,2 +1,0 @@
-.professional-order{display:grid;gap:14px}.professional-order h2{margin:8px 0}.professional-order-meta{display:flex;flex-wrap:wrap;gap:12px;color:var(--color-text-muted);font-size:13px}.professional-profile-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
-@media(max-width:760px){.professional-profile-grid{grid-template-columns:1fr}}

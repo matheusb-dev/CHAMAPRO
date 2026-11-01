@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="Chamapro.Api.csproj" />
-  <Project Path="Tests/Chamapro.Tests/Chamapro.Tests.csproj" />
-</Solution>
