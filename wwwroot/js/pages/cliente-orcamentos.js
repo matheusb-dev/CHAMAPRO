@@ -1,400 +1,81 @@
-/* =========================================
-   CHAMAPRO - CLIENTE / ORÇAMENTOS E AGENDA
-   Arquivo: wwwroot/js/pages/cliente-orcamentos.js
+(() => {
+    const C = window.Chamapro;
+    const safe = C.escaparHtml;
+    const label = value => String(value || "").replaceAll("_", " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+    const message = (id, text, ok = false) => { const el = document.getElementById(id); if (el) { el.textContent = text || ""; el.style.color = ok ? "var(--color-success)" : "var(--color-danger)"; } };
 
-   Funcionalidades:
-   - Lista as propostas do pedido (GET /pedidos/{id}/orcamentos)
-   - Aceita uma proposta (POST /orcamentos/{id}/aceitar)
-   - Agenda o atendimento (POST /agendamentos)
-   - Usa dados de demonstração sem sessão ou sem API
-
-   O pedido vem de ?pedido=ID na URL; sem ele, usa o
-   pedido mais recente do cliente que esteja PENDENTE ou ACEITO.
-========================================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    const { api, temSessao, mostrarAvisoDemo, toast, iniciais,
-        formatarMoeda, formatarNota, escaparHtml, ICONES } = window.Chamapro;
-
-    // =====================================
-    // DADOS DE DEMONSTRAÇÃO (Figma)
-    // =====================================
-
-    const DEMO_PEDIDO = {
-        id: 0,
-        titulo: "Troca de torneira",
-        categoria: "Hidráulica",
-        status: "PENDENTE",
-        orcamentoAceito: null,
-        agendamento: null
-    };
-
-    const DEMO_PROPOSTAS = [
-        {
-            id: 1,
-            valor: 150,
-            prazoEstimado: "1 dia",
-            condicoes: "Troca da torneira, instalação e teste de vazamento. Material não incluso.",
-            expirado: false,
-            situacao: "ENVIADO",
-            totalAvaliacoes: 37,
-            profissional: { id: 1, nome: "Carlos Mendes", notaMedia: 4.9, verificado: true }
-        },
-        {
-            id: 2,
-            valor: 180,
-            prazoEstimado: "Mesmo dia",
-            condicoes: "Atendimento no mesmo dia, mão de obra e garantia de 30 dias.",
-            expirado: false,
-            situacao: "ENVIADO",
-            totalAvaliacoes: 21,
-            profissional: { id: 2, nome: "Rafael Serviços", notaMedia: 4.7, verificado: true }
+    async function init() {
+        const query = new URLSearchParams(location.search);
+        let pedidoId = query.get("pedidoId");
+        const content = document.getElementById("orderContent");
+        if (!pedidoId) {
+            try {
+                const result = await C.api("/pedidos?pagina=1&tamanho=50");
+                const items = result.itens || [];
+                if (!items.length) { content.innerHTML = '<section class="app-card empty-state"><h2>Você ainda não tem chamados</h2><p>Crie um chamado para receber propostas.</p><a class="btn btn-primary" href="criar-chamado.html">Criar chamado</a></section>'; return; }
+                const picker = document.getElementById("orderPicker");
+                const select = document.getElementById("orderSelect"); picker.hidden = false;
+                select.innerHTML = items.map(p => `<option value="${p.id}">#${p.id} · ${safe(p.titulo)} · ${safe(label(p.status))}</option>`).join("");
+                select.addEventListener("change", () => location.assign(`orcamentos.html?pedidoId=${select.value}`));
+                select.value = items[0].id; pedidoId = String(items[0].id);
+            } catch (e) { content.innerHTML = `<p class="empty-state">${safe(e.message)}</p>`; return; }
         }
-    ];
-
-    // =====================================
-    // ESTADO
-    // =====================================
-
-    const estado = {
-        demo: false,
-        pedido: null,
-        propostas: [],
-        selecionadaId: null
-    };
-
-    // =====================================
-    // ELEMENTOS
-    // =====================================
-
-    const tituloPropostas = document.getElementById("tituloPropostas");
-    const listaPropostas = document.getElementById("listaPropostas");
-    const badgeOrcamentos = document.getElementById("badgeOrcamentos");
-    const btnWhatsApp = document.getElementById("btnWhatsApp");
-
-    const formAgendamento = document.getElementById("formAgendamento");
-    const selectData = document.getElementById("dataAgendamento");
-    const selectHorario = document.getElementById("horarioAgendamento");
-    const btnConfirmar = document.getElementById("btnConfirmarAgendamento");
-    const avisoAgendamento = document.getElementById("avisoAgendamento");
-
-    // =====================================
-    // CARREGAMENTO
-    // =====================================
-
-    async function obterPedidoId() {
-
-        const daUrl = Number(new URLSearchParams(location.search).get("pedido"));
-        if (daUrl > 0) return daUrl;
-
-        const pagina = await api("/pedidos?tamanho=50");
-
-        const pedido = (pagina?.itens || []).find(p =>
-            p.status === "PENDENTE" || p.status === "ACEITO"
-        );
-
-        return pedido?.id ?? null;
-    }
-
-    async function carregar() {
-
-        if (!temSessao()) {
-            usarDemo("Entre como cliente para ver suas propostas reais. Exibindo dados de demonstração.");
-            return;
-        }
-
         try {
-            const pedidoId = await obterPedidoId();
-
-            if (!pedidoId) {
-                estado.pedido = null;
-                estado.propostas = [];
-                renderizar();
-                return;
+            const p = await C.api(`/pedidos/${pedidoId}`);
+            const status = String(p.status || "").toUpperCase();
+            let quotes = [];
+            if (status !== "CANCELADO") {
+                try { quotes = await C.api(`/pedidos/${pedidoId}/orcamentos`); } catch { quotes = []; }
             }
-
-            const [pedido, propostas] = await Promise.all([
-                api(`/pedidos/${pedidoId}`),
-                api(`/pedidos/${pedidoId}/orcamentos`)
-            ]);
-
-            estado.pedido = pedido;
-            estado.propostas = propostas || [];
-            estado.selecionadaId = pedido.orcamentoAceito?.id ?? null;
-
-            renderizar();
-
-        } catch (erro) {
-            console.error("Erro ao carregar propostas:", erro);
-            usarDemo("Não foi possível carregar os dados da API. Exibindo dados de demonstração.");
-        }
-    }
-
-    function usarDemo(mensagem) {
-
-        estado.demo = true;
-        estado.pedido = structuredClone(DEMO_PEDIDO);
-        estado.propostas = structuredClone(DEMO_PROPOSTAS);
-
-        mostrarAvisoDemo(mensagem);
-        renderizar();
-    }
-
-    // =====================================
-    // RENDERIZAÇÃO DAS PROPOSTAS
-    // =====================================
-
-    function propostaAceita() {
-        return estado.pedido?.orcamentoAceito ?? null;
-    }
-
-    function renderizar() {
-
-        const { pedido } = estado;
-
-        const propostas = [...estado.propostas].sort((a, b) =>
-            (b.profissional?.notaMedia ?? 0) - (a.profissional?.notaMedia ?? 0)
-        );
-
-        const aceita = propostaAceita();
-
-        if (!estado.selecionadaId && propostas.length) {
-            estado.selecionadaId = propostas[0].id;
-        }
-
-        const pendentes = aceita ? 0 : propostas.filter(p => !p.expirado).length;
-        badgeOrcamentos.textContent = pendentes;
-        badgeOrcamentos.hidden = pendentes === 0;
-
-        if (!pedido) {
-            tituloPropostas.textContent = "Nenhum pedido aguardando propostas";
-            listaPropostas.innerHTML =
-                '<p class="empty-state">Quando você abrir um chamado, as propostas recebidas aparecem aqui.</p>';
-            atualizarAgendamento();
-            return;
-        }
-
-        const quantidade = propostas.length === 1 ? "1 proposta" : `${propostas.length} propostas`;
-        tituloPropostas.textContent = `${quantidade} para “${pedido.titulo}”`;
-
-        if (!propostas.length) {
-            listaPropostas.innerHTML =
-                '<p class="empty-state">Ainda não chegaram propostas para este pedido.</p>';
-            atualizarAgendamento();
-            return;
-        }
-
-        listaPropostas.innerHTML = propostas.map(p => renderizarProposta(p, aceita)).join("");
-
-        atualizarAgendamento();
-    }
-
-    function renderizarProposta(proposta, aceita) {
-
-        const prof = proposta.profissional || {};
-        const selecionada = proposta.id === estado.selecionadaId;
-
-        const avaliacoes = proposta.totalAvaliacoes
-            ? ` · ${proposta.totalAvaliacoes} avaliações`
-            : "";
-
-        const descricao = proposta.condicoes
-            || `Prazo estimado: ${proposta.prazoEstimado}`;
-
-        let acao;
-
-        if (aceita) {
-            acao = aceita.id === proposta.id
-                ? `<span class="tag tag-success">${ICONES.check} Proposta aceita</span>`
-                : '<span class="tag">Não escolhida</span>';
-        } else if (proposta.expirado) {
-            acao = '<span class="tag">Expirada</span>';
-        } else if (selecionada) {
-            acao = `<button type="button" class="app-btn app-btn-primary" data-aceitar="${proposta.id}">Aceitar proposta</button>`;
-        } else {
-            acao = `<button type="button" class="app-btn" data-ver="${proposta.id}">Ver proposta</button>`;
-        }
-
-        return `
-            <article class="proposta ${selecionada ? "selecionada" : ""}" data-id="${proposta.id}">
-
-                <span class="app-avatar app-avatar-soft">${escaparHtml(iniciais(prof.nome))}</span>
-
-                <div class="proposta-info">
-                    <div class="proposta-nome">
-                        <a href="./perfil-profissional.html?id=${prof.id}"><strong>${escaparHtml(prof.nome)}</strong></a>
-                        ${prof.verificado ? `<span class="tag tag-success">${ICONES.check} Verificado</span>` : ""}
-                    </div>
-
-                    <div class="proposta-avaliacao">
-                        ${ICONES.estrelaContorno}
-                        <span>${formatarNota(prof.notaMedia)}${avaliacoes} · ${escaparHtml(estado.pedido.categoria)}</span>
-                    </div>
-
-                    <p class="proposta-descricao">${escaparHtml(descricao)}</p>
-                </div>
-
-                <div class="proposta-valor">
-                    <strong>${formatarMoeda(proposta.valor)}</strong>
-                    ${acao}
-                </div>
-
-            </article>
-        `;
-    }
-
-    // =====================================
-    // AÇÕES DAS PROPOSTAS
-    // =====================================
-
-    listaPropostas.addEventListener("click", async (event) => {
-
-        const ver = event.target.closest("[data-ver]");
-
-        if (ver) {
-            estado.selecionadaId = Number(ver.dataset.ver);
-            renderizar();
-            return;
-        }
-
-        const aceitar = event.target.closest("[data-aceitar]");
-        if (!aceitar) return;
-
-        const id = Number(aceitar.dataset.aceitar);
-
-        aceitar.disabled = true;
-        aceitar.textContent = "Aceitando...";
-
-        try {
-            if (estado.demo) {
-                const proposta = estado.propostas.find(p => p.id === id);
-                estado.pedido.orcamentoAceito = { id, profissionalId: proposta.profissional.id };
-                estado.pedido.status = "ACEITO";
-            } else {
-                estado.pedido = await api(`/orcamentos/${id}/aceitar`, { method: "POST" });
+            content.innerHTML = `<article class="app-card"><span class="badge badge-info">${safe(label(p.status))}</span><h2 style="margin:12px 0">${safe(p.titulo)}</h2><p>${safe(p.categoria)} · ${safe([p.cidade,p.bairro,p.endereco].filter(Boolean).join(" · "))}</p><p style="margin-top:12px">${safe(p.descricao)}</p>${p.dataDesejada ? `<p class="app-muted">Data desejada: ${C.formatarData(p.dataDesejada)}</p>` : ""}${p.fotoUrls?.length ? `<div class="app-grid-two" style="margin-top:16px">${p.fotoUrls.map(url => `<img src="${safe(url)}" alt="Foto do chamado" loading="lazy">`).join("")}</div>` : ""}<div class="app-actions" id="orderActions"></div><p id="orderMessage" class="app-message"></p></article><section class="app-stack"><h2>Propostas recebidas (${quotes.length})</h2>${quotes.length ? quotes.map(q => `<article class="app-card"><div class="app-row"><div><strong>${safe(q.profissional.nome)}</strong><div class="app-muted">Nota ${C.formatarNota(q.profissional.notaMedia)} ${q.profissional.verificado ? "· perfil verificado" : ""} · ${safe(q.prazoEstimado)}</div><p class="app-muted">${safe(q.condicoes || "Sem observações adicionais")}</p><span class="badge ${q.situacao === "ACEITO" ? "badge-success" : "badge-info"}">${safe(label(q.situacao))}${q.expirado ? " · expirado" : ""}</span></div><div><strong>${C.formatarMoeda(q.valor)}</strong><div class="app-actions">${status === "PENDENTE" && q.situacao === "ENVIADO" && !q.expirado ? `<button class="btn btn-primary btn-small" data-accept-quote="${q.id}">Aceitar</button><button class="btn btn-secondary btn-small" data-reject-quote="${q.id}">Recusar</button>` : ""}<a class="btn btn-secondary btn-small" href="perfil-profissional.html?id=${q.profissional.id}">Ver perfil</a></div></div></div></article>`).join("") : '<p class="empty-state">Nenhum orçamento foi enviado ainda. O chamado continua aberto para profissionais compatíveis.</p>'}</section>`;
+            const actions = document.getElementById("orderActions");
+            content.insertAdjacentHTML("beforeend", '<section class="app-card"><h2>Histórico do chamado</h2><div id="orderHistory" class="app-stack"><p class="empty-state">Carregando…</p></div></section>');
+            try {
+                const history = await C.api(`/pedidos/${pedidoId}/historico`);
+                document.getElementById("orderHistory").innerHTML = history.length ? history.map(item => `<div class="app-row"><div><strong>${safe(label(item.statusNovo))}</strong><div class="app-muted">${safe(item.detalhe || "Atualização do chamado")}</div></div><time class="app-muted">${C.formatarData(item.criadoEm)}</time></div>`).join("") : '<p class="empty-state">Ainda não há eventos registrados.</p>';
+            } catch (e) { document.getElementById("orderHistory").innerHTML = `<p class="empty-state">${safe(e.message)}</p>`; }
+            if (["PENDENTE", "ACEITO", "AGENDADO"].includes(status)) actions.innerHTML += '<button class="btn btn-secondary" id="cancelOrder">Cancelar chamado</button>';
+            if (!["PENDENTE", "ORCADO", "CANCELADO"].includes(status)) {
+                try {
+                    const contact = await C.api(`/whatsapp/pedidos/${pedidoId}/contato`);
+                    const number = String(contact.telefone || "").replace(/\D/g, "");
+                    const text = encodeURIComponent(contact.mensagemInicialWhatsApp || `Olá! Estou entrando em contato pelo CHAMAPRO sobre o chamado “${p.titulo}”.`);
+                    actions.insertAdjacentHTML("beforeend", `<a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/${number}?text=${text}">Conversar pelo WhatsApp</a>`);
+                } catch { /* Contato desativado ou ainda indisponível. */ }
             }
+            if (status === "ACEITO" && !p.agendamento) document.getElementById("scheduleBox").hidden = false;
+            if (status === "CONCLUIDO" && !p.avaliacao) document.getElementById("reviewBox").hidden = false;
+            if (p.agendamento) actions.insertAdjacentHTML("beforeend", `<span class="app-muted">Agendado para ${C.formatarData(p.agendamento.dataHora)} · ${safe(label(p.agendamento.situacao))}</span><button class="btn btn-secondary btn-small" id="reschedule">Remarcar</button>`);
 
-            estado.selecionadaId = id;
-            renderizar();
-            toast("Proposta aceita! Agora escolha a data do atendimento.", "success");
-
-        } catch (erro) {
-            toast(erro.message, "error");
-            renderizar();
-        }
-    });
-
-    btnWhatsApp.addEventListener("click", () => {
-
-        if (!propostaAceita()) {
-            toast("Aceite uma proposta para liberar a conversa pelo WhatsApp.");
-            return;
-        }
-
-        toast("O contato por WhatsApp do profissional ainda não está disponível.");
-    });
-
-    // =====================================
-    // AGENDAMENTO
-    // =====================================
-
-    const formatoData = new Intl.DateTimeFormat("pt-BR", {
-        weekday: "long",
-        day: "numeric",
-        month: "long"
-    });
-
-    function rotuloData(data) {
-        const texto = formatoData.format(data);
-        return texto.charAt(0).toUpperCase() + texto.slice(1);
+            content.querySelectorAll("[data-accept-quote]").forEach(btn => btn.addEventListener("click", async () => {
+                if (!confirm("Aceitar este orçamento? As demais propostas serão encerradas.")) return;
+                try { await C.api(`/orcamentos/${btn.dataset.acceptQuote}/aceitar`, { method: "POST" }); location.reload(); }
+                catch (e) { message("orderMessage", e.message); }
+            }));
+            content.querySelectorAll("[data-reject-quote]").forEach(btn => btn.addEventListener("click", async () => {
+                try { await C.api(`/orcamentos/${btn.dataset.rejectQuote}/recusar`, { method: "POST" }); location.reload(); }
+                catch (e) { message("orderMessage", e.message); }
+            }));
+            document.getElementById("cancelOrder")?.addEventListener("click", async () => {
+                const motivo = prompt("Informe o motivo do cancelamento:"); if (!motivo?.trim()) return;
+                try { await C.api(`/pedidos/${pedidoId}/cancelar`, { method: "POST", body: { motivo } }); location.reload(); }
+                catch (e) { message("orderMessage", e.message); }
+            });
+            document.getElementById("reschedule")?.addEventListener("click", () => { document.getElementById("scheduleBox").hidden = false; document.getElementById("scheduleForm").dataset.agendamentoId = p.agendamento.id; });
+            document.getElementById("scheduleForm").addEventListener("submit", async event => {
+                event.preventDefault();
+                const date = new Date(document.getElementById("scheduleDate").value).toISOString();
+                const appointmentId = event.currentTarget.dataset.agendamentoId;
+                try { if (appointmentId) await C.api(`/agendamentos/${appointmentId}`, { method: "PUT", body: { dataHora: date } }); else await C.api("/agendamentos", { method: "POST", body: { pedidoId: Number(pedidoId), dataHora: date } }); location.reload(); }
+                catch (e) { message("scheduleMessage", e.message); }
+            });
+            document.getElementById("reviewForm").addEventListener("submit", async event => {
+                event.preventDefault();
+                try { await C.api("/avaliacoes", { method: "POST", body: { pedidoId: Number(pedidoId), nota: Number(document.getElementById("reviewRating").value), comentario: document.getElementById("reviewComment").value.trim() || null } }); message("reviewMessage", "Obrigado pela avaliação.", true); setTimeout(() => location.reload(), 800); }
+                catch (e) { message("reviewMessage", e.message); }
+            });
+        } catch (e) { content.innerHTML = `<p class="empty-state">${safe(e.message)}</p>`; }
     }
 
-    function preencherDatas() {
-
-        const hoje = new Date();
-
-        for (let i = 1; i <= 14; i++) {
-            const dia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + i);
-
-            const option = document.createElement("option");
-            option.value = `${dia.getFullYear()}-${dia.getMonth() + 1}-${dia.getDate()}`;
-            option.textContent = rotuloData(dia);
-
-            selectData.appendChild(option);
-        }
-    }
-
-    function dataHoraSelecionada() {
-        const [ano, mes, dia] = selectData.value.split("-").map(Number);
-        const [hora, minuto] = selectHorario.value.split(":").map(Number);
-        return new Date(ano, mes - 1, dia, hora, minuto);
-    }
-
-    function mostrarAviso(texto, sucesso = false) {
-        avisoAgendamento.querySelector("span").textContent = texto;
-        avisoAgendamento.classList.toggle("sucesso", sucesso);
-    }
-
-    function atualizarAgendamento() {
-
-        const agendamento = estado.pedido?.agendamento;
-
-        if (agendamento) {
-            const data = new Date(agendamento.dataHora);
-            const hora = data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-
-            mostrarAviso(`Atendimento agendado: ${rotuloData(data)}, às ${hora}.`, true);
-
-            btnConfirmar.disabled = true;
-            selectData.disabled = true;
-            selectHorario.disabled = true;
-            return;
-        }
-
-        mostrarAviso("Você pode remarcar até 24h antes do horário.");
-    }
-
-    formAgendamento.addEventListener("submit", async (event) => {
-
-        event.preventDefault();
-
-        if (!estado.pedido) {
-            toast("Nenhum pedido para agendar.", "error");
-            return;
-        }
-
-        if (!propostaAceita()) {
-            toast("Aceite uma proposta antes de confirmar o agendamento.", "error");
-            return;
-        }
-
-        const dataHora = dataHoraSelecionada();
-
-        btnConfirmar.disabled = true;
-
-        try {
-            const agendamento = estado.demo
-                ? { id: 1, pedidoId: 0, dataHora: dataHora.toISOString(), status: "Agendado" }
-                : await api("/agendamentos", {
-                    method: "POST",
-                    body: { pedidoId: estado.pedido.id, dataHora: dataHora.toISOString() }
-                });
-
-            estado.pedido.agendamento = agendamento;
-            atualizarAgendamento();
-            toast("Agendamento confirmado!", "success");
-
-        } catch (erro) {
-            btnConfirmar.disabled = false;
-            toast(erro.message, "error");
-        }
-    });
-
-    // =====================================
-    // INICIALIZAÇÃO
-    // =====================================
-
-    preencherDatas();
-    carregar();
-});
+    window.ChamaproApp?.ready.then(user => { if (user?.perfil === "CLIENTE") init(); });
+})();

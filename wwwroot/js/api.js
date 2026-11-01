@@ -6,7 +6,6 @@
    - Requisições autenticadas (JWT salvo no login)
    - Leitura da sessão do usuário
    - Preenchimento do header (nome e iniciais)
-   - Aviso de modo demonstração (dados mockados)
    - Toast de feedback e formatação
 ========================================= */
 
@@ -117,22 +116,6 @@
     }
 
     // =====================================
-    // MODO DEMONSTRAÇÃO
-    // =====================================
-
-    function mostrarAvisoDemo(mensagem) {
-
-        const aviso = document.getElementById("demoNotice");
-        if (!aviso) return;
-
-        if (mensagem) {
-            aviso.querySelector("span").textContent = mensagem;
-        }
-
-        aviso.hidden = false;
-    }
-
-    // =====================================
     // TOAST
     // =====================================
 
@@ -226,7 +209,6 @@
         temSessao,
         iniciais,
         preencherUsuario,
-        mostrarAvisoDemo,
         toast,
         formatarMoeda,
         formatarNota,

@@ -273,12 +273,19 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("cadastroForm");
 
     if (cadastroForm) {
+        if (new URLSearchParams(window.location.search).get("tipo") === "profissional") {
+            const profissional = cadastroForm.querySelector('input[name="tipoConta"][value="profissional"]');
+            if (profissional) profissional.checked = true;
+        }
 
         const nomeCadastro =
             document.getElementById("nome");
 
         const emailCadastro =
             document.getElementById("email");
+
+        const telefoneCadastro =
+            document.getElementById("telefone");
 
         const senhaCadastro =
             document.getElementById("senha");
@@ -398,6 +405,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const email =
                     emailCadastro?.value.trim() || "";
 
+                const telefone =
+                    telefoneCadastro?.value.replace(/\D/g, "") || "";
+
                 const senha =
                     senhaCadastro?.value || "";
 
@@ -484,7 +494,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const dadosCadastro = {
                     nome: nome,
                     email: email,
-                    senha: senha
+                    senha: senha,
+                    confirmacaoSenha: confirmacao,
+                    telefone: telefone
                 };
 
                 // =====================================

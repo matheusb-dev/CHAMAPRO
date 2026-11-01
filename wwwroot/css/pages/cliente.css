@@ -1,0 +1,2 @@
+.client-order{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center}.client-order small{color:var(--color-text-muted)}.rating-stars{color:var(--color-primary)}.review-card{padding:16px;border-top:1px solid var(--color-border)}
+@media(max-width:600px){.client-order{grid-template-columns:1fr}}
