@@ -69,10 +69,12 @@ Para uma instalação nova, execute na ordem:
 2. `Infrastructure/Persistence/Database/chamapro_schema_v3.sql`
 3. `Infrastructure/Persistence/Database/chamapro_schema_v4.sql`
 4. `Infrastructure/Persistence/Database/chamapro_schema_v5.sql`
+5. `Infrastructure/Persistence/Database/chamapro_schema_v6.sql`
+6. `Infrastructure/Persistence/Database/chamapro_schema_v7.sql`
 
 A migração v3 é incremental sobre o esquema v2. Ela cria as tabelas e colunas adicionais, índices e RLS. A API acessa o PostgreSQL pelo servidor; não exponha as tabelas diretamente pela chave pública do Supabase. Os documentos de verificação ficam fora da pasta estática, com registro de propriedade no banco. Imagens de perfil e portfólio são públicas.
 
-A v3 insere somente a taxonomia inicial de serviços, sem usuários ou chamados fictícios. A v4 adiciona índices para as chaves estrangeiras dos pedidos. A v5 revoga privilégios de tabela e sequência de `PUBLIC`, `anon` e `authenticated`, inclusive para futuras tabelas criadas pelo papel `postgres`. RLS continua habilitado em todas as tabelas públicas e não há policies de acesso direto pelo PostgREST: o modelo atual acessa a base pela API privada. O administrador inicial é criado uma única vez pela API quando `Bootstrap:AdminEmail` e `Bootstrap:AdminPassword` estão configurados; a senha é armazenada com BCrypt e não é alterada em inicializações seguintes. Remova as duas configurações de bootstrap depois da criação.
+A v3 insere somente a taxonomia inicial de serviços, sem usuários ou chamados fictícios. A v4 adiciona índices para as chaves estrangeiras dos pedidos. A v5 revoga privilégios de tabela e sequência de `PUBLIC`, `anon` e `authenticated`, inclusive para futuras tabelas criadas pelo papel `postgres`. A v6 cria a trilha persistente de ações administrativas; a v7 adiciona o índice da FK do administrador. RLS continua habilitado em todas as tabelas públicas e não há policies de acesso direto pelo PostgREST: o modelo atual acessa a base pela API privada. O administrador inicial é criado uma única vez pela API quando `Bootstrap:AdminEmail` e `Bootstrap:AdminPassword` estão configurados; a senha é armazenada com BCrypt e não é alterada em inicializações seguintes. Remova as duas configurações de bootstrap depois da criação.
 
 Os arquivos são atualmente salvos no disco local da aplicação (`uploads` e `uploads-privado`, configuráveis). Para múltiplas instâncias ou publicação com disco efêmero, configure armazenamento durável e privado antes da produção.
 
@@ -93,12 +95,12 @@ Os testes locais cobrem transições de chamados e validação de denúncias. Ai
 |---|---|
 | Autenticação | `POST /auth/cadastro/cliente`, `POST /auth/cadastro/profissional`, `POST /auth/login`, `GET /auth/me` |
 | Clientes | `GET/PUT /clientes/me` |
-| Profissionais | `GET /profissionais`, `GET /profissionais/{id}`, `GET /profissionais/{id}/avaliacoes`, `GET/PUT /profissionais/me`, `PUT /profissionais/me/servicos`, `/areas`, `/disponibilidade` |
+| Profissionais | `GET /profissionais`, `GET /profissionais/{id}`, `GET /profissionais/{id}/avaliacoes`, `GET/PUT /profissionais/me`, `PUT /profissionais/me/servicos`, `/areas`, `/disponibilidade`, `GET /painel/profissional` |
 | Chamados | `GET/POST /pedidos`, `GET /pedidos/{id}`, `POST /pedidos/{id}/aceitar`, `/recusar`, `/cancelar`, `PATCH /pedidos/{id}/status` |
 | Orçamentos | `POST /pedidos/{id}/orcamentos`, `GET /pedidos/{id}/orcamentos`, `POST /orcamentos/{id}/aceitar`, `/recusar` |
-| Agendamentos | `POST /agendamentos`, `GET /agendamentos/{pedidoId}`, `PUT /agendamentos/{id}`, `PATCH /agendamentos/{id}/status` |
+| Agendamentos | `POST /agendamentos`, `GET /agendamentos/me`, `GET /agendamentos/{pedidoId}`, `PUT /agendamentos/{id}`, `PATCH /agendamentos/{id}/status` |
 | Avaliações e marketplace | `GET /avaliacoes/pendentes`, `POST /avaliacoes`, favoritos, notificações e denúncias em `/favoritos`, `/notificacoes` e `/denuncias` |
-| Administração | `/admin/usuarios`, `/admin/pedidos`, `/admin/relatorios`, `/verificacoes` e `/denuncias` |
+| Administração | `/admin/usuarios`, `/admin/pedidos`, `/admin/relatorios`, `/admin/auditoria`, `/verificacoes` e `/denuncias` |
 
 As rotas protegidas usam `Authorization: Bearer <JWT>`. A API verifica papel, conta ativa e propriedade/participação antes de permitir alterações.
 
