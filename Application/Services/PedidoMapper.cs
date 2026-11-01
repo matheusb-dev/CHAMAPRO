@@ -35,7 +35,6 @@ public static class PedidoMapper
                 .OrderByDescending(o => o.CriadoEm)
                 .FirstOrDefault()?.ToResponse();
 
-        // O contato do cliente não é exposto ao profissional: só o primeiro nome.
         var nomeCliente = ehCliente
             ? null
             : p.Cliente.Nome.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
@@ -66,7 +65,7 @@ public static class PedidoMapper
             o.PrazoEstimado,
             o.Condicoes,
             o.ValidoAte,
-            Expirado: o.Status == StatusOrcamento.Enviado && o.ValidoAte <= agora,
+            o.Status == StatusOrcamento.Enviado && o.ValidoAte <= agora,
             o.Status,
             new ProfissionalOrcamentoResponse(
                 o.Profissional.Id,
