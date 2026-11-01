@@ -16,6 +16,13 @@ public class CadastroProfissionalRequest
     [StringLength(128, MinimumLength = 8, ErrorMessage = "A senha deve ter entre 8 e 128 caracteres.")]
     public string Senha { get; set; } = string.Empty;
 
+    [Compare(nameof(Senha), ErrorMessage = "As senhas não coincidem.")]
+    public string ConfirmacaoSenha { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "O telefone é obrigatório.")]
+    [RegularExpression(@"^\d{10,11}$", ErrorMessage = "Informe DDD e telefone com 10 ou 11 dígitos.")]
+    public string Telefone { get; set; } = string.Empty;
+
     [StringLength(500, ErrorMessage = "A descrição deve ter até 500 caracteres.")]
     public string? DescricaoPerfil { get; set; }
 }

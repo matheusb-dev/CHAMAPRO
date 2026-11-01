@@ -1,5 +1,6 @@
 using Chamapro.Api.Common;
 using Chamapro.Api.DTOs.Requests;
+using Chamapro.Api.DTOs.Responses;
 using Chamapro.Api.Repositories;
 
 namespace Chamapro.Api.Services;
@@ -17,4 +18,7 @@ public class ClienteService : IClienteService
 
     public Task AtualizarPerfilAsync(AtualizarClienteRequest request, CancellationToken ct = default)
         => _repositorio.AtualizarAsync(_usuario.Id, request, ct);
+
+    public Task<ClientePerfilResponse?> ObterPerfilAsync(CancellationToken ct = default)
+        => _repositorio.ObterPerfilAsync(_usuario.Id, ct);
 }

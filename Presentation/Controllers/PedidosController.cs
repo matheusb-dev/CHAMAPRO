@@ -41,6 +41,11 @@ public class PedidosController : ControllerBase
     public async Task<ActionResult<PedidoDetalheResponse>> Obter(int id)
         => Ok(await _service.ObterAsync(id));
 
+    [HttpGet("{id:int}/historico")]
+    [Authorize(Roles = "CLIENTE,PROFISSIONAL")]
+    public async Task<ActionResult<IReadOnlyList<PedidoHistoricoResponse>>> Historico(int id)
+        => Ok(await _service.HistoricoAsync(id));
+
     /// <summary>21 - Profissional aceita atender o pedido (libera o envio de orçamento).</summary>
     [HttpPost("{id:int}/aceitar")]
     [Authorize(Roles = "PROFISSIONAL")]

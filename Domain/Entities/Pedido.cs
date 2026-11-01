@@ -11,6 +11,9 @@ public class Pedido
     public string Descricao { get; set; } = string.Empty;
     public string Cidade { get; set; } = string.Empty;
     public string? Bairro { get; set; }
+    public string? Endereco { get; set; }
+    public TipoAtendimento TipoAtendimento { get; set; } = TipoAtendimento.Imediato;
+    public DateTime? DataDesejada { get; set; }
     public List<string> FotoUrls { get; set; } = new();
     public StatusPedido Status { get; set; } = StatusPedido.Pendente;
 

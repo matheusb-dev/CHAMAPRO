@@ -1,5 +1,6 @@
 using Chamapro.Api.Models.Entities;
 using Chamapro.Api.Models.Enums;
+using Chamapro.Api.DTOs.Responses;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Chamapro.Api.Repositories;
@@ -17,8 +18,14 @@ public interface IPedidoRepository
     Task<bool> CategoriaExisteAsync(int categoriaId);
     Task<int> ContarPendentesDoClienteAsync(int clienteId);
     Task<bool> ClienteEhDonoAsync(int pedidoId, int clienteId);
+    void AdicionarHistorico(int pedidoId, int? atorId, StatusPedido? anterior, StatusPedido novo, string detalhe);
+    Task<IReadOnlyList<PedidoHistoricoResponse>?> ListarHistoricoAsync(int pedidoId, int? clienteId, int? profissionalId);
     /// <summary>Dos ids informados, devolve os que atendem a categoria e a cidade (RN04).</summary>
-    Task<HashSet<int>> FiltrarProfissionaisQueAtendemAsync(IReadOnlyList<int> profissionalIds, int categoriaId, string cidade);
+    Task<HashSet<int>> FiltrarProfissionaisQueAtendemAsync(IReadOnlyList<int> profissionalIds, int categoriaId, string cidade, string? bairro,
+        TipoAtendimento tipoAtendimento, DateTime? dataDesejada);
+    Task<List<int>> SelecionarProfissionaisCompativeisAsync(int categoriaId, string cidade, string? bairro,
+        TipoAtendimento tipoAtendimento, DateTime? dataDesejada, int limite = 5);
+    Task<List<int>> ListarUsuarioIdsProfissionaisAsync(IReadOnlyList<int> profissionalIds);
 
     // Pedidos
     Task AdicionarAsync(Pedido pedido);

@@ -24,6 +24,11 @@ public class AppDbContext : DbContext
     public DbSet<Avaliacao> Avaliacoes => Set<Avaliacao>();
     public DbSet<VerificacaoProfissional> Verificacoes => Set<VerificacaoProfissional>();
     public DbSet<Denuncia> Denuncias => Set<Denuncia>();
+    public DbSet<Favorito> Favoritos => Set<Favorito>();
+    public DbSet<Notificacao> Notificacoes => Set<Notificacao>();
+    public DbSet<DisponibilidadeProfissional> DisponibilidadesProfissionais => Set<DisponibilidadeProfissional>();
+    public DbSet<ArquivoPrivado> ArquivosPrivados => Set<ArquivoPrivado>();
+    public DbSet<HistoricoPedido> HistoricosPedidos => Set<HistoricoPedido>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -41,8 +46,16 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Avaliacao>().ToTable("avaliacoes");
         modelBuilder.Entity<VerificacaoProfissional>().ToTable("verificacoes_profissionais");
         modelBuilder.Entity<Denuncia>().ToTable("denuncias");
+        modelBuilder.Entity<Favorito>().ToTable("favoritos");
+        modelBuilder.Entity<Notificacao>().ToTable("notificacoes");
+        modelBuilder.Entity<DisponibilidadeProfissional>().ToTable("disponibilidade_profissional");
+        modelBuilder.Entity<ArquivoPrivado>().ToTable("arquivos_privados");
+        modelBuilder.Entity<HistoricoPedido>().ToTable("historico_pedidos");
 
         modelBuilder.HasPostgresEnum<TipoUsuario>(name: "tipo_usuario", nameTranslator: new NpgsqlNullNameTranslator());
+        modelBuilder.HasPostgresEnum<StatusPedido>(name: "status_pedido", nameTranslator: new NpgsqlNullNameTranslator());
+        modelBuilder.HasPostgresEnum<StatusAgendamento>(name: "status_agendamento", nameTranslator: new NpgsqlNullNameTranslator());
+        modelBuilder.HasPostgresEnum<StatusVerificacao>(name: "status_verificacao", nameTranslator: new NpgsqlNullNameTranslator());
 
         modelBuilder.Entity<Usuario>().HasKey(x => x.Id);
         modelBuilder.Entity<Categoria>().HasKey(x => x.Id);
@@ -66,6 +79,28 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Avaliacao>().HasKey(x => x.Id);
         modelBuilder.Entity<VerificacaoProfissional>().HasKey(x => x.Id);
         modelBuilder.Entity<Denuncia>().HasKey(x => x.Id);
+        modelBuilder.Entity<Favorito>().HasKey(x => new { x.ClienteId, x.ProfissionalId });
+        modelBuilder.Entity<Notificacao>().HasKey(x => x.Id);
+        modelBuilder.Entity<DisponibilidadeProfissional>().HasKey(x => new { x.ProfissionalId, x.DiaSemana, x.HoraInicio });
+        modelBuilder.Entity<ArquivoPrivado>().HasKey(x => x.NomeArquivo);
+        modelBuilder.Entity<HistoricoPedido>().HasKey(x => x.Id);
+        modelBuilder.Entity<DisponibilidadeProfissional>()
+            .HasOne(x => x.Profissional).WithMany(p => p.Disponibilidade)
+            .HasForeignKey(x => x.ProfissionalId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Notificacao>().Property(x => x.Dados).HasColumnType("jsonb");
+        modelBuilder.Entity<Favorito>()
+            .HasOne(x => x.Cliente).WithMany().HasForeignKey(x => x.ClienteId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Favorito>()
+            .HasOne(x => x.Profissional).WithMany().HasForeignKey(x => x.ProfissionalId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Notificacao>()
+            .HasOne(x => x.Usuario).WithMany().HasForeignKey(x => x.UsuarioId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<ArquivoPrivado>()
+            .HasOne(x => x.Usuario).WithMany().HasForeignKey(x => x.UsuarioId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<HistoricoPedido>()
+            .HasOne<Pedido>().WithMany().HasForeignKey(x => x.PedidoId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<HistoricoPedido>()
+            .HasOne<Usuario>().WithMany().HasForeignKey(x => x.AtorId).OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<Pedido>().Property(x => x.TipoAtendimento).HasConversion<string>();
 
         modelBuilder.Entity<ProfissionalCategoria>()
             .HasKey(x => new { x.ProfissionalId, x.CategoriaId });
@@ -139,15 +174,34 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Agendamento>()
             .HasOne<Pedido>()
-            .WithMany()
-            .HasForeignKey(x => x.PedidoId)
+            .WithOne(x => x.Agendamento)
+            .HasForeignKey<Agendamento>(x => x.PedidoId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Agendamento>()
+            .HasIndex(x => new { x.ProfissionalId, x.DataHora })
+            .IsUnique()
+            .HasFilter("status <> 'Cancelado' AND profissional_id IS NOT NULL");
 
         modelBuilder.Entity<Avaliacao>()
             .HasOne<Pedido>()
-            .WithMany()
-            .HasForeignKey(x => x.PedidoId)
+            .WithOne(x => x.Avaliacao)
+            .HasForeignKey<Avaliacao>(x => x.PedidoId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PedidoDestinatario>().Property(x => x.Situacao)
+            .HasConversion<string>();
+        modelBuilder.Entity<Orcamento>().Property(x => x.Status).HasConversion<string>();
+        modelBuilder.Entity<Denuncia>().Property(x => x.Status).HasConversion<string>();
+
+        // PostgreSQL uses snake_case columns throughout the schema. This also maps
+        // shadow foreign-key properties generated by EF conventions.
+        foreach (var entity in modelBuilder.Model.GetEntityTypes())
+        foreach (var property in entity.GetProperties())
+            property.SetColumnName(ParaSnakeCase(property.Name));
+
+        modelBuilder.Entity<Categoria>().Property(x => x.Icone).HasColumnName("icone");
+        modelBuilder.Entity<PedidoDestinatario>().Property(x => x.Situacao).HasColumnName("status");
 
         modelBuilder.Entity<Denuncia>()
             .HasOne(x => x.Denunciante)
@@ -162,5 +216,18 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    }
+
+    private static string ParaSnakeCase(string name)
+    {
+        var resultado = new System.Text.StringBuilder(name.Length + 8);
+        for (var i = 0; i < name.Length; i++)
+        {
+            var c = name[i];
+            if (char.IsUpper(c) && i > 0 && (char.IsLower(name[i - 1]) || (i + 1 < name.Length && char.IsLower(name[i + 1]))))
+                resultado.Append('_');
+            resultado.Append(char.ToLowerInvariant(c));
+        }
+        return resultado.ToString();
     }
 }

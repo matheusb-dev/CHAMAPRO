@@ -25,6 +25,7 @@ public record PedidoResumoResponse(
 public record AgendamentoResumoResponse(int Id, DateTime DataHora, string Situacao);
 
 public record AvaliacaoResumoResponse(int Id, int Nota, string? Comentario);
+public record PedidoHistoricoResponse(long Id, string? StatusAnterior, string StatusNovo, string? Detalhe, DateTime CriadoEm);
 
 /// <summary>
 /// Saída de GET /pedidos/{id} (e do aceite de orçamento / mudança de status).
@@ -38,6 +39,9 @@ public record PedidoDetalheResponse(
     string Categoria,
     string Cidade,
     string? Bairro,
+    string? Endereco,
+    string TipoAtendimento,
+    DateTime? DataDesejada,
     IReadOnlyList<string> FotoUrls,
     StatusPedido Status,
     DateTime CriadoEm,

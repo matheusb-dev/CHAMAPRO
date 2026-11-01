@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Chamapro.Api.Models.Enums;
 
 namespace Chamapro.Api.DTOs.Requests;
 
@@ -24,11 +25,20 @@ public class PedidoCriarRequest : IValidatableObject
     [StringLength(100, ErrorMessage = "O bairro deve ter até 100 caracteres.")]
     public string? Bairro { get; set; }
 
+    [StringLength(250, ErrorMessage = "O endereço deve ter até 250 caracteres.")]
+    public string? Endereco { get; set; }
+
+    public TipoAtendimento TipoAtendimento { get; set; } = TipoAtendimento.Imediato;
+
+    public DateTime? DataDesejada { get; set; }
+
+    /// <summary>Quando true, direciona o pedido a até cinco profissionais verificados compatíveis da região.</summary>
+    public bool DistribuirParaCompativeis { get; set; }
+
     /// <summary>URLs obtidas em POST /arquivos (até 5).</summary>
     public List<string> FotoUrls { get; set; } = new();
 
-    /// <summary>De 1 a 5 profissionais que vão receber o pedido (RN04).</summary>
-    [MinLength(1, ErrorMessage = "Escolha pelo menos 1 profissional.")]
+    /// <summary>De 1 a 5 profissionais selecionados individualmente (RN04).</summary>
     [MaxLength(5, ErrorMessage = "Escolha no máximo 5 profissionais.")]
     public List<int> ProfissionalIds { get; set; } = new();
 
@@ -45,5 +55,17 @@ public class PedidoCriarRequest : IValidatableObject
 
         if (ProfissionalIds.Distinct().Count() != ProfissionalIds.Count)
             yield return new ValidationResult("Não repita o mesmo profissional.", [nameof(ProfissionalIds)]);
+
+        if (DistribuirParaCompativeis && ProfissionalIds.Count > 0)
+            yield return new ValidationResult("Escolha profissionais ou distribua o chamado, não os dois.", [nameof(ProfissionalIds)]);
+
+        if (!DistribuirParaCompativeis && ProfissionalIds.Count == 0)
+            yield return new ValidationResult("Escolha profissionais ou ative a distribuição para compatíveis.", [nameof(ProfissionalIds)]);
+
+        if (TipoAtendimento == TipoAtendimento.Agendado && DataDesejada is null)
+            yield return new ValidationResult("Informe a data e o horário desejados.", [nameof(DataDesejada)]);
+
+        if (TipoAtendimento == TipoAtendimento.Agendado && DataDesejada <= DateTime.UtcNow)
+            yield return new ValidationResult("A data desejada precisa estar no futuro.", [nameof(DataDesejada)]);
     }
 }

@@ -1,44 +1,46 @@
+using Chamapro.Api.Data;
+using Chamapro.Api.Models.Enums;
+using Microsoft.EntityFrameworkCore;
+
 namespace Chamapro.Api.Repositories;
 
 public class RotinasRepository : IRotinasRepository
 {
-    private static readonly object Trava = new();
+    private readonly AppDbContext _db;
 
-    private static readonly List<LembreteAgendamento> Agendamentos = new()
-    {
-        new LembreteAgendamento(
-            1, "Troca de disjuntor", DateTime.UtcNow.AddHours(2),
-            "Maria Souza", "maria@exemplo.local",
-            "Carlos Silva", "carlos@exemplo.local")
-    };
+    public RotinasRepository(AppDbContext db) => _db = db;
 
-    private static readonly HashSet<int> LembretesEnviados = new();
-
-    public Task<List<LembreteAgendamento>> ListarAgendamentosParaLembreteAsync(
+    public async Task<List<LembreteAgendamento>> ListarAgendamentosParaLembreteAsync(
         DateTime agoraUtc, DateTime limiteUtc, CancellationToken ct = default)
-    {
-        lock (Trava)
-        {
-            var lista = Agendamentos
-                .Where(a => !LembretesEnviados.Contains(a.AgendamentoId)
-                         && a.DataHoraUtc >= agoraUtc
-                         && a.DataHoraUtc <= limiteUtc)
-                .ToList();
-            return Task.FromResult(lista);
-        }
-    }
+        => await _db.Agendamentos.AsNoTracking()
+            .Where(a => a.LembreteEnviadoEm == null
+                && a.DataHora >= agoraUtc && a.DataHora <= limiteUtc
+                && (a.Status == StatusAgendamento.Agendado || a.Status == StatusAgendamento.Confirmado)
+                && a.Pedido.Status == StatusPedido.Agendado
+                && a.Pedido.ProfissionalId != null)
+            .Select(a => new LembreteAgendamento(
+                a.Id,
+                a.Pedido.Titulo,
+                a.DataHora,
+                a.Pedido.Cliente.Nome,
+                a.Pedido.Cliente.Email,
+                a.Pedido.Profissional!.Usuario.Nome,
+                a.Pedido.Profissional!.Usuario.Email))
+            .ToListAsync(ct);
 
-    public Task MarcarLembreteEnviadoAsync(int agendamentoId, CancellationToken ct = default)
+    public async Task MarcarLembreteEnviadoAsync(int agendamentoId, CancellationToken ct = default)
     {
-        lock (Trava)
-        {
-            LembretesEnviados.Add(agendamentoId);
-        }
-        return Task.CompletedTask;
+        await _db.Agendamentos
+            .Where(a => a.Id == agendamentoId && a.LembreteEnviadoEm == null)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(a => a.LembreteEnviadoEm, DateTime.UtcNow), ct);
     }
 
     public Task<int> CancelarPedidosPendentesAsync(DateTime criadosAntesDeUtc, CancellationToken ct = default)
-    {
-        return Task.FromResult(0);
-    }
+        => _db.Pedidos
+            .Where(p => p.Status == StatusPedido.Pendente && p.CriadoEm <= criadosAntesDeUtc)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(p => p.Status, StatusPedido.Cancelado)
+                .SetProperty(p => p.MotivoCancelamento, "Cancelado automaticamente após sete dias sem propostas.")
+                .SetProperty(p => p.CancelamentoTardio, false)
+                .SetProperty(p => p.CanceladoEm, DateTime.UtcNow), ct);
 }

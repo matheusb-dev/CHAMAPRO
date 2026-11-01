@@ -9,6 +9,7 @@ public interface IProfissionalRepository
     Task<RespostaPaginada<ProfissionalResumoResponse>> BuscarAsync(BuscaProfissionaisQuery filtro, CancellationToken ct = default);
 
     Task<PerfilPublicoResponse?> ObterPerfilPublicoAsync(int id, CancellationToken ct = default);
+    Task<ProfissionalMeuPerfilResponse?> ObterMeuPerfilAsync(int usuarioId, CancellationToken ct = default);
 
     Task<RespostaPaginada<AvaliacaoPublicaResponse>?> ListarAvaliacoesAsync(int id, PaginacaoQuery paginacao, CancellationToken ct = default);
 
@@ -17,4 +18,5 @@ public interface IProfissionalRepository
     Task<bool> DefinirServicosAsync(int usuarioId, IReadOnlyList<ServicoProfissionalRequest> servicos, CancellationToken ct = default);
 
     Task<bool> DefinirAreasAsync(int usuarioId, IReadOnlyList<AreaAtendimentoRequest> areas, CancellationToken ct = default);
+    Task<bool> DefinirDisponibilidadeAsync(int usuarioId, IReadOnlyList<DisponibilidadeProfissionalRequest> disponibilidade, CancellationToken ct = default);
 }

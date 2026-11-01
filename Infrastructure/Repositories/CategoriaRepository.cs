@@ -1,71 +1,51 @@
+using Chamapro.Api.Data;
 using Chamapro.Api.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Chamapro.Api.Repositories;
 
 public class CategoriaRepository : ICategoriaRepository
 {
-    private static readonly object Trava = new();
-    private static readonly List<Categoria> Dados = new()
-    {
-        new Categoria { Id = 1, Nome = "Eletricista", Icone = "zap", Ativa = true },
-        new Categoria { Id = 2, Nome = "Encanador", Icone = "droplet", Ativa = true }
-    };
-    private static int _proximoId = 3;
+    private readonly AppDbContext _db;
+
+    public CategoriaRepository(AppDbContext db) => _db = db;
 
     public Task<List<Categoria>> ListarAtivasAsync(CancellationToken ct = default)
-    {
-        lock (Trava)
-        {
-            var lista = Dados.Where(c => c.Ativa).OrderBy(c => c.Nome).ToList();
-            return Task.FromResult(lista);
-        }
-    }
+        => _db.Categorias.AsNoTracking()
+            .Where(c => c.Ativa)
+            .OrderBy(c => c.Nome)
+            .ToListAsync(ct);
 
     public Task<Categoria?> ObterPorIdAsync(int id, CancellationToken ct = default)
-    {
-        lock (Trava)
-        {
-            return Task.FromResult(Dados.FirstOrDefault(c => c.Id == id));
-        }
-    }
+        => _db.Categorias.FirstOrDefaultAsync(c => c.Id == id, ct);
 
     public Task<bool> ExisteNomeAsync(string nome, int? ignorarId = null, CancellationToken ct = default)
     {
-        lock (Trava)
-        {
-            var existe = Dados.Any(c =>
-                c.Id != ignorarId &&
-                string.Equals(c.Nome, nome, StringComparison.OrdinalIgnoreCase));
-            return Task.FromResult(existe);
-        }
+        var normalizado = nome.Trim().ToLowerInvariant();
+        return _db.Categorias.AsNoTracking().AnyAsync(c =>
+            c.Id != ignorarId && c.Nome.ToLower() == normalizado, ct);
     }
 
-    public Task<bool> TemVinculosAsync(int id, CancellationToken ct = default)
+    public async Task<bool> TemVinculosAsync(int id, CancellationToken ct = default)
+        => await _db.ProfissionalCategorias.AsNoTracking().AnyAsync(x => x.CategoriaId == id, ct)
+            || await _db.Pedidos.AsNoTracking().AnyAsync(p => p.CategoriaId == id, ct);
+
+    public async Task<Categoria> AdicionarAsync(Categoria categoria, CancellationToken ct = default)
     {
-        return Task.FromResult(false);
+        await _db.Categorias.AddAsync(categoria, ct);
+        await _db.SaveChangesAsync(ct);
+        return categoria;
     }
 
-    public Task<Categoria> AdicionarAsync(Categoria categoria, CancellationToken ct = default)
+    public async Task AtualizarAsync(Categoria categoria, CancellationToken ct = default)
     {
-        lock (Trava)
-        {
-            categoria.Id = _proximoId++;
-            Dados.Add(categoria);
-            return Task.FromResult(categoria);
-        }
+        _db.Categorias.Update(categoria);
+        await _db.SaveChangesAsync(ct);
     }
 
-    public Task AtualizarAsync(Categoria categoria, CancellationToken ct = default)
+    public async Task RemoverAsync(Categoria categoria, CancellationToken ct = default)
     {
-        return Task.CompletedTask;
-    }
-
-    public Task RemoverAsync(Categoria categoria, CancellationToken ct = default)
-    {
-        lock (Trava)
-        {
-            Dados.Remove(categoria);
-            return Task.CompletedTask;
-        }
+        _db.Categorias.Remove(categoria);
+        await _db.SaveChangesAsync(ct);
     }
 }

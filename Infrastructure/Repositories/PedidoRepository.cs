@@ -1,6 +1,8 @@
 using Chamapro.Api.Data;
+using Chamapro.Api.DTOs.Responses;
 using Chamapro.Api.Models.Entities;
 using Chamapro.Api.Models.Enums;
+using Chamapro.Api.Models.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -26,7 +28,7 @@ public class PedidoRepository : IPedidoRepository
             .FirstOrDefaultAsync();
 
     public Task<bool> CategoriaExisteAsync(int categoriaId)
-        => _db.Set<Categoria>().AsNoTracking().AnyAsync(c => c.Id == categoriaId);
+        => _db.Set<Categoria>().AsNoTracking().AnyAsync(c => c.Id == categoriaId && c.Ativa);
 
     public Task<int> ContarPendentesDoClienteAsync(int clienteId)
         => _db.Set<Pedido>().AsNoTracking()
@@ -35,21 +37,93 @@ public class PedidoRepository : IPedidoRepository
     public Task<bool> ClienteEhDonoAsync(int pedidoId, int clienteId)
         => _db.Set<Pedido>().AsNoTracking().AnyAsync(p => p.Id == pedidoId && p.ClienteId == clienteId);
 
+    public void AdicionarHistorico(int pedidoId, int? atorId, StatusPedido? anterior, StatusPedido novo, string detalhe)
+        => _db.HistoricosPedidos.Add(new HistoricoPedido
+        {
+            PedidoId = pedidoId,
+            AtorId = atorId,
+            StatusAnterior = anterior?.ToString(),
+            StatusNovo = novo.ToString(),
+            Detalhe = detalhe,
+            CriadoEm = DateTime.UtcNow
+        });
+
+    public async Task<IReadOnlyList<PedidoHistoricoResponse>?> ListarHistoricoAsync(
+        int pedidoId, int? clienteId, int? profissionalId)
+    {
+        var autorizado = await _db.Pedidos.AsNoTracking().AnyAsync(p => p.Id == pedidoId
+            && ((clienteId.HasValue && p.ClienteId == clienteId.Value)
+                || (profissionalId.HasValue && p.Destinatarios.Any(d => d.ProfissionalId == profissionalId.Value))));
+        if (!autorizado) return null;
+
+        return await _db.HistoricosPedidos.AsNoTracking()
+            .Where(h => h.PedidoId == pedidoId)
+            .OrderBy(h => h.CriadoEm).ThenBy(h => h.Id)
+            .Select(h => new PedidoHistoricoResponse(h.Id, h.StatusAnterior, h.StatusNovo, h.Detalhe, h.CriadoEm))
+            .ToListAsync();
+    }
+
     public async Task<HashSet<int>> FiltrarProfissionaisQueAtendemAsync(
-        IReadOnlyList<int> profissionalIds, int categoriaId, string cidade)
+        IReadOnlyList<int> profissionalIds, int categoriaId, string cidade, string? bairro,
+        TipoAtendimento tipoAtendimento, DateTime? dataDesejada)
     {
         var ids = profissionalIds.ToList();
         var cidadeNormalizada = cidade.Trim().ToLower();
+        var bairroNormalizado = string.IsNullOrWhiteSpace(bairro) ? null : bairro.Trim().ToLower();
+        var data = HorarioBrasil.ParaLocal(tipoAtendimento == TipoAtendimento.Agendado
+            ? dataDesejada!.Value : DateTime.UtcNow);
+        var diaSemana = (short)data.DayOfWeek;
+        var hora = TimeOnly.FromDateTime(data);
 
         var atendem = await _db.Set<Profissional>().AsNoTracking()
             .Where(p => ids.Contains(p.Id)
-                && _db.Set<ProfissionalCategoria>().Any(pc => pc.ProfissionalId == p.Id && pc.CategoriaId == categoriaId)
-                && _db.Set<AreaAtendimento>().Any(a => a.ProfissionalId == p.Id && a.Cidade.ToLower() == cidadeNormalizada))
+                && p.Usuario.Ativo
+                && p.Usuario.IdentidadeVerificada
+                && _db.Set<ProfissionalCategoria>().Any(pc => pc.ProfissionalId == p.Id
+                    && pc.CategoriaId == categoriaId && pc.Categoria.Ativa)
+                && _db.Set<AreaAtendimento>().Any(a => a.ProfissionalId == p.Id
+                    && a.Cidade.ToLower() == cidadeNormalizada
+                    && (bairroNormalizado == null || a.Bairro == null || a.Bairro.ToLower() == bairroNormalizado))
+                && (tipoAtendimento == TipoAtendimento.Imediato
+                    ? p.AtendeUrgencia && p.Disponibilidade.Any(d => d.DiaSemana == diaSemana && d.AtendeImediato && d.HoraInicio <= hora && d.HoraFim > hora)
+                    : p.Disponibilidade.Any(d => d.DiaSemana == diaSemana && d.AtendeAgendado && d.HoraInicio <= hora && d.HoraFim > hora)))
             .Select(p => p.Id)
             .ToListAsync();
 
         return atendem.ToHashSet();
     }
+
+    public Task<List<int>> SelecionarProfissionaisCompativeisAsync(
+        int categoriaId, string cidade, string? bairro, TipoAtendimento tipoAtendimento,
+        DateTime? dataDesejada, int limite = 5)
+    {
+        var cidadeNormalizada = cidade.Trim().ToLower();
+        var bairroNormalizado = string.IsNullOrWhiteSpace(bairro) ? null : bairro.Trim().ToLower();
+        var data = HorarioBrasil.ParaLocal(tipoAtendimento == TipoAtendimento.Agendado
+            ? dataDesejada!.Value : DateTime.UtcNow);
+        var diaSemana = (short)data.DayOfWeek;
+        var hora = TimeOnly.FromDateTime(data);
+
+        return _db.Set<Profissional>().AsNoTracking()
+            .Where(p => p.Usuario.Ativo && p.Usuario.IdentidadeVerificada
+                && p.Categorias.Any(pc => pc.CategoriaId == categoriaId && pc.Categoria.Ativa)
+                && p.Areas.Any(a => a.Cidade.ToLower() == cidadeNormalizada
+                    && (bairroNormalizado == null || a.Bairro == null || a.Bairro.ToLower() == bairroNormalizado))
+                && (tipoAtendimento == TipoAtendimento.Imediato
+                    ? p.AtendeUrgencia && p.Disponibilidade.Any(d => d.DiaSemana == diaSemana && d.AtendeImediato && d.HoraInicio <= hora && d.HoraFim > hora)
+                    : p.Disponibilidade.Any(d => d.DiaSemana == diaSemana && d.AtendeAgendado && d.HoraInicio <= hora && d.HoraFim > hora)))
+            .OrderByDescending(p => p.MediaAvaliacao)
+            .ThenBy(p => p.Id)
+            .Select(p => p.Id)
+            .Take(Math.Clamp(limite, 1, 5))
+            .ToListAsync();
+    }
+
+    public Task<List<int>> ListarUsuarioIdsProfissionaisAsync(IReadOnlyList<int> profissionalIds)
+        => _db.Set<Profissional>().AsNoTracking()
+            .Where(p => profissionalIds.Contains(p.Id))
+            .Select(p => p.UsuarioId)
+            .ToListAsync();
 
     public async Task AdicionarAsync(Pedido pedido) => await _db.Set<Pedido>().AddAsync(pedido);
 

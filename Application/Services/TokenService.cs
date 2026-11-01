@@ -24,7 +24,10 @@ public class TokenService : ITokenService
 
     public string GerarToken(Usuario usuario)
     {
-        var jwtKey = _configuration["Jwt:Key"] ?? "CHAMAPRO-DEV-KEY-CHANGE-ME-2026-!@#";
+        var jwtKey = _configuration["Jwt:Key"];
+        if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.StartsWith("SUA_", StringComparison.OrdinalIgnoreCase)
+            || Encoding.UTF8.GetByteCount(jwtKey) < 32)
+            throw new InvalidOperationException("Jwt:Key precisa ser configurada com pelo menos 32 bytes.");
         var issuer = _configuration["Jwt:Issuer"] ?? "Chamapro.Api";
         var audience = _configuration["Jwt:Audience"] ?? "Chamapro.Clients";
 

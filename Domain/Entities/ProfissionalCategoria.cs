@@ -5,6 +5,8 @@ public class ProfissionalCategoria
 {
     public int ProfissionalId { get; set; }
     public int CategoriaId { get; set; }
+    public decimal? FaixaPrecoMin { get; set; }
+    public decimal? FaixaPrecoMax { get; set; }
 
     public Profissional Profissional { get; set; } = null!;
     public Categoria Categoria { get; set; } = null!;

@@ -27,6 +27,10 @@ public class ProfissionalService : IProfissionalService
                ?? throw ProfissionalNaoEncontrado();
     }
 
+    public async Task<ProfissionalMeuPerfilResponse> ObterMeuPerfilAsync(CancellationToken ct = default)
+        => await _repositorio.ObterMeuPerfilAsync(_usuario.Id, ct)
+           ?? throw PerfilNaoEncontrado();
+
     public async Task<RespostaPaginada<AvaliacaoPublicaResponse>> ListarAvaliacoesAsync(
         int id, PaginacaoQuery paginacao, CancellationToken ct = default)
     {
@@ -66,6 +70,19 @@ public class ProfissionalService : IProfissionalService
             throw BusinessException.Invalido("AREAS_OBRIGATORIAS", "Informe pelo menos uma cidade atendida.");
 
         var achou = await _repositorio.DefinirAreasAsync(_usuario.Id, areas, ct);
+        if (!achou) throw PerfilNaoEncontrado();
+    }
+
+    public async Task DefinirDisponibilidadeAsync(
+        IReadOnlyList<DisponibilidadeProfissionalRequest> disponibilidade, CancellationToken ct = default)
+    {
+        if (disponibilidade is null || disponibilidade.Count > 42)
+            throw BusinessException.Invalido("DISPONIBILIDADE_INVALIDA", "Informe até 42 faixas de disponibilidade.");
+        if (disponibilidade.GroupBy(x => x.DiaSemana).Any(g =>
+                g.OrderBy(x => x.HoraInicio).Zip(g.OrderBy(x => x.HoraInicio).Skip(1), (a, b) => a.HoraFim > b.HoraInicio).Any(x => x)))
+            throw BusinessException.Invalido("HORARIO_SOBREPOSTO", "Os horários de um mesmo dia não podem se sobrepor.");
+
+        var achou = await _repositorio.DefinirDisponibilidadeAsync(_usuario.Id, disponibilidade, ct);
         if (!achou) throw PerfilNaoEncontrado();
     }
 

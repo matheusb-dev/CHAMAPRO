@@ -21,4 +21,14 @@ public class AtualizarProfissionalRequest
 
     [MaxLength(10, ErrorMessage = "Envie no máximo 10 fotos de trabalhos.")]
     public List<string> FotosTrabalhos { get; set; } = new();
+
+    [Range(0, 80)]
+    public short? ExperienciaAnos { get; set; }
+
+    [Range(typeof(decimal), "0", "1000")]
+    public decimal? DistanciaMaxKm { get; set; }
+
+    public bool AtendeUrgencia { get; set; }
+    public bool AtendeDomicilio { get; set; } = true;
+    public bool AtendeEstabelecimento { get; set; }
 }

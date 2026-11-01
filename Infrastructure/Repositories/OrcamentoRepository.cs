@@ -16,6 +16,12 @@ public class OrcamentoRepository : IOrcamentoRepository
             .Select(o => (int?)o.PedidoId)
             .FirstOrDefaultAsync();
 
+    public Task<int?> ObterUsuarioProfissionalAsync(int profissionalId)
+        => _db.Set<Profissional>().AsNoTracking()
+            .Where(p => p.Id == profissionalId)
+            .Select(p => (int?)p.UsuarioId)
+            .FirstOrDefaultAsync();
+
     public async Task AdicionarAsync(Orcamento orcamento) => await _db.Set<Orcamento>().AddAsync(orcamento);
 
     public async Task<IReadOnlyList<Orcamento>> ListarDoPedidoAsync(int pedidoId)

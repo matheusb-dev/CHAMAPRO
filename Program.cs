@@ -20,6 +20,8 @@ using Npgsql;
 using Npgsql.NameTranslation;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // ======================================================
 // CONTROLLERS E CONFIGURAÇÃO JSON
@@ -46,9 +48,13 @@ builder.Services
 // BANCO DE DADOS - POSTGRESQL
 // ======================================================
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException("ConnectionStrings:DefaultConnection precisa ser configurada via User Secrets ou variável de ambiente.");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
+        connectionString,
         npgsql =>
         {
             npgsql.EnableRetryOnFailure(3);
@@ -57,6 +63,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
                 "tipo_usuario",
                 nameTranslator: new NpgsqlNullNameTranslator()
             );
+            npgsql.MapEnum<StatusPedido>("status_pedido", nameTranslator: new NpgsqlNullNameTranslator());
+            npgsql.MapEnum<StatusAgendamento>("status_agendamento", nameTranslator: new NpgsqlNullNameTranslator());
+            npgsql.MapEnum<StatusVerificacao>("status_verificacao", nameTranslator: new NpgsqlNullNameTranslator());
         }
     )
 );
@@ -66,6 +75,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // ======================================================
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHostedService<Chamapro.Api.Services.AdminBootstrapService>();
 
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
@@ -75,8 +85,10 @@ builder.Services.AddServicesERepositories();
 // AUTENTICAÇÃO JWT
 // ======================================================
 
-var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? "CHAMAPRO-DEV-KEY-CHANGE-ME-2026-!@#";
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.StartsWith("SUA_", StringComparison.OrdinalIgnoreCase)
+    || Encoding.UTF8.GetByteCount(jwtKey) < 32)
+    throw new InvalidOperationException("Jwt:Key precisa ser uma chave secreta configurada com pelo menos 32 bytes via User Secrets ou variável de ambiente.");
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]
     ?? "Chamapro.Api";
@@ -95,7 +107,7 @@ builder.Services
     })
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = false;
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
         options.SaveToken = true;
 
         options.TokenValidationParameters = new TokenValidationParameters
@@ -216,6 +228,12 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
 // ======================================================
 // MIDDLEWARES
 // ======================================================
@@ -247,6 +265,7 @@ if (app.Environment.IsDevelopment())
 // ARQUIVOS ESTÁTICOS
 // ======================================================
 
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
 var pastaPublica = Path.Combine(

@@ -19,12 +19,15 @@ public class OrcamentoService : IOrcamentoService
     private readonly IPedidoRepository _pedidos;
     private readonly IOrcamentoRepository _orcamentos;
     private readonly ICurrentUser _user;
+    private readonly INotificacaoService _notificacoes;
 
-    public OrcamentoService(IPedidoRepository pedidos, IOrcamentoRepository orcamentos, ICurrentUser user)
+    public OrcamentoService(IPedidoRepository pedidos, IOrcamentoRepository orcamentos, ICurrentUser user,
+        INotificacaoService notificacoes)
     {
         _pedidos = pedidos;
         _orcamentos = orcamentos;
         _user = user;
+        _notificacoes = notificacoes;
     }
 
     // ---------------------------------------------------------------- POST /pedidos/{id}/orcamentos
@@ -73,8 +76,14 @@ public class OrcamentoService : IOrcamentoService
         orcamento.Condicoes = string.IsNullOrWhiteSpace(request.Condicoes) ? null : request.Condicoes.Trim();
         orcamento.ValidoAte = validoAte;
 
+        _pedidos.AdicionarHistorico(pedido.Id, _user.Id, pedido.Status, pedido.Status,
+            orcamento.CriadoEm == agora ? "Profissional enviou um orçamento." : "Profissional atualizou o orçamento.");
+
         var (min, max) = await _orcamentos.ObterFaixaPrecoAsync(profissionalId);
 
+        await _pedidos.SalvarAsync();
+        _notificacoes.Adicionar(pedido.ClienteId, "novo_orcamento", "Você recebeu um orçamento",
+            "Um profissional enviou uma proposta para o seu chamado.", new { pedidoId = pedido.Id, orcamentoId = orcamento.Id });
         await _pedidos.SalvarAsync();
         await tx.CommitAsync();
 
@@ -112,6 +121,8 @@ public class OrcamentoService : IOrcamentoService
             var escolhido = pedido.Orcamentos.FirstOrDefault(o => o.Id == orcamentoId)
                 ?? throw PedidoErros.OrcamentoNaoEncontrado();
 
+            var statusAnterior = pedido.Status;
+
             PedidoTransicoes.Garantir(pedido.Status, StatusPedido.Aceito, AtorTransicao.Cliente, "PEDIDO_STATUS_INVALIDO");
 
             if (escolhido.Status != StatusOrcamento.Enviado)
@@ -136,6 +147,12 @@ public class OrcamentoService : IOrcamentoService
 
             pedido.Status = StatusPedido.Aceito;
             pedido.ProfissionalId = escolhido.ProfissionalId;
+            _pedidos.AdicionarHistorico(pedido.Id, _user.Id, statusAnterior, pedido.Status, "Cliente aceitou um orçamento.");
+
+            var usuarioProfissionalId = await _orcamentos.ObterUsuarioProfissionalAsync(escolhido.ProfissionalId);
+            if (usuarioProfissionalId.HasValue)
+                _notificacoes.Adicionar(usuarioProfissionalId.Value, "orcamento_aceito", "Seu orçamento foi aceito",
+                    "O cliente escolheu sua proposta. Combine a data do serviço.", new { pedidoId = pedido.Id, orcamentoId = escolhido.Id });
 
             await _pedidos.SalvarAsync();
             await tx.CommitAsync();
@@ -168,6 +185,12 @@ public class OrcamentoService : IOrcamentoService
             throw PedidoErros.Regra("ORCAMENTO_STATUS_INVALIDO", "Este orçamento não está mais disponível para recusa.");
 
         orcamento.Status = StatusOrcamento.Recusado;   // o pedido continua PENDENTE para outros orçamentos
+        _pedidos.AdicionarHistorico(pedido.Id, _user.Id, pedido.Status, pedido.Status, "Cliente recusou um orçamento.");
+
+        var usuarioProfissionalId = await _orcamentos.ObterUsuarioProfissionalAsync(orcamento.ProfissionalId);
+        if (usuarioProfissionalId.HasValue)
+            _notificacoes.Adicionar(usuarioProfissionalId.Value, "orcamento_recusado", "Orçamento recusado",
+                "O cliente recusou seu orçamento.", new { pedidoId = pedido.Id, orcamentoId = orcamento.Id });
 
         await _pedidos.SalvarAsync();
         await tx.CommitAsync();

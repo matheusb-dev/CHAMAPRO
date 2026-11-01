@@ -5,6 +5,7 @@ using Chamapro.Api.DTOs.Responses;
 using Chamapro.Api.Models.Entities;
 using Chamapro.Api.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Chamapro.Api.Services;
 
@@ -28,15 +29,16 @@ public class AuthService : IAuthService
     }
 
     public async Task<LoginResponse> RegistrarClienteAsync(CadastroClienteRequest request, CancellationToken ct = default)
-        => await RegistrarAsync(request.Email, request.Nome, request.Senha, TipoUsuario.Cliente, ct);
+        => await RegistrarAsync(request.Email, request.Nome, request.Senha, request.Telefone, TipoUsuario.Cliente, ct);
 
     public async Task<LoginResponse> RegistrarProfissionalAsync(CadastroProfissionalRequest request, CancellationToken ct = default)
-        => await RegistrarAsync(request.Email, request.Nome, request.Senha, TipoUsuario.Profissional, ct, request.DescricaoPerfil);
+        => await RegistrarAsync(request.Email, request.Nome, request.Senha, request.Telefone,
+            TipoUsuario.Profissional, ct, request.DescricaoPerfil);
 
     public async Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken ct = default)
     {
-        var email = request.Email.Trim();
-        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email, ct);
+        var email = NormalizarEmail(request.Email);
+        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email.ToLower() == email, ct);
         if (usuario is null || !usuario.Ativo)
             throw BusinessException.Proibido("CREDENCIAIS_INVALIDADAS", "E-mail ou senha inválidos.");
 
@@ -65,18 +67,19 @@ public class AuthService : IAuthService
         string email,
         string nome,
         string senha,
+        string telefone,
         TipoUsuario tipo,
         CancellationToken ct,
         string? descricaoPerfil = null)
     {
-        var emailNormalizado = email.Trim();
+        var emailNormalizado = NormalizarEmail(email);
         if (string.IsNullOrWhiteSpace(emailNormalizado))
             throw BusinessException.Invalido("EMAIL_OBRIGATORIO", "O e-mail é obrigatório.");
 
         if (string.IsNullOrWhiteSpace(senha) || senha.Length < 8)
             throw BusinessException.Invalido("SENHA_INVALIDA", "A senha deve ter pelo menos 8 caracteres.");
 
-        var jaExiste = await _context.Usuarios.AnyAsync(u => u.Email == emailNormalizado, ct);
+        var jaExiste = await _context.Usuarios.AnyAsync(u => u.Email.ToLower() == emailNormalizado, ct);
         if (jaExiste)
             throw BusinessException.Conflito("EMAIL_JA_CADASTRADO", "Este e-mail já está cadastrado.");
 
@@ -86,6 +89,7 @@ public class AuthService : IAuthService
             Email = emailNormalizado,
             SenhaHash = BCrypt.Net.BCrypt.HashPassword(senha),
             Tipo = tipo,
+            Telefone = telefone.Trim(),
             Ativo = true,
             IdentidadeVerificada = false,
             CriadoEm = DateTime.UtcNow
@@ -103,7 +107,16 @@ public class AuthService : IAuthService
         }
 
         await _context.Usuarios.AddAsync(usuario, ct);
-        await _context.SaveChangesAsync(ct);
+        try
+        {
+            await _context.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException postgres
+            && postgres.SqlState == PostgresErrorCodes.UniqueViolation
+            && postgres.ConstraintName is "ux_usuarios_email_lower" or "usuarios_email_key")
+        {
+            throw BusinessException.Conflito("EMAIL_JA_CADASTRADO", "Este e-mail já está cadastrado.");
+        }
 
         return new LoginResponse
         {
@@ -127,4 +140,6 @@ public class AuthService : IAuthService
             },
             Ativo = usuario.Ativo
         };
+
+    private static string NormalizarEmail(string email) => email.Trim().ToLowerInvariant();
 }

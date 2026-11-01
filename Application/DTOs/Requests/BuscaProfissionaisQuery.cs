@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using Chamapro.Api.Common;
+using Chamapro.Api.Models.Enums;
 
 namespace Chamapro.Api.DTOs.Requests;
 
-public class BuscaProfissionaisQuery : PaginacaoQuery
+public class BuscaProfissionaisQuery : PaginacaoQuery, IValidatableObject
 {
     [Required(ErrorMessage = "A categoria é obrigatória.")]
     [Range(1, int.MaxValue, ErrorMessage = "Informe uma categoria válida.")]
@@ -23,4 +24,15 @@ public class BuscaProfissionaisQuery : PaginacaoQuery
 
     [RegularExpression("^(nota|avaliacoes|preco)$", ErrorMessage = "Ordenação inválida. Use nota, avaliacoes ou preco.")]
     public string Ordenar { get; set; } = "nota";
+
+    public TipoAtendimento? TipoAtendimento { get; set; }
+    public DateTime? DataDesejada { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (TipoAtendimento == Chamapro.Api.Models.Enums.TipoAtendimento.Agendado && DataDesejada is null)
+            yield return new ValidationResult("Informe a data para filtrar disponibilidade.", [nameof(DataDesejada)]);
+        if (DataDesejada <= DateTime.UtcNow)
+            yield return new ValidationResult("A data desejada precisa estar no futuro.", [nameof(DataDesejada)]);
+    }
 }

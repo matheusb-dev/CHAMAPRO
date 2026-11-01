@@ -16,6 +16,15 @@ public class AtualizarClienteRequest
     [StringLength(100, ErrorMessage = "A cidade deve ter no máximo 100 caracteres.")]
     public string Cidade { get; set; } = string.Empty;
 
+    [StringLength(100)]
+    public string? Bairro { get; set; }
+
+    [StringLength(250)]
+    public string? EnderecoPrincipal { get; set; }
+
+    [StringLength(20)]
+    public string? PreferenciaContato { get; set; }
+
     [StringLength(300, ErrorMessage = "A URL da foto deve ter no máximo 300 caracteres.")]
     public string? FotoUrl { get; set; }
 }

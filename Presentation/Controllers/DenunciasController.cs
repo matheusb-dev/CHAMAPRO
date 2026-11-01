@@ -4,6 +4,7 @@ using Chamapro.Api.DTOs.Requests;
 using Chamapro.Api.DTOs.Responses;
 using Chamapro.Api.Models.Entities;
 using Chamapro.Api.Models.Enums;
+using Chamapro.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,47 +16,74 @@ public class DenunciasController : ApiControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ICurrentUser _currentUser;
+    private readonly INotificacaoService _notificacoes;
 
-    public DenunciasController(AppDbContext context, ICurrentUser currentUser)
+    public DenunciasController(AppDbContext context, ICurrentUser currentUser, INotificacaoService notificacoes)
     {
         _context = context;
         _currentUser = currentUser;
+        _notificacoes = notificacoes;
     }
 
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<DenunciaResponse>> Criar([FromBody] DenunciaCriarRequest request, CancellationToken ct)
     {
-        if (request.DenunciadoId <= 0)
-            throw BusinessException.Invalido("DENUNCIADO_INVALIDO", "Usuário denunciado inválido.");
-
-        if (string.IsNullOrWhiteSpace(request.Motivo))
-            throw BusinessException.Invalido("MOTIVO_INVALIDO", "Informe o motivo da denúncia.");
-
-        if (string.IsNullOrWhiteSpace(request.Descricao))
-            throw BusinessException.Invalido("DESCRICAO_INVALIDA", "Informe a descrição do ocorrido.");
-
-        if (string.IsNullOrWhiteSpace(request.TipoEntidade))
-            throw BusinessException.Invalido("TIPO_ENTIDADE_INVALIDO", "Informe o tipo da entidade denunciada.");
-
         var denuncianteId = _currentUser.Id;
-
-        if (denuncianteId == request.DenunciadoId)
-            throw BusinessException.Invalido("DENUNCIA_PROPRIA", "Você não pode denunciar a si mesmo.");
-
         var denunciante = await _context.Usuarios.AnyAsync(u => u.Id == denuncianteId, ct);
         if (!denunciante)
             throw BusinessException.NaoEncontrado("USUARIO_DENUNCIANTE_NAO_ENCONTRADO", "Usuário denunciante não encontrado.");
 
-        var denunciado = await _context.Usuarios.AnyAsync(u => u.Id == request.DenunciadoId, ct);
+        var tipoEntidade = request.TipoEntidade.Trim().ToUpperInvariant();
+        int? denunciadoId = null;
+        var entidadeValida = false;
+        switch (tipoEntidade)
+        {
+            case "PROFISSIONAL":
+                denunciadoId = await _context.Profissionais.AsNoTracking()
+                    .Where(p => p.Id == request.EntidadeId).Select(p => (int?)p.UsuarioId).FirstOrDefaultAsync(ct);
+                entidadeValida = denunciadoId.HasValue;
+                break;
+            case "USUARIO":
+                denunciadoId = request.EntidadeId;
+                entidadeValida = true;
+                break;
+            case "AVALIACAO":
+                denunciadoId = await _context.Avaliacoes.AsNoTracking()
+                    .Where(a => a.Id == request.EntidadeId).Select(a => (int?)a.AvaliadoId).FirstOrDefaultAsync(ct);
+                entidadeValida = denunciadoId.HasValue;
+                break;
+            case "PEDIDO":
+                denunciadoId = request.DenunciadoId;
+                entidadeValida = denunciadoId.HasValue && await DenunciaPedidoValidaAsync(
+                    request.EntidadeId, denuncianteId, denunciadoId.Value, ct);
+                break;
+        }
+        if (request.DenunciadoId.HasValue && request.DenunciadoId != denunciadoId)
+            entidadeValida = false;
+        if (!entidadeValida)
+            throw BusinessException.Invalido("ENTIDADE_NAO_RELACIONADA", "O usuário denunciado não corresponde ao perfil, chamado ou avaliação informados.");
+        if (denunciadoId is null || denunciadoId <= 0)
+            throw BusinessException.Invalido("DENUNCIADO_INVALIDO", "Usuário denunciado inválido.");
+        if (denuncianteId == denunciadoId)
+            throw BusinessException.Invalido("DENUNCIA_PROPRIA", "Você não pode denunciar a si mesmo.");
+
+        var denunciado = await _context.Usuarios.AnyAsync(u => u.Id == denunciadoId, ct);
         if (!denunciado)
             throw BusinessException.NaoEncontrado("USUARIO_DENUNCIADO_NAO_ENCONTRADO", "Usuário denunciado não encontrado.");
+
+        var duplicada = await _context.Denuncias.AnyAsync(d =>
+            d.DenuncianteId == denuncianteId && d.DenunciadoId == denunciadoId
+            && d.TipoEntidade == tipoEntidade && d.EntidadeId == request.EntidadeId
+            && (d.Status == StatusDenuncia.Pendente || d.Status == StatusDenuncia.EmAnalise), ct);
+        if (duplicada)
+            throw BusinessException.Conflito("DENUNCIA_DUPLICADA", "Já existe uma denúncia em análise para este item.");
 
         var denuncia = new Denuncia
         {
             DenuncianteId = denuncianteId,
-            DenunciadoId = request.DenunciadoId,
-            TipoEntidade = request.TipoEntidade.Trim(),
+            DenunciadoId = denunciadoId.Value,
+            TipoEntidade = tipoEntidade,
             EntidadeId = request.EntidadeId,
             Motivo = request.Motivo.Trim(),
             Descricao = request.Descricao.Trim(),
@@ -146,12 +174,15 @@ public class DenunciasController : ApiControllerBase
         if (denuncia is null)
             throw BusinessException.NaoEncontrado("DENUNCIA_NAO_ENCONTRADA", "Denúncia não encontrada.");
 
-        if (!Enum.TryParse<StatusDenuncia>(request.Status, true, out var novoStatus))
-            throw BusinessException.Invalido("STATUS_INVALIDO", "Status da denúncia inválido.");
+        if (!Enum.TryParse<StatusDenuncia>(request.Status, true, out var novoStatus)
+            || !Enum.IsDefined(novoStatus) || novoStatus == StatusDenuncia.Pendente)
+            throw BusinessException.Invalido("STATUS_INVALIDO", "Use EmAnalise, Resolvido ou Rejeitado.");
 
         denuncia.Status = novoStatus;
         denuncia.ObservacaoAdmin = request.Observacao ?? denuncia.ObservacaoAdmin;
         denuncia.AtualizadoEm = DateTime.UtcNow;
+        _notificacoes.Adicionar(denuncia.DenuncianteId, "denuncia_atualizada", "Sua denúncia foi atualizada",
+            $"A denúncia #{denuncia.Id} foi marcada como {novoStatus}.", new { denunciaId = denuncia.Id, status = novoStatus.ToString() });
 
         await _context.SaveChangesAsync(ct);
 
@@ -169,5 +200,35 @@ public class DenunciasController : ApiControllerBase
             ObservacaoAdmin = denuncia.ObservacaoAdmin,
             CriadoEm = denuncia.CriadoEm
         });
+    }
+
+    private async Task<bool> DenunciaPedidoValidaAsync(int pedidoId, int denuncianteId, int denunciadoId, CancellationToken ct)
+    {
+        var pedido = await _context.Pedidos.AsNoTracking()
+            .Where(p => p.Id == pedidoId)
+            .Select(p => new { p.ClienteId, p.ProfissionalId })
+            .FirstOrDefaultAsync(ct);
+        if (pedido is null) return false;
+
+        if (pedido.ClienteId == denuncianteId)
+        {
+            return await (from destinatario in _context.PedidoDestinatarios.AsNoTracking()
+                          join profissional in _context.Profissionais.AsNoTracking()
+                              on destinatario.ProfissionalId equals profissional.Id
+                          where destinatario.PedidoId == pedidoId && profissional.UsuarioId == denunciadoId
+                          select destinatario.PedidoId).AnyAsync(ct)
+                || await _context.Profissionais.AsNoTracking()
+                    .AnyAsync(p => p.Id == pedido.ProfissionalId && p.UsuarioId == denunciadoId, ct);
+        }
+
+        var profissionalId = await _context.Profissionais.AsNoTracking()
+            .Where(p => p.UsuarioId == denuncianteId)
+            .Select(p => (int?)p.Id)
+            .FirstOrDefaultAsync(ct);
+        return profissionalId is not null
+            && (pedido.ProfissionalId == profissionalId.Value
+                || await _context.PedidoDestinatarios.AsNoTracking()
+                    .AnyAsync(d => d.PedidoId == pedidoId && d.ProfissionalId == profissionalId.Value, ct))
+            && pedido.ClienteId == denunciadoId;
     }
 }

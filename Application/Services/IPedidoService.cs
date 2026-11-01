@@ -9,6 +9,7 @@ public interface IPedidoService
     Task<PedidoCriadoResponse> CriarAsync(PedidoCriarRequest request);
     Task<PagedResponse<PedidoResumoResponse>> ListarAsync(PedidoListarQuery query);
     Task<PedidoDetalheResponse> ObterAsync(int id);
+    Task<IReadOnlyList<PedidoHistoricoResponse>> HistoricoAsync(int id);
     Task AceitarAsync(int id);
     Task RecusarAsync(int id, PedidoRecusarRequest? request);
     Task CancelarAsync(int id, PedidoCancelarRequest request);

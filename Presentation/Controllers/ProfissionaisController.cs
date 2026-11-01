@@ -24,6 +24,11 @@ public class ProfissionaisController : ApiControllerBase
     public async Task<ActionResult<PerfilPublicoResponse>> ObterPerfil(int id, CancellationToken ct)
         => Ok(await _servico.ObterPerfilAsync(id, ct));
 
+    [HttpGet("me")]
+    [Authorize(Roles = Perfis.Profissional)]
+    public async Task<ActionResult<ProfissionalMeuPerfilResponse>> ObterMeuPerfil(CancellationToken ct)
+        => Ok(await _servico.ObterMeuPerfilAsync(ct));
+
     [HttpGet("{id:int}/avaliacoes")]
     [AllowAnonymous]
     public async Task<ActionResult<RespostaPaginada<AvaliacaoPublicaResponse>>> ListarAvaliacoes(
@@ -51,6 +56,15 @@ public class ProfissionaisController : ApiControllerBase
     public async Task<IActionResult> DefinirAreas([FromBody] List<AreaAtendimentoRequest> areas, CancellationToken ct)
     {
         await _servico.DefinirAreasAsync(areas, ct);
+        return NoContent();
+    }
+
+    [HttpPut("me/disponibilidade")]
+    [Authorize(Roles = Perfis.Profissional)]
+    public async Task<IActionResult> DefinirDisponibilidade(
+        [FromBody] List<DisponibilidadeProfissionalRequest> disponibilidade, CancellationToken ct)
+    {
+        await _servico.DefinirDisponibilidadeAsync(disponibilidade, ct);
         return NoContent();
     }
 }

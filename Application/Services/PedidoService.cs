@@ -14,11 +14,13 @@ public class PedidoService : IPedidoService
 
     private readonly IPedidoRepository _pedidos;
     private readonly ICurrentUser _user;
+    private readonly INotificacaoService _notificacoes;
 
-    public PedidoService(IPedidoRepository pedidos, ICurrentUser user)
+    public PedidoService(IPedidoRepository pedidos, ICurrentUser user, INotificacaoService notificacoes)
     {
         _pedidos = pedidos;
         _user = user;
+        _notificacoes = notificacoes;
     }
 
     private bool EhCliente => string.Equals(_user.Role, "CLIENTE", StringComparison.OrdinalIgnoreCase);
@@ -34,10 +36,19 @@ public class PedidoService : IPedidoService
         if (!await _pedidos.CategoriaExisteAsync(request.CategoriaId))
             throw PedidoErros.Regra("CATEGORIA_INVALIDA", "A categoria informada não existe.");
 
-        // RN04: todos os profissionais escolhidos precisam atender a categoria e a cidade do pedido.
+        // RN04: lista selecionada ou distribuição regional ficam limitadas a cinco perfis ativos e verificados.
         var cidade = request.Cidade.Trim();
-        var atendem = await _pedidos.FiltrarProfissionaisQueAtendemAsync(request.ProfissionalIds, request.CategoriaId, cidade);
-        var foraDoAtendimento = request.ProfissionalIds.Where(id => !atendem.Contains(id)).ToList();
+        var profissionalIds = request.DistribuirParaCompativeis
+            ? await _pedidos.SelecionarProfissionaisCompativeisAsync(request.CategoriaId, cidade, request.Bairro,
+                request.TipoAtendimento, request.DataDesejada)
+            : request.ProfissionalIds;
+
+        if (profissionalIds.Count == 0)
+            throw PedidoErros.Regra("SEM_PROFISSIONAIS_COMPATIVEIS", "Não encontramos profissionais verificados que atendam a região informada.");
+
+        var atendem = await _pedidos.FiltrarProfissionaisQueAtendemAsync(
+            profissionalIds, request.CategoriaId, cidade, request.Bairro, request.TipoAtendimento, request.DataDesejada);
+        var foraDoAtendimento = profissionalIds.Where(id => !atendem.Contains(id)).ToList();
         if (foraDoAtendimento.Count > 0)
             throw PedidoErros.Regra("PROFISSIONAL_NAO_ATENDE",
                 $"Estes profissionais não atendem a categoria e a cidade do pedido: {string.Join(", ", foraDoAtendimento)}.");
@@ -50,16 +61,28 @@ public class PedidoService : IPedidoService
             Descricao = request.Descricao.Trim(),
             Cidade = cidade,
             Bairro = string.IsNullOrWhiteSpace(request.Bairro) ? null : request.Bairro.Trim(),
+            Endereco = string.IsNullOrWhiteSpace(request.Endereco) ? null : request.Endereco.Trim(),
+            TipoAtendimento = request.TipoAtendimento,
+            DataDesejada = request.TipoAtendimento == TipoAtendimento.Agendado ? request.DataDesejada : null,
             FotoUrls = request.FotoUrls.Select(f => f.Trim()).ToList(),
             Status = StatusPedido.Pendente,
             CriadoEm = DateTime.UtcNow,
-            Destinatarios = request.ProfissionalIds
+            Destinatarios = profissionalIds
                 .Select(id => new PedidoDestinatario { ProfissionalId = id, Situacao = SituacaoDestinatario.Pendente })
                 .ToList()
         };
 
+        await using var tx = await _pedidos.IniciarTransacaoAsync();
         await _pedidos.AdicionarAsync(pedido);
         await _pedidos.SalvarAsync();
+        _pedidos.AdicionarHistorico(pedido.Id, _user.Id, null, pedido.Status, "Chamado criado.");
+
+        var destinatariosUsuarios = await _pedidos.ListarUsuarioIdsProfissionaisAsync(profissionalIds);
+        foreach (var usuarioId in destinatariosUsuarios)
+            _notificacoes.Adicionar(usuarioId, "novo_chamado", "Novo chamado na sua região",
+                $"Um chamado de {pedido.CategoriaId} foi direcionado a você.", new { pedidoId = pedido.Id });
+        await _pedidos.SalvarAsync();
+        await tx.CommitAsync();
 
         return pedido.ToCriadoResponse();
     }
@@ -85,6 +108,14 @@ public class PedidoService : IPedidoService
 
     public Task<PedidoDetalheResponse> ObterAsync(int id) => MontarDetalheAsync(id);
 
+    public async Task<IReadOnlyList<PedidoHistoricoResponse>> HistoricoAsync(int id)
+    {
+        var clienteId = EhCliente ? _user.Id : (int?)null;
+        int? profissionalId = EhCliente ? null : await ProfissionalIdAtualAsync();
+        return await _pedidos.ListarHistoricoAsync(id, clienteId, profissionalId)
+            ?? throw PedidoErros.PedidoNaoEncontrado();
+    }
+
     // ---------------------------------------------------------------- POST /pedidos/{id}/aceitar
 
     public async Task AceitarAsync(int id)
@@ -99,6 +130,9 @@ public class PedidoService : IPedidoService
             throw PedidoErros.StatusInvalido("Só é possível aceitar um pedido pendente que você ainda não respondeu.");
 
         destinatario.Situacao = SituacaoDestinatario.Aceito;   // libera o envio de orçamento (RN05)
+        _pedidos.AdicionarHistorico(pedido.Id, _user.Id, pedido.Status, pedido.Status, "Profissional demonstrou interesse no chamado.");
+        _notificacoes.Adicionar(pedido.ClienteId, "chamado_aceito", "Profissional interessado",
+            "Um profissional aceitou receber seu chamado.", new { pedidoId = pedido.Id });
 
         await _pedidos.SalvarAsync();
         await tx.CommitAsync();
@@ -113,6 +147,7 @@ public class PedidoService : IPedidoService
         await using var tx = await _pedidos.IniciarTransacaoAsync();
         var pedido = await CarregarBloqueadoAsync(id);
         var destinatario = ObterDestinatario(pedido, profissionalId);
+        var statusAnterior = pedido.Status;
 
         if (pedido.Status != StatusPedido.Pendente || destinatario.Situacao != SituacaoDestinatario.Pendente)
             throw PedidoErros.StatusInvalido("Só é possível recusar um pedido pendente que você ainda não respondeu.");
@@ -128,8 +163,12 @@ public class PedidoService : IPedidoService
             pedido.CanceladoPorId = null;
             pedido.CanceladoEm = DateTime.UtcNow;
             pedido.MotivoCancelamento = "Todos os profissionais recusaram o pedido.";
-            // TODO (P2 - EmailService): avisar o cliente de que o pedido foi cancelado.
+            _notificacoes.Adicionar(pedido.ClienteId, "chamado_cancelado", "Chamado sem profissionais disponíveis",
+                "Todos os profissionais direcionados recusaram este chamado.", new { pedidoId = pedido.Id });
         }
+
+        _pedidos.AdicionarHistorico(pedido.Id, _user.Id, statusAnterior, pedido.Status,
+            pedido.Status == StatusPedido.Cancelado ? "Todos recusaram; o chamado foi cancelado automaticamente." : "Profissional recusou o chamado.");
 
         await _pedidos.SalvarAsync();
         await tx.CommitAsync();
@@ -165,6 +204,7 @@ public class PedidoService : IPedidoService
         PedidoTransicoes.Garantir(pedido.Status, StatusPedido.Cancelado, ator, "PEDIDO_STATUS_INVALIDO");
 
         var agora = DateTime.UtcNow;
+        var statusAnterior = pedido.Status;
 
         // RN11: cancelar um pedido AGENDADO com 24 h ou menos de antecedência é cancelamento tardio.
         if (pedido.Status == StatusPedido.Agendado
@@ -178,9 +218,10 @@ public class PedidoService : IPedidoService
         pedido.CanceladoPorId = _user.Id;
         pedido.CanceladoEm = agora;
         pedido.MotivoCancelamento = request.Motivo.Trim();
+        if (pedido.Agendamento is { } agendamento)
+            agendamento.Status = StatusAgendamento.Cancelado;
 
-        // TODO(P4): marcar o agendamento do pedido como cancelado. Fica de fora até o enum
-        // de status do agendamento existir na solução com o nome definido pela P1.
+        _pedidos.AdicionarHistorico(pedido.Id, _user.Id, statusAnterior, pedido.Status, "Chamado cancelado por um participante.");
 
         await _pedidos.SalvarAsync();
         await tx.CommitAsync();
@@ -210,9 +251,15 @@ public class PedidoService : IPedidoService
 
             PedidoTransicoes.Garantir(pedido.Status, novoStatus, AtorTransicao.Profissional);
 
+            var statusAnterior = pedido.Status;
             pedido.Status = novoStatus;
-
-            // TODO(P4): marcar o agendamento como concluído quando o pedido for CONCLUIDO.
+            if (novoStatus == StatusPedido.Concluido && pedido.Agendamento is { } agendamento)
+                agendamento.Status = StatusAgendamento.Concluido;
+            if (novoStatus == StatusPedido.Concluido)
+                _notificacoes.Adicionar(pedido.ClienteId, "servico_concluido", "Serviço concluído",
+                    "O profissional marcou o serviço como concluído. Você já pode avaliar o atendimento.", new { pedidoId = pedido.Id });
+            _pedidos.AdicionarHistorico(pedido.Id, _user.Id, statusAnterior, novoStatus,
+                novoStatus == StatusPedido.Concluido ? "Serviço concluído." : "Serviço iniciado.");
 
             await _pedidos.SalvarAsync();
             await tx.CommitAsync();

@@ -50,6 +50,7 @@ public static class PedidoMapper
 
         return new PedidoDetalheResponse(
             p.Id, p.Titulo, p.Descricao, p.CategoriaId, p.Categoria.Nome, p.Cidade, p.Bairro,
+            p.Endereco, EnumTexto.Rotulo(p.TipoAtendimento), p.DataDesejada,
             p.FotoUrls, p.Status, p.CriadoEm, nomeCliente, p.ProfissionalId,
             destinatarios, orcamentoAceito, meuOrcamento, agendamento, avaliacao,
             p.CancelamentoTardio, p.MotivoCancelamento);

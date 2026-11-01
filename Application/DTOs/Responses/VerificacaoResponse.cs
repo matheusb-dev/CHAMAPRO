@@ -10,3 +10,11 @@ public class VerificacaoResponse
     public DateTime CriadoEm { get; set; }
     public string? Observacao { get; set; }
 }
+
+public record VerificacaoStatusResponse(
+    int Id,
+    string TipoDocumento,
+    string UrlDocumento,
+    string Status,
+    string? Observacao,
+    DateTime CriadoEm);

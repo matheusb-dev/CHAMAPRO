@@ -20,6 +20,12 @@ public class LembreteAgendamentoBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (string.IsNullOrWhiteSpace(_config["Email:Host"]))
+        {
+            _logger.LogWarning("Rotina de e-mails desativada: SMTP não foi configurado.");
+            return;
+        }
+
         var minutos = int.TryParse(_config["Rotinas:LembreteIntervaloMinutos"], out var m) && m > 0 ? m : 15;
         using var timer = new PeriodicTimer(TimeSpan.FromMinutes(minutos));
 

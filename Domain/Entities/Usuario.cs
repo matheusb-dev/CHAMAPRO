@@ -13,6 +13,11 @@ public class Usuario
     public bool Ativo { get; set; } = true;
 
     public string? Telefone { get; set; }
+    public string? Cidade { get; set; }
+    public string? Bairro { get; set; }
+    public string? EnderecoPrincipal { get; set; }
+    public string? PreferenciaContato { get; set; }
+    public string? FotoUrl { get; set; }
     public bool WhatsAppAtivo { get; set; } = false;
     public string? MensagemInicialWhatsApp { get; set; }
 

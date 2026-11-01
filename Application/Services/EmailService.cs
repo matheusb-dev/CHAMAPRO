@@ -6,22 +6,14 @@ namespace Chamapro.Api.Services;
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _config;
-    private readonly ILogger<EmailService> _logger;
 
-    public EmailService(IConfiguration config, ILogger<EmailService> logger)
-    {
-        _config = config;
-        _logger = logger;
-    }
+    public EmailService(IConfiguration config) => _config = config;
 
     public async Task EnviarAsync(string para, string assunto, string corpoHtml, CancellationToken ct = default)
     {
         var host = _config["Email:Host"];
         if (string.IsNullOrWhiteSpace(host))
-        {
-            _logger.LogInformation("E-mail simulado (SMTP não configurado). Para: {Para} | Assunto: {Assunto}", para, assunto);
-            return;
-        }
+            throw new InvalidOperationException("SMTP não configurado; o e-mail não foi enviado.");
 
         var porta = int.TryParse(_config["Email:Porta"], out var p) ? p : 587;
         var remetente = _config["Email:Remetente"] ?? "nao-responda@chamapro.local";
