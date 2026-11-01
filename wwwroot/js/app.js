@@ -1,7 +1,7 @@
 (() => {
     const destinos = {
         CLIENTE: "/pages/cliente/painel.html",
-        PROFISSIONAL: "/pages/trabalhador/fila-chamados.html",
+        PROFISSIONAL: "/pages/trabalhador/painel.html",
         ADMIN: "/pages/admin/gestao.html"
     };
     const exigidosPorCaminho = [

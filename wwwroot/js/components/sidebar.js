@@ -8,6 +8,7 @@
             ["Perfil", "/pages/cliente/perfil.html"]
         ],
         PROFISSIONAL: [
+            ["Painel", "/pages/trabalhador/painel.html"],
             ["Fila de chamados", "/pages/trabalhador/fila-chamados.html"],
             ["Meu perfil", "/pages/trabalhador/perfil.html"],
             ["Verificação", "/pages/trabalhador/verificacao.html"]

@@ -2,14 +2,34 @@
     const C = window.Chamapro;
     const safe = C.escaparHtml;
     const statusText = value => String(value || "").replaceAll("_", " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+    const toLocalInput = value => { const date = new Date(value); return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
     const setMessage = (id, text, success = false) => {
         const el = document.getElementById(id);
         if (el) { el.textContent = text || ""; el.style.color = success ? "var(--color-success)" : "var(--color-danger)"; }
     };
 
+    function prepararAgendamentos() {
+        const orders = document.getElementById("ordersList")?.closest("section");
+        if (!orders) return null;
+        const section = document.createElement("section");
+        section.className = "app-card";
+        section.style.marginTop = "18px";
+        const title = document.createElement("h2");
+        title.textContent = "Próximos agendamentos";
+        const list = document.createElement("div");
+        list.id = "appointmentsList";
+        list.className = "app-stack";
+        list.innerHTML = '<p class="empty-state">Carregando agenda…</p>';
+        section.append(title, list);
+        orders.after(section);
+        return list;
+    }
+
+    const appointmentsList = prepararAgendamentos();
+
     async function carregarPainel() {
-        const [ordersResult, reviewsResult, favoritesResult] = await Promise.allSettled([
-            C.api("/pedidos?pagina=1&tamanho=50"), C.api("/avaliacoes/pendentes"), C.api("/favoritos")
+        const [ordersResult, reviewsResult, favoritesResult, appointmentsResult] = await Promise.allSettled([
+            C.api("/pedidos?pagina=1&tamanho=50"), C.api("/avaliacoes/pendentes"), C.api("/favoritos"), C.api("/agendamentos/me")
         ]);
         const orders = ordersResult.status === "fulfilled" ? (ordersResult.value.itens || []) : [];
         const reviews = reviewsResult.status === "fulfilled" ? reviewsResult.value : [];
@@ -23,6 +43,23 @@
             if (ordersResult.status === "rejected") list.innerHTML = `<p class="empty-state">${safe(ordersResult.reason.message)}</p>`;
             else if (!orders.length) list.innerHTML = '<p class="empty-state">Você ainda não criou chamados. Quando precisar de um serviço, comece por “Criar chamado”.</p>';
             else list.innerHTML = orders.map(o => `<article class="app-row"><div><strong>${safe(o.titulo)}</strong><div class="app-muted">${safe(o.categoria)} · ${safe([o.cidade,o.bairro].filter(Boolean).join(" · "))} · ${C.formatarData(o.criadoEm)}</div></div><div class="app-actions"><span class="badge badge-info">${safe(statusText(o.status))}</span><a class="btn btn-secondary btn-small" href="orcamentos.html?pedidoId=${o.id}">Abrir</a></div></article>`).join("");
+        }
+        if (appointmentsList) {
+            if (appointmentsResult.status === "rejected") appointmentsList.innerHTML = `<p class="empty-state">${safe(appointmentsResult.reason.message)}</p>`;
+            else if (!appointmentsResult.value.length) appointmentsList.innerHTML = '<p class="empty-state">Você ainda não tem agendamentos ativos.</p>';
+            else appointmentsList.innerHTML = appointmentsResult.value.map(a => `<article class="app-row"><div><strong>${safe(a.titulo)}</strong><div class="app-muted">Profissional: ${safe(a.profissionalNome)} · ${new Date(a.dataHora).toLocaleString("pt-BR")} · ${safe(statusText(a.statusAgendamento))}</div><a href="orcamentos.html?pedidoId=${a.pedidoId}">Abrir chamado</a></div><div class="app-stack"><form data-reschedule="${a.id}" class="app-actions"><label class="app-muted">Remarcar <input type="datetime-local" required value="${toLocalInput(a.dataHora)}"></label><button class="btn btn-secondary btn-small" type="submit">Salvar horário</button></form><button class="btn btn-danger btn-small" data-cancel-appointment="${a.id}">Cancelar agendamento</button></div></article>`).join("");
+            appointmentsList.querySelectorAll("[data-reschedule]").forEach(form => form.addEventListener("submit", async event => {
+                event.preventDefault();
+                const date = new Date(form.querySelector("input").value);
+                if (!Number.isFinite(date.getTime())) return;
+                try { await C.api(`/agendamentos/${form.dataset.reschedule}`, { method: "PUT", body: { dataHora: date.toISOString() } }); C.toast("Agendamento remarcado.", "success"); await carregarPainel(); }
+                catch (e) { C.toast(e.message, "error"); }
+            }));
+            appointmentsList.querySelectorAll("[data-cancel-appointment]").forEach(button => button.addEventListener("click", async () => {
+                if (!window.confirm("Deseja cancelar este agendamento?")) return;
+                try { await C.api(`/agendamentos/${button.dataset.cancelAppointment}/status`, { method: "PATCH", body: { status: "Cancelado" } }); C.toast("Agendamento cancelado.", "success"); await carregarPainel(); }
+                catch (e) { C.toast(e.message, "error"); }
+            }));
         }
         const fav = document.getElementById("favoritesList");
         if (fav) fav.innerHTML = favorites.length ? favorites.map(f => `<article class="app-row"><div><strong>${safe(f.nome)}</strong><div class="app-muted">Nota ${C.formatarNota(f.notaMedia)} · profissional</div></div><div class="app-actions"><a class="btn btn-secondary btn-small" href="perfil-profissional.html?id=${f.profissionalId}">Perfil</a><button class="btn btn-secondary btn-small" data-unfavorite="${f.profissionalId}">Remover</button></div></article>`).join("") : '<p class="empty-state">Seus profissionais favoritos aparecerão aqui.</p>';

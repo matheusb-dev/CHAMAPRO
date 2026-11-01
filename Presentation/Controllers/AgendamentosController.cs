@@ -29,6 +29,25 @@ public class AgendamentosController : ApiControllerBase
         _notificacoes = notificacoes;
     }
 
+    [HttpGet("me")]
+    public async Task<ActionResult<IReadOnlyList<AgendamentoListaResponse>>> ListarMeus(CancellationToken ct)
+    {
+        var consulta = _context.Agendamentos.AsNoTracking()
+            .Where(a => a.Status == StatusAgendamento.Agendado || a.Status == StatusAgendamento.Confirmado);
+        if (_currentUser.EhCliente)
+            consulta = consulta.Where(a => a.Pedido.ClienteId == _currentUser.Id);
+        else if (_currentUser.EhProfissional)
+            consulta = consulta.Where(a => a.ProfissionalId != null
+                && a.Pedido.Profissional != null && a.Pedido.Profissional.UsuarioId == _currentUser.Id);
+
+        var itens = await consulta.OrderBy(a => a.DataHora).Take(100)
+            .Select(a => new AgendamentoListaResponse(
+                a.Id, a.PedidoId, a.Pedido.Titulo, a.DataHora, a.Status.ToString(), a.Pedido.Status.ToString(),
+                a.Pedido.Cliente.Nome, a.Pedido.Profissional!.Usuario.Nome))
+            .ToListAsync(ct);
+        return Ok(itens);
+    }
+
     [HttpPost]
     public async Task<ActionResult<AgendamentoResponse>> Criar(
         [FromBody] AgendamentoCriarRequest request,
@@ -165,8 +184,8 @@ public class AgendamentosController : ApiControllerBase
 
         if (_currentUser.EhCliente && novoStatus != StatusAgendamento.Cancelado)
             throw BusinessException.Proibido("STATUS_RESTRITO", "O cliente pode cancelar o agendamento; confirmação e conclusão pertencem ao profissional.");
-        if (_currentUser.EhProfissional && novoStatus is not (StatusAgendamento.Confirmado or StatusAgendamento.Concluido))
-            throw BusinessException.Proibido("STATUS_RESTRITO", "O profissional pode confirmar ou concluir o agendamento.");
+        if (_currentUser.EhProfissional && novoStatus is not (StatusAgendamento.Confirmado or StatusAgendamento.Concluido or StatusAgendamento.Cancelado))
+            throw BusinessException.Proibido("STATUS_RESTRITO", "O profissional pode confirmar, cancelar ou concluir o agendamento.");
         if (novoStatus == StatusAgendamento.Confirmado && agendamento.Status != StatusAgendamento.Agendado)
             throw BusinessException.Conflito("TRANSICAO_INVALIDA", "Somente um agendamento aguardando confirmação pode ser confirmado.");
 
