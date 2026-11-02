@@ -6,7 +6,14 @@
     const date = value => value ? new Date(value).toLocaleString('pt-BR') : 'Não informada';
     const states = ['PENDENTE','ORCADO','ACEITO','AGENDADO','EM_ANDAMENTO','CONCLUIDO','CANCELADO'];
     const verificationStates = ['Pendente','EmAnalise','DocumentacaoPendente'];
-    const sections = {inicio:'Início',verificacoes:'Verificações',denuncias:'Denúncias',usuarios:'Usuários',pedidos:'Pedidos',categorias:'Categorias',atividade:'Atividade administrativa'};
+    const sections = {inicio:'Visão geral',verificacoes:'Verificações',denuncias:'Denúncias',usuarios:'Usuários',pedidos:'Pedidos',categorias:'Categorias',atividade:'Atividade administrativa'};
+    const number = value => Number(value || 0).toLocaleString('pt-BR');
+    // Ícones do Figma (Versão Vitoria)
+    const ICON = {
+        doc: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M10.5 2.25H4.5V15.75H13.5V5.25L10.5 2.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.5 2.25V5.25H13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        flag: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.3335 14V8M3.3335 8V2.66663H10.6668L9.3335 5.33329L10.6668 8H3.3335Z" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        arrow: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.9165 7H11.0832M7.58317 10.5L11.0832 7L7.58317 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    };
     const aliases = {verificationList:'verificacoes',reportsList:'denuncias',usersList:'usuarios',adminOrders:'pedidos',categoryList:'categorias',categoryForm:'categorias',adminAudit:'atividade',metrics:'inicio',categoryReport:'inicio',topRatedProfessionals:'inicio'};
     function errorText(error) {
         if(error?.status === 401) return 'Sua sessão expirou. Entre novamente para continuar.';
@@ -53,15 +60,39 @@
             finally{busy=false;view.setAttribute('aria-busy','false');view.querySelectorAll('[data-admin-controls]').forEach(el=>el.disabled=false);}
         }
         function heading(text,hint){view.innerHTML=`<h1 id="adminHeading" tabindex="-1">${text}</h1><p>${hint}</p>`;}
+        // Visão geral no layout do Figma: métricas, filas de verificação/denúncia e chamados por categoria.
         async function home(ticket) {
-            heading('O que precisa da sua atenção agora?','Abra uma fila para analisar pendências. Os números abaixo vêm de consultas reais, sem estimar totais a partir de amostras.');
-            view.innerHTML+='<div class="app-grid-two"><section class="app-card"><h2>Verificações a analisar</h2><div id="verificationSummary" aria-live="polite"></div><a href="#verificacoes" class="btn btn-primary">Analisar verificações</a></section><section class="app-card"><h2>Denúncias a analisar</h2><div id="reportSummary" aria-live="polite"></div><a href="#denuncias" class="btn btn-secondary">Revisar denúncias</a></section></div><details class="app-card"><summary>Informações gerais da plataforma</summary><div id="platformSummary" aria-live="polite"></div></details><p>Não há indicador automático de pedidos que exigem intervenção ou de pendências de usuários. Consulte os registros antes de decidir.</p>';
+            heading('Visão geral da plataforma','Gerencie usuários, profissionais, chamados, verificações e denúncias.');
+            view.innerHTML+=`<section class="fg-metrics" aria-label="Indicadores da plataforma"><div id="platformSummary" aria-live="polite"></div><div class="fg-metric"><span class="fg-metric-rotulo">Denúncias pendentes</span><strong class="fg-metric-valor" id="reportMetric">…</strong><span class="fg-metric-detalhe fg-vermelho">Revisão necessária</span></div></section>`
+                +`<div class="fg-grid fg-grid-wide"><section class="fg-card"><div class="fg-card-header"><h2 class="fg-title">Verificações aguardando análise</h2><span class="fg-tag fg-tag-warning" id="verificationTag" hidden></span></div><div id="verificationSummary" aria-live="polite"></div></section>`
+                +`<section class="fg-card"><div class="fg-card-header"><h2 class="fg-title">Denúncias recentes</h2><a href="#denuncias" class="fg-link">Ver todas</a></div><div id="reportSummary" aria-live="polite"></div></section></div>`
+                +`<section class="fg-card"><h2 class="fg-title">Chamados por categoria</h2><div id="categoryBars" class="fg-barras"><p class="fg-small">Carregando…</p></div><div id="topRatedProfessionals"></div></section>`;
             async function summary(targetId,path,render){const target=$(targetId);target.innerHTML='<p role="status">Carregando…</p>';try{const data=await C.api(path);if(ticket!==sequence)return;target.innerHTML=render(data);}catch(e){if(ticket===sequence)fail(target,e,()=>summary(targetId,path,render));}}
+            function verificationRows(items){
+                const tag=$('verificationTag');if(tag){tag.textContent=`${number(items.length)} na fila`;tag.hidden=false;}
+                const rows=items.slice(0,3).map(r=>`<div class="fg-row"><span class="fg-doc-icone">${ICON.doc}</span><div class="fg-row-info"><strong>${safe(r.tipoDocumento)}</strong><span>${safe(label(r.status))} · Solicitado em ${safe(date(r.criadoEm))}</span></div><a class="fg-btn fg-btn-sm" href="#verificacoes">Analisar ${ICON.arrow}</a></div>`).join('');
+                return `<p class="fg-small">${items.length} solicitações na fila (pendentes, em análise ou com documentação pendente).</p>${rows||'<p class="empty-state">Nenhuma verificação aguardando análise.</p>'}${items.length>3?'<a class="fg-link" href="#verificacoes">Ver a fila completa</a>':''}`;
+            }
+            function reportRows(items){
+                const metric=$('reportMetric');if(metric)metric.textContent=number(items.length);
+                const rows=[...items].reverse().slice(0,3).map(r=>{const emAnalise=normalize(r.status)==='EMANALISE';return `<div class="fg-row"><span class="${emAnalise?'fg-amarelo':'fg-vermelho'}">${ICON.flag}</span><div class="fg-row-info"><strong>${safe(r.motivo)}</strong><span>${safe(date(r.criadoEm))}</span></div><span class="fg-tag ${emAnalise?'fg-tag-warning':'fg-tag-danger'}">${safe(label(r.status))}</span></div>`;}).join('');
+                return rows||'<p class="empty-state">Nenhuma denúncia pendente.</p>';
+            }
+            function platformCards(data){
+                const ativos=Math.max(0,Number(data.chamados||0)-Number(data.chamadosConcluidos||0)-Number(data.chamadosCancelados||0));
+                const categories=data.categoriasMaisSolicitadas||[],top=Math.max(1,...categories.map(c=>Number(c.chamados)||0));
+                const bars=$('categoryBars');if(bars)bars.innerHTML=categories.slice(0,4).map(c=>`<div class="fg-barra"><span>${safe(c.categoria)} <small>${number(c.chamados)}</small></span><div class="fg-trilho" role="progressbar" aria-label="${safe(c.categoria)}" aria-valuemin="0" aria-valuemax="${top}" aria-valuenow="${Number(c.chamados)||0}"><div class="fg-preenchimento" style="width:${Math.round((Number(c.chamados)||0)/top*70)}%"></div></div></div>`).join('')||'<p class="fg-small">Ainda não há pedidos por categoria.</p>';
+                const rated=$('topRatedProfessionals');if(rated)rated.innerHTML=(data.profissionaisMaisAvaliados||[]).length?`<h3 class="fg-secao-titulo" style="margin-top:8px">PROFISSIONAIS COM MAIS AVALIAÇÕES</h3>${data.profissionaisMaisAvaliados.map(p=>`<div class="fg-row"><div class="fg-row-info"><strong>${safe(p.nome)}</strong><span>${safe(p.media)} / 5 · ${safe(p.avaliacoes)} avaliações</span></div></div>`).join('')}`:'';
+                return `<div class="fg-metric"><span class="fg-metric-rotulo">Usuários</span><strong class="fg-metric-valor">${number(data.usuarios)}</strong><span class="fg-metric-detalhe fg-verde">${safe(data.usuarios)} usuários cadastrados</span></div>`
+                    +`<div class="fg-metric"><span class="fg-metric-rotulo">Profissionais</span><strong class="fg-metric-valor">${number(data.profissionais)}</strong><span class="fg-metric-detalhe fg-amarelo">${number(data.profissionaisVerificados)} verificados</span></div>`
+                    +`<div class="fg-metric"><span class="fg-metric-rotulo">Chamados ativos</span><strong class="fg-metric-valor">${number(ativos)}</strong><span class="fg-metric-detalhe fg-amarelo">${number(data.chamadosPendentes)} aguardando proposta</span></div>`;
+            }
             await Promise.allSettled([
-                summary('verificationSummary','/verificacoes',items=>`<p>${items.length} solicitações na fila de verificação.</p><p>Inclui pendentes, em análise e documentação pendente. Uma pessoa pode ter mais de uma solicitação.</p>`),
-                summary('reportSummary','/denuncias',items=>`<p>${items.length} denúncias pendentes ou em análise.</p>`),
-                summary('platformSummary','/admin/relatorios',data=>`<p>${safe(data.usuarios)} usuários · ${safe(data.profissionais)} profissionais · ${safe(data.profissionaisVerificados)} profissionais verificados.</p><p>${safe(data.chamados)} pedidos · ${safe(data.chamadosPendentes)} pendentes · ${safe(data.chamadosConcluidos)} concluídos · ${safe(data.chamadosCancelados)} cancelados.</p><h2>Categorias mais solicitadas</h2>${data.categoriasMaisSolicitadas.map(c=>`<p>${safe(c.categoria)}: ${safe(c.chamados)} pedidos</p>`).join('')||'<p>Ainda não há pedidos por categoria.</p>'}<h2>Profissionais com mais avaliações</h2>${(data.profissionaisMaisAvaliados||[]).map(p=>`<p>${safe(p.nome)} · ${safe(p.media)} / 5 · ${safe(p.avaliacoes)} avaliações</p>`).join('')||'<p>Ainda não há avaliações.</p>'}`)
+                summary('verificationSummary','/verificacoes',verificationRows),
+                summary('reportSummary','/denuncias',reportRows),
+                summary('platformSummary','/admin/relatorios',platformCards)
             ]);
+            if(ticket===sequence){const bars=$('categoryBars');if(bars&&/Carregando/.test(bars.innerHTML))bars.innerHTML='<p class="fg-small">O resumo da plataforma não carregou. Use “Tentar novamente” nos indicadores acima.</p>';}
         }
         // All local pagination describes its actual source. Unsupported query parameters are never sent.
         async function collection({title,hint,path,filter,selectOptions,card,enrich,setup,extra='',id,searchLabel='Buscar nos registros carregados',searchValues},ticket) {
