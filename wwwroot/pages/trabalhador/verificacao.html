@@ -1,2 +1,199 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CHAMAPRO | Verificação profissional</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/variables.css?v=20261102-simple1"><link rel="stylesheet" href="/css/global.css?v=20261102-simple1"><link rel="stylesheet" href="/css/components.css?v=20261102-simple1"><link rel="stylesheet" href="/css/pages/app.css?v=20261102-simple1"><link rel="stylesheet" href="/css/pages/trabalhador-verificacao.css?v=20261102-simple1"><link rel="stylesheet" href="/css/pages/cadastro-profissional.css?v=20261102-simple1"><link rel="stylesheet" href="/css/pages/authenticated.css?v=20261102-simple1"></head>
-<body class="app-auth"><a class="skip-link" href="#mainContent">Pular para o conteúdo</a><header data-app-header></header><div class="app-layout"><aside data-app-sidebar></aside><main class="app-main" id="mainContent" tabindex="-1"><div class="app-content"><section class="page-heading"><span class="text-primary">CONFIANÇA E SEGURANÇA</span><h1>Verificação profissional</h1><p>Envie documentos privados para análise. Apenas você e a equipe autorizada podem acessá-los.</p></section><section id="verificationOnboarding" class="app-card onboarding-card" hidden><h2>Conferir cadastro e verificação</h2><p id="onboardingVerificationNote">A verificação é analisada pela equipe. Envie documentos quando forem necessários para sua atividade ou solicitados pela administração. O selo só aparece depois da aprovação.</p><p class="app-muted">Revise as informações do cadastro. A identidade precisa estar verificada para receber pedidos compatíveis.</p><p id="onboardingFinishMessage" class="app-message" role="status"></p><button id="finishProfessionalSetup" class="btn btn-primary" type="button">Concluir cadastro e abrir painel</button></section><div class="app-grid-two"><section class="app-card"><h2>Enviar documento</h2><form id="verificationForm" class="app-form"><div class="form-group"><label for="documentType">Tipo de documento</label><select id="documentType" required><option value="">Selecione</option><option>Documento de identificação</option><option>Comprovante de qualificação</option><option>Certificado profissional</option><option>Outro documento</option></select></div><div class="form-group"><label for="documentFile">Arquivo PDF, JPG, PNG ou WEBP (até 10 MB)</label><input id="documentFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required></div><div class="form-group"><label for="documentNote">Observação (opcional)</label><textarea id="documentNote" maxlength="500"></textarea></div><p id="verificationMessage" class="app-message" role="status"></p><button id="submitVerification" class="btn btn-primary" type="submit">Enviar para análise</button></form></section><section class="app-card"><h2>Como funciona</h2><div class="app-stack"><p>1. Envie somente os documentos necessários à sua atividade.</p><p>2. A equipe analisa cada envio e pode solicitar correções.</p><p>3. O selo de verificado só aparece após aprovação administrativa.</p><p class="app-muted">Consulte as orientações da equipe sobre os documentos necessários.</p></div></section></div><section class="app-card" style="margin-top:20px"><h2>Histórico de verificações</h2><div id="verificationHistory" class="app-stack"><p class="empty-state">Carregando histórico…</p></div></section></div></main></div><script src="/js/api.js?v=20261102-simple1" defer></script><script src="/js/components/header.js?v=20261102-simple1" defer></script><script src="/js/components/sidebar.js?v=20261102-stage5" defer></script><script src="/js/components/notifications.js?v=20261102-stage7" defer></script><script src="/js/app.js?v=20261102-stage7" defer></script><script src="/js/components/private-document.js?v=20261102-stage7" defer></script><script src="/js/pages/trabalhador-verificacao.js?v=20261102-stage7" defer></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>CHAMAPRO | Verificação profissional</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/variables.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/global.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/components.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/pages/app.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/pages/trabalhador-verificacao.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/pages/cadastro-profissional.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/pages/figma.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/pages/authenticated.css?v=20261102-simple1">
+</head>
+<body class="app-auth">
+    <a class="skip-link" href="#mainContent">Pular para o conteúdo</a>
+    <header data-app-header data-figma></header>
+    <div class="app-layout" data-figma>
+        <aside data-app-sidebar></aside>
+        <main class="app-main" id="mainContent" tabindex="-1">
+            <div class="app-content">
+
+                <section class="page-heading">
+                    <span class="text-primary">CONFIANÇA E SEGURANÇA</span>
+                    <h1>Validação do perfil profissional</h1>
+                    <p>A aprovação é feita por categoria quando a atividade exigir comprovação.</p>
+                </section>
+
+                <!-- Etapa final do cadastro profissional (?onboarding=1) -->
+                <section id="verificationOnboarding" class="fg-card onboarding-card" hidden>
+                    <h2 class="fg-title fg-title-lg">Conferir cadastro e verificação</h2>
+                    <p class="fg-text" id="onboardingVerificationNote">A verificação é analisada pela equipe. Envie documentos quando forem necessários para sua atividade ou solicitados pela administração. O selo só aparece depois da aprovação.</p>
+                    <p class="fg-small">Revise as informações do cadastro. A identidade precisa estar verificada para receber pedidos compatíveis.</p>
+                    <p id="onboardingFinishMessage" class="app-message" role="status"></p>
+                    <button id="finishProfessionalSetup" class="fg-btn fg-btn-primary" type="button" style="align-self:flex-start">Concluir cadastro e abrir painel</button>
+                </section>
+
+                <div class="fg-grid">
+
+                    <div class="fg-stack">
+
+                        <!-- STATUS DA VALIDAÇÃO -->
+                        <section class="fg-card fg-card-lg" aria-labelledby="statusCategory">
+                            <div class="fg-status-topo">
+                                <span class="fg-tag" id="statusTag">
+                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M10.5 6C10.5 8.48528 8.48528 10.5 6 10.5C3.51472 10.5 1.5 8.48528 1.5 6C1.5 3.51472 3.51472 1.5 6 1.5C8.48528 1.5 10.5 3.51472 10.5 6Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 3.5V6L7.5 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    <span id="statusTagText">CARREGANDO</span>
+                                </span>
+                                <span class="fg-small" id="statusSentAt"></span>
+                            </div>
+                            <div class="fg-status-categoria">
+                                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M11 2.75L18.3333 5.5V11C18.3333 15.5833 15.125 18.3333 11 19.25C6.87499 18.3333 3.66666 15.5833 3.66666 11V5.5L11 2.75Z" stroke="currentColor" stroke-width="1.83333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <h2 id="statusCategory">Perfil profissional</h2>
+                            </div>
+                            <p class="fg-text" id="statusText" style="font-size:14px;line-height:21px">Consultando a situação da sua verificação…</p>
+                            <div class="fg-progresso">
+                                <div class="fg-etapas" aria-hidden="true">
+                                    <span class="fg-ponto"></span><span class="fg-linha"></span>
+                                    <span class="fg-ponto"></span><span class="fg-linha"></span>
+                                    <span class="fg-ponto"></span>
+                                </div>
+                                <ol class="fg-rotulos" id="statusSteps">
+                                    <li>Enviado</li>
+                                    <li>Em análise</li>
+                                    <li>Aprovado</li>
+                                </ol>
+                            </div>
+                        </section>
+
+                        <!-- DOCUMENTOS ENVIADOS -->
+                        <section class="fg-card" aria-labelledby="documentsTitle" style="gap:8px">
+                            <div class="fg-card-header">
+                                <h2 class="fg-title" id="documentsTitle">Documentos enviados</h2>
+                                <button class="fg-btn" type="button" id="openDocumentDialog">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 10.6667V2.66675M11.3334 6.00008L8 2.66675L4.66669 6.00008" stroke="currentColor" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.66669 13.3333H13.3334" stroke="currentColor" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    Enviar documento
+                                </button>
+                            </div>
+                            <div id="verificationHistory">
+                                <p class="empty-state">Carregando histórico…</p>
+                            </div>
+                        </section>
+
+                    </div>
+
+                    <!-- RELATAR UM PROBLEMA -->
+                    <section class="fg-card fg-card-lg" id="denuncia" aria-labelledby="reportTitle">
+                        <div class="fg-titulo-icone">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.5L17.9167 16.6667H2.08337L10 2.5Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 8.33325V11.6666M10 14.1666H10.0083" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <h2 class="fg-title fg-title-lg" id="reportTitle">Relatar um problema</h2>
+                        </div>
+                        <p class="fg-text">Denúncias são analisadas pela equipe com acesso restrito.</p>
+
+                        <form id="problemForm" class="fg-stack" style="gap:18px" novalidate>
+                            <div class="fg-field">
+                                <label for="problemType">O que deseja denunciar?</label>
+                                <div class="fg-control">
+                                    <select id="problemType" required>
+                                        <option value="" selected disabled>Perfil, chamado ou avaliação</option>
+                                        <option value="AVALIACAO">Uma avaliação que recebi</option>
+                                        <option value="PERFIL" disabled>Perfil de cliente (em breve)</option>
+                                        <option value="PEDIDO" disabled>Chamado (em breve)</option>
+                                    </select>
+                                    <svg class="fg-icon-right" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                            </div>
+
+                            <div class="fg-field" id="problemTargetField" hidden>
+                                <label for="problemTarget">Qual avaliação?</label>
+                                <div class="fg-control">
+                                    <select id="problemTarget"></select>
+                                    <svg class="fg-icon-right" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                            </div>
+
+                            <div class="fg-field">
+                                <label for="problemReason">Motivo</label>
+                                <div class="fg-control">
+                                    <select id="problemReason">
+                                        <option>Suspeita de golpe</option>
+                                        <option>Avaliação falsa ou abusiva</option>
+                                        <option>Comportamento inadequado</option>
+                                        <option>Cobrança indevida</option>
+                                        <option>Outro</option>
+                                    </select>
+                                    <svg class="fg-icon-right" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                            </div>
+
+                            <div class="fg-field">
+                                <label for="problemDescription">Descrição</label>
+                                <div class="fg-control">
+                                    <textarea id="problemDescription" minlength="10" maxlength="4000" placeholder="Conte o que aconteceu..."></textarea>
+                                </div>
+                            </div>
+
+                            <p id="problemMessage" class="app-message" role="status"></p>
+
+                            <button class="fg-btn fg-btn-primary fg-btn-block" type="submit" id="problemSubmit">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M14.6667 1.33325L7.33337 8.66659" stroke="currentColor" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.6667 1.33325L10 14.6666L7.33337 8.66659L1.33337 5.99992L14.6667 1.33325Z" stroke="currentColor" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                Enviar denúncia
+                            </button>
+                        </form>
+                    </section>
+
+                </div>
+
+                <!-- ENVIO DE DOCUMENTO -->
+                <dialog id="documentDialog" class="fg-dialog" aria-labelledby="documentDialogTitle">
+                    <form id="verificationForm" class="fg-card" style="gap:16px">
+                        <h2 class="fg-title fg-title-lg" id="documentDialogTitle">Enviar documento</h2>
+                        <p class="fg-text">Documentos privados: apenas você e a equipe autorizada podem acessá-los. O selo de verificado só aparece após aprovação administrativa.</p>
+                        <div class="fg-field">
+                            <label for="documentType">Tipo de documento</label>
+                            <div class="fg-control">
+                                <select id="documentType" required>
+                                    <option value="">Selecione</option>
+                                    <option>Documento de identificação</option>
+                                    <option>Comprovante de qualificação</option>
+                                    <option>Certificado profissional</option>
+                                    <option>Outro documento</option>
+                                </select>
+                                <svg class="fg-icon-right" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                        </div>
+                        <div class="fg-field">
+                            <label for="documentFile">Arquivo PDF, JPG, PNG ou WEBP (até 10 MB)</label>
+                            <input id="documentFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required>
+                        </div>
+                        <div class="fg-field">
+                            <label for="documentNote">Observação (opcional)</label>
+                            <div class="fg-control">
+                                <textarea id="documentNote" maxlength="500"></textarea>
+                            </div>
+                        </div>
+                        <p id="verificationMessage" class="app-message" role="status"></p>
+                        <div class="fg-pedido-acoes" style="justify-content:flex-end">
+                            <button class="fg-btn" type="button" id="closeDocumentDialog">Cancelar</button>
+                            <button id="submitVerification" class="fg-btn fg-btn-primary" type="submit">Enviar para análise</button>
+                        </div>
+                    </form>
+                </dialog>
+
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js?v=20261102-simple1" defer></script>
+    <script src="/js/components/header.js?v=20261102-simple1" defer></script>
+    <script src="/js/components/sidebar.js?v=20261102-stage5" defer></script>
+    <script src="/js/components/notifications.js?v=20261102-stage7" defer></script>
+    <script src="/js/app.js?v=20261102-stage7" defer></script>
+    <script src="/js/components/private-document.js?v=20261102-stage7" defer></script>
+    <script src="/js/pages/trabalhador-verificacao.js?v=20261102-stage7" defer></script>
+</body>
+</html>
