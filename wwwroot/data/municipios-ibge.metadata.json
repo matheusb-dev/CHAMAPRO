@@ -1,0 +1,12 @@
+{
+  "source": "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome",
+  "documentation": "https://servicodados.ibge.gov.br/api/docs/localidades",
+  "snapshotDate": "2026-11-02",
+  "count": 5571,
+  "fields": [
+    "id",
+    "nome",
+    "uf"
+  ],
+  "sha256": "988533fb00b6430a258f5219ca9f3c2709b91ef82858d0f5b4eaaf11a1266397"
+}

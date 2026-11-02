@@ -81,6 +81,8 @@
             );
 
             erro.status = response.status;
+            erro.codigo = resultado?.codigo || null;
+            erro.campos = resultado?.erros || [];
             throw erro;
         }
 

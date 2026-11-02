@@ -7,6 +7,7 @@ using Chamapro.Api.Services;
 
 var testes = new (string Nome, Action Executar)[]
 {
+    ("erros de pedido preservam motivo e status HTTP", TestarMotivoPedido),
     ("transições de pedido respeitam ator e estado", TestarTransicoes),
     ("transição inválida retorna erro de negócio", TestarTransicaoInvalida),
     ("denúncia rejeita campos fora dos limites", TestarValidacaoDenuncia),
@@ -134,4 +135,13 @@ static T Capturar<T>(Action acao) where T : Exception
     try { acao(); }
     catch (T erro) { return erro; }
     throw new InvalidOperationException($"exceção {typeof(T).Name} não foi lançada");
+}
+
+static void TestarMotivoPedido()
+{
+    var erro = PedidoErros.Regra("SEM_PROFISSIONAIS_COMPATIVEIS", "Não encontramos profissionais para esta região.");
+    Exigir(erro.Status == 422 && erro.Codigo == "SEM_PROFISSIONAIS_COMPATIVEIS", "status ou código alterado");
+    Exigir(erro.Message == "Não encontramos profissionais para esta região." && erro.Titulo == "Operação não permitida", "motivo ocultado pela ordem dos argumentos");
+    var negado = PedidoErros.SemPermissao("Somente o participante pode alterar.");
+    Exigir(negado.Status == 403 && negado.Message == "Somente o participante pode alterar.", "permissão perdeu o motivo");
 }

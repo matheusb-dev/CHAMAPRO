@@ -3,28 +3,11 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>CHAMAPRO | Painel profissional</title>
-  <link rel="stylesheet" href="../../css/variables.css"><link rel="stylesheet" href="../../css/global.css"><link rel="stylesheet" href="../../css/components.css"><link rel="stylesheet" href="../../css/pages/app.css">
-</head>
-<body>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/variables.css?v=20261102-simple1"><link rel="stylesheet" href="/css/global.css?v=20261102-simple1"><link rel="stylesheet" href="/css/components.css?v=20261102-simple1"><link rel="stylesheet" href="/css/pages/app.css?v=20261102-simple1">
+<link rel="stylesheet" href="/css/pages/authenticated.css?v=20261102-simple1"></head>
+<body class="app-auth"><a class="skip-link" href="#mainContent">Pular para o conteúdo</a>
   <header data-app-header></header>
-  <div class="app-layout"><aside data-app-sidebar></aside><main class="app-main"><div class="app-content">
-    <section class="page-heading"><span class="text-primary">ÁREA DO PROFISSIONAL</span><h1>Olá, <span data-usuario-nome>profissional</span></h1><p>Acompanhe seus chamados, propostas e agenda.</p></section>
-    <div class="app-actions" style="margin:0 0 22px"><a class="btn btn-primary" href="fila-chamados.html">Ver fila de chamados</a><a class="btn btn-secondary" href="cadastro-profissional.html">Cadastro profissional em etapas</a><a class="btn btn-outline" href="verificacao.html">Verificação</a></div>
-    <section id="onboardingPrompt" class="app-card" style="margin-bottom:20px" hidden><h2>Seu cadastro está incompleto</h2><p>Complete profissão, área de atendimento, preços e horários para receber chamados compatíveis.</p><a class="btn btn-primary" href="cadastro-profissional.html">Continuar cadastro</a></section>
-    <section class="app-grid">
-      <article class="app-card"><span class="app-muted">Novos chamados</span><h2 id="newOrders">—</h2></article>
-      <article class="app-card"><span class="app-muted">Chamados aceitos</span><h2 id="acceptedOrders">—</h2></article>
-      <article class="app-card"><span class="app-muted">Orçamentos enviados</span><h2 id="sentQuotes">—</h2></article>
-      <article class="app-card"><span class="app-muted">Agendamentos futuros</span><h2 id="futureAppointments">—</h2></article>
-      <article class="app-card"><span class="app-muted">Serviços em andamento</span><h2 id="servicesInProgress">—</h2></article>
-      <article class="app-card"><span class="app-muted">Serviços concluídos</span><h2 id="servicesCompleted">—</h2></article>
-    </section>
-    <section class="app-grid-two" style="margin-top:20px">
-      <article class="app-card"><h2>Minha avaliação</h2><p><strong id="averageRating">—</strong> / 5</p></article>
-      <article class="app-card"><h2>Verificação</h2><p id="verificationStatus" class="app-muted">Carregando…</p></article>
-    </section>
-    <section class="app-card" style="margin-top:20px"><h2>Próximos agendamentos</h2><div id="appointmentsList" class="app-stack"><p class="empty-state">Carregando agenda…</p></div></section>
-  </div></main></div>
-  <script src="../../js/api.js" defer></script><script src="../../js/components/header.js" defer></script><script src="../../js/components/sidebar.js" defer></script><script src="../../js/components/notifications.js" defer></script><script src="../../js/app.js" defer></script><script src="../../js/pages/painel-trabalhador.js" defer></script>
+  <div class="app-layout"><aside data-app-sidebar></aside><main class="app-main" id="mainContent" tabindex="-1"><div class="app-content"><section class="page-heading"><span class="text-primary">ÁREA DO PROFISSIONAL</span><p>Olá, <span data-usuario-nome>profissional</span></p></section><div id="professionalHome" class="app-stack"></div></div></main></div>
+  <script src="/js/api.js?v=20261102-simple1" defer></script><script src="/js/components/header.js?v=20261102-simple1" defer></script><script src="/js/components/sidebar.js?v=20261102-stage5" defer></script><script src="/js/components/notifications.js?v=20261102-stage7" defer></script><script src="/js/app.js?v=20261102-stage7" defer></script><script src="/js/components/professional-work.js?v=20261102-stage7" defer></script><script src="/js/pages/painel-trabalhador.js?v=20261102-stage5" defer></script>
 </body>
 </html>

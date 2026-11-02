@@ -1,2 +1,11 @@
 .client-order{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center}.client-order small{color:var(--color-text-muted)}.rating-stars{color:var(--color-primary)}.review-card{padding:16px;border-top:1px solid var(--color-border)}
 @media(max-width:600px){.client-order{grid-template-columns:1fr}}
+
+.app-auth .client-area .app-row h2 { margin: 10px 0 6px; font-size: 18px; }
+.app-auth .client-area .app-row p + p { margin-top: 8px; font-size: 14px; }
+.app-auth .client-area #ordersPagination { align-items: center; justify-content: space-between; }
+.app-auth .client-area #ordersStatus { max-width: 340px; }
+@media(max-width:560px) { .app-auth .client-area #ordersPageLabel { order: 3; width: 100%; text-align: center; } .app-auth .client-area .app-row > .btn { width: 100%; } }
+
+.app-auth .client-area .service-hero { grid-template-columns: 1fr; }
+.app-auth .client-area :is(#homeOrdersList, #ordersPageList, #homeNotices) { min-width: 0; }

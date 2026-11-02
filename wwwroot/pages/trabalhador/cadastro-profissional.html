@@ -5,130 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Configure seu perfil profissional no CHAMAPRO em etapas.">
   <title>CHAMAPRO | Cadastro profissional</title>
-  <link rel="stylesheet" href="../../css/variables.css">
-  <link rel="stylesheet" href="../../css/global.css">
-  <link rel="stylesheet" href="../../css/components.css">
-  <link rel="stylesheet" href="../../css/pages/app.css">
-  <link rel="stylesheet" href="../../css/pages/cadastro-profissional.css">
-</head>
-<body>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/variables.css?v=20261102-simple1">
+  <link rel="stylesheet" href="/css/global.css?v=20261102-simple1">
+  <link rel="stylesheet" href="/css/components.css?v=20261102-simple1">
+  <link rel="stylesheet" href="/css/pages/app.css?v=20261102-simple1">
+  <link rel="stylesheet" href="/css/pages/cadastro-profissional.css?v=20261102-simple1">
+<link rel="stylesheet" href="/css/pages/authenticated.css?v=20261102-simple1"><link rel="stylesheet" href="/css/pages/pedido.css?v=20261102-stage3"><link rel="stylesheet" href="/css/pages/professional-editor.css?v=20261102-stage4"></head>
+<body class="app-auth"><a class="skip-link" href="#mainContent">Pular para o conteúdo</a>
   <header data-app-header></header>
   <div class="app-layout">
     <aside data-app-sidebar></aside>
-    <main class="app-main">
+    <main class="app-main" id="mainContent" tabindex="-1">
       <div class="app-content">
-        <section class="page-heading">
-          <span class="text-primary">SEU PERFIL PROFISSIONAL</span>
-          <h1>Vamos configurar seu cadastro</h1>
-          <p>As informações são salvas por etapa. Você pode voltar para corrigir qualquer dado.</p>
-        </section>
-
-        <section class="app-card onboarding-card" aria-labelledby="onboardingTitle">
-          <h2 id="onboardingTitle">Etapa <span id="currentStep">2</span> de 5</h2>
-          <ol class="onboarding-progress" aria-label="Etapas do cadastro profissional">
-            <li class="is-complete" data-progress-step="1"><span>1</span><strong>Conta</strong></li>
-            <li aria-current="step" data-progress-step="2"><span>2</span><strong>Profissão</strong></li>
-            <li data-progress-step="3"><span>3</span><strong>Localização</strong></li>
-            <li data-progress-step="4"><span>4</span><strong>Preços e horários</strong></li>
-            <li data-progress-step="5"><span>5</span><strong>Verificação</strong></li>
-          </ol>
-
-          <div id="wizardMessage" class="app-message" role="status" aria-live="polite"></div>
-
-          <section class="wizard-panel" data-wizard-panel="2">
-            <h3>Profissão e serviços</h3>
-            <p>Conte sua experiência, escolha as categorias que atende e apresente seu trabalho.</p>
-            <div class="form-group">
-              <label for="description">Descrição profissional</label>
-              <textarea id="description" maxlength="500" minlength="10" required placeholder="Descreva sua experiência e como costuma realizar os serviços."></textarea>
-            </div>
-            <div class="onboarding-grid">
-              <div class="form-group">
-                <label for="experience">Tempo de experiência (anos)</label>
-                <input id="experience" type="number" min="0" max="80" step="1">
-              </div>
-              <div class="form-group">
-                <label for="photoFile">Foto de perfil (opcional)</label>
-                <input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp">
-                <span class="form-hint">JPG, PNG ou WEBP, até 5 MB.</span>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="categoryList">Categorias que você atende</label>
-              <div id="categoryList" class="category-checklist"><p class="empty-state">Carregando categorias…</p></div>
-              <span class="form-hint">Você pode selecionar mais de uma.</span>
-            </div>
-            <div class="form-group">
-              <label for="portfolioUrls">Links de trabalhos anteriores (opcional)</label>
-              <textarea id="portfolioUrls" maxlength="5000" placeholder="Um link por linha"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="portfolioFiles">Fotos de trabalhos anteriores (opcional)</label>
-              <input id="portfolioFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple>
-              <span class="form-hint">Até 10 fotos no total, cada uma com no máximo 5 MB.</span>
-            </div>
-            <label class="onboarding-check"><input id="whatsappActive" type="checkbox"> Permitir contato pelo WhatsApp depois da contratação</label>
-            <span class="form-hint">O contato usará o telefone informado na etapa de criação da conta.</span>
-            <div class="form-group">
-              <label for="whatsappMessage">Mensagem inicial (opcional)</label>
-              <input id="whatsappMessage" maxlength="300" placeholder="Olá, estou entrando em contato pelo CHAMAPRO.">
-            </div>
-            <div class="wizard-actions">
-              <a class="btn btn-secondary" href="painel.html">Voltar ao painel</a>
-              <button id="saveProfessionalStep" class="btn btn-primary" type="button">Salvar e continuar</button>
-            </div>
-          </section>
-
-          <section class="wizard-panel" data-wizard-panel="3" hidden>
-            <h3>Onde você atende</h3>
-            <p>Informe as cidades e bairros que podem receber seus serviços.</p>
-            <div class="form-group">
-              <label for="areas">Cidades e bairros atendidos</label>
-              <textarea id="areas" required placeholder="São Paulo | Centro&#10;São Paulo | Vila Mariana"></textarea>
-              <span class="form-hint">Uma área por linha, no formato cidade | bairro. Deixe o bairro vazio para atender a cidade toda.</span>
-            </div>
-            <div class="onboarding-grid">
-              <div class="form-group">
-                <label for="distance">Distância máxima de atendimento (km)</label>
-                <input id="distance" type="number" min="1" max="1000" step="1" required>
-              </div>
-              <div class="onboarding-checks">
-                <label class="onboarding-check"><input id="homeService" type="checkbox" checked> Atendo em domicílio</label>
-                <label class="onboarding-check"><input id="shopService" type="checkbox"> Atendo em estabelecimento próprio</label>
-              </div>
-            </div>
-            <div class="wizard-actions">
-              <button class="btn btn-secondary" type="button" data-wizard-back="2">Voltar</button>
-              <button id="saveLocationStep" class="btn btn-primary" type="button">Salvar e continuar</button>
-            </div>
-          </section>
-
-          <section class="wizard-panel" data-wizard-panel="4" hidden>
-            <h3>Preços e disponibilidade</h3>
-            <p>Os valores são uma referência inicial. O preço final pode ser combinado no orçamento.</p>
-            <div id="categoryPrices" class="category-prices app-stack"></div>
-            <div class="form-group">
-              <label class="onboarding-check"><input id="urgent" type="checkbox"> Aceito chamados de atendimento imediato</label>
-            </div>
-            <fieldset class="availability-fieldset">
-              <legend>Horários semanais</legend>
-              <p class="form-hint">Marque os dias e informe horários locais. Escolha se atende imediatamente, com agendamento ou das duas formas.</p>
-              <div id="availabilityGrid" class="app-stack"></div>
-            </fieldset>
-            <div class="wizard-actions">
-              <button class="btn btn-secondary" type="button" data-wizard-back="3">Voltar</button>
-              <button id="saveScheduleStep" class="btn btn-primary" type="button">Salvar e ir para verificação</button>
-            </div>
-          </section>
-        </section>
-      </div>
-    </main>
+        <section class="page-heading"><span class="text-primary">SEU ESPAÇO PROFISSIONAL</span><h1>Vamos preparar seu cadastro</h1><p>Escolha o que faz, onde atende e quando está disponível.</p></section><div id="professionalEditor" class="professional-editor" data-guided="true"></div></div></main>
   </div>
-  <script src="../../js/api.js" defer></script>
-  <script src="../../js/components/header.js" defer></script>
-  <script src="../../js/components/sidebar.js" defer></script>
-  <script src="../../js/components/notifications.js" defer></script>
-  <script src="../../js/app.js" defer></script>
-  <script src="../../js/pages/cadastro-profissional.js" defer></script>
-</body>
-</html>
+  <script src="/js/api.js?v=20261102-simple1" defer></script><script src="/js/components/header.js?v=20261102-simple1" defer></script><script src="/js/components/sidebar.js?v=20261102-stage5" defer></script><script src="/js/components/notifications.js?v=20261102-stage7" defer></script><script src="/js/app.js?v=20261102-stage7" defer></script><script src="/js/components/combobox.js?v=20261102-stage3" defer></script><script src="/js/components/availability.js?v=20261102-stage1" defer></script><script src="/js/components/professional-data.js?v=20261102-stage4" defer></script><script src="/js/components/availability-editor.js?v=20261102-stage4" defer></script><script src="/js/components/professional-editor.js?v=20261102-stage7" defer></script><script src="/js/pages/cadastro-profissional.js?v=20261102-stage4" defer></script></body></html>

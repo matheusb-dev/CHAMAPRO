@@ -1,161 +1,208 @@
 (() => {
     const C = window.Chamapro;
     const safe = C.escaparHtml;
-    const statusText = value => String(value || "").replaceAll("_", " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-    const toLocalInput = value => { const date = new Date(value); return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
     const setMessage = (id, text, success = false) => {
         const el = document.getElementById(id);
         if (el) { el.textContent = text || ""; el.style.color = success ? "var(--color-success)" : "var(--color-danger)"; }
     };
 
-    function prepararAgendamentos() {
-        const orders = document.getElementById("ordersList")?.closest("section");
-        if (!orders) return null;
-        const section = document.createElement("section");
-        section.className = "app-card";
-        section.style.marginTop = "18px";
-        const title = document.createElement("h2");
-        title.textContent = "Próximos agendamentos";
-        const list = document.createElement("div");
-        list.id = "appointmentsList";
-        list.className = "app-stack";
-        list.innerHTML = '<p class="empty-state">Carregando agenda…</p>';
-        section.append(title, list);
-        orders.after(section);
-        return list;
+    function orderError(error) {
+        const rules = {
+            SEM_PROFISSIONAIS_COMPATIVEIS: 'Não encontramos profissionais disponíveis para este serviço, local e horário. Confira a cidade ou tente agendar outro horário.',
+            PROFISSIONAL_NAO_ATENDE: 'Um dos profissionais escolhidos não está disponível para este pedido. Atualize a busca ou deixe a plataforma procurar por você.',
+            LIMITE_PEDIDOS_PENDENTES: 'Você já tem cinco pedidos aguardando resposta. Acompanhe ou cancele um deles em Meus pedidos antes de pedir outro serviço.',
+            CATEGORIA_INVALIDA: 'Esta categoria não está mais disponível. Escolha outra e tente novamente.',
+            VALIDACAO: 'Confira os campos do pedido, incluindo a data e o horário, e tente novamente.',
+            ARQUIVO_MUITO_GRANDE: 'Use até cinco fotos JPG, PNG ou WEBP, de até 5 MB cada.'
+        };
+        if (rules[error.codigo]) return rules[error.codigo];
+        if (error.status === 401) return 'Sua sessão expirou. Entre novamente para enviar o pedido.';
+        if (error.status === 403) return 'Esta conta não pode pedir serviços. Entre com uma conta de cliente.';
+        if (error.status === 422 || error.status === 400) return 'Não foi possível confirmar com esses dados. Confira o serviço, a localização e o horário e tente novamente.';
+        return 'Não foi possível enviar agora. Seus dados continuam aqui. Verifique a conexão e tente novamente.';
     }
-
-    const appointmentsList = prepararAgendamentos();
-
-    async function carregarPainel() {
-        const [ordersResult, reviewsResult, favoritesResult, appointmentsResult] = await Promise.allSettled([
-            C.api("/pedidos?pagina=1&tamanho=50"), C.api("/avaliacoes/pendentes"), C.api("/favoritos"), C.api("/agendamentos/me")
-        ]);
-        const orders = ordersResult.status === "fulfilled" ? (ordersResult.value.itens || []) : [];
-        const reviews = reviewsResult.status === "fulfilled" ? reviewsResult.value : [];
-        const favorites = favoritesResult.status === "fulfilled" ? favoritesResult.value : [];
-        const active = orders.filter(o => !["CONCLUIDO", "CANCELADO"].includes(String(o.status).toUpperCase()));
-        document.getElementById("countActive") && (document.getElementById("countActive").textContent = active.length);
-        document.getElementById("countReviews") && (document.getElementById("countReviews").textContent = reviews.length);
-        document.getElementById("countFavorites") && (document.getElementById("countFavorites").textContent = favorites.length);
-        const list = document.getElementById("ordersList");
-        if (list) {
-            if (ordersResult.status === "rejected") list.innerHTML = `<p class="empty-state">${safe(ordersResult.reason.message)}</p>`;
-            else if (!orders.length) list.innerHTML = '<p class="empty-state">Você ainda não criou chamados. Quando precisar de um serviço, comece por “Criar chamado”.</p>';
-            else list.innerHTML = orders.map(o => `<article class="app-row"><div><strong>${safe(o.titulo)}</strong><div class="app-muted">${safe(o.categoria)} · ${safe([o.cidade,o.bairro].filter(Boolean).join(" · "))} · ${C.formatarData(o.criadoEm)}</div></div><div class="app-actions"><span class="badge badge-info">${safe(statusText(o.status))}</span><a class="btn btn-secondary btn-small" href="orcamentos.html?pedidoId=${o.id}">Abrir</a></div></article>`).join("");
-        }
-        if (appointmentsList) {
-            if (appointmentsResult.status === "rejected") appointmentsList.innerHTML = `<p class="empty-state">${safe(appointmentsResult.reason.message)}</p>`;
-            else if (!appointmentsResult.value.length) appointmentsList.innerHTML = '<p class="empty-state">Você ainda não tem agendamentos ativos.</p>';
-            else appointmentsList.innerHTML = appointmentsResult.value.map(a => `<article class="app-row"><div><strong>${safe(a.titulo)}</strong><div class="app-muted">Profissional: ${safe(a.profissionalNome)} · ${new Date(a.dataHora).toLocaleString("pt-BR")} · ${safe(statusText(a.statusAgendamento))}</div><a href="orcamentos.html?pedidoId=${a.pedidoId}">Abrir chamado</a></div><div class="app-stack"><form data-reschedule="${a.id}" class="app-actions"><label class="app-muted">Remarcar <input type="datetime-local" required value="${toLocalInput(a.dataHora)}"></label><button class="btn btn-secondary btn-small" type="submit">Salvar horário</button></form><button class="btn btn-danger btn-small" data-cancel-appointment="${a.id}">Cancelar agendamento</button></div></article>`).join("");
-            appointmentsList.querySelectorAll("[data-reschedule]").forEach(form => form.addEventListener("submit", async event => {
-                event.preventDefault();
-                const date = new Date(form.querySelector("input").value);
-                if (!Number.isFinite(date.getTime())) return;
-                try { await C.api(`/agendamentos/${form.dataset.reschedule}`, { method: "PUT", body: { dataHora: date.toISOString() } }); C.toast("Agendamento remarcado.", "success"); await carregarPainel(); }
-                catch (e) { C.toast(e.message, "error"); }
-            }));
-            appointmentsList.querySelectorAll("[data-cancel-appointment]").forEach(button => button.addEventListener("click", async () => {
-                if (!window.confirm("Deseja cancelar este agendamento?")) return;
-                try { await C.api(`/agendamentos/${button.dataset.cancelAppointment}/status`, { method: "PATCH", body: { status: "Cancelado" } }); C.toast("Agendamento cancelado.", "success"); await carregarPainel(); }
-                catch (e) { C.toast(e.message, "error"); }
-            }));
-        }
-        const fav = document.getElementById("favoritesList");
-        if (fav) fav.innerHTML = favorites.length ? favorites.map(f => `<article class="app-row"><div><strong>${safe(f.nome)}</strong><div class="app-muted">Nota ${C.formatarNota(f.notaMedia)} · profissional</div></div><div class="app-actions"><a class="btn btn-secondary btn-small" href="perfil-profissional.html?id=${f.profissionalId}">Perfil</a><button class="btn btn-secondary btn-small" data-unfavorite="${f.profissionalId}">Remover</button></div></article>`).join("") : '<p class="empty-state">Seus profissionais favoritos aparecerão aqui.</p>';
-        fav?.querySelectorAll("[data-unfavorite]").forEach(btn => btn.addEventListener("click", async () => {
-            await C.api(`/favoritos/${btn.dataset.unfavorite}`, { method: "DELETE" });
-            await carregarPainel();
-        }));
-        const reviewList = document.getElementById("pendingReviews");
-        if (reviewList) reviewList.innerHTML = reviews.length ? reviews.map(r => `<article class="app-row"><div><strong>${safe(r.titulo)}</strong><div class="app-muted">Atendimento de ${safe(r.profissionalNome)}</div></div><a class="btn btn-primary btn-small" href="orcamentos.html?pedidoId=${r.pedidoId}#avaliar">Avaliar</a></article>`).join("") : '<p class="empty-state">Nenhuma avaliação pendente.</p>';
-    }
+    window.ChamaproOrderErrors = { message: orderError };
 
     async function iniciarCriacao() {
-        const form = document.getElementById("createOrderForm");
-        const categorySelect = document.getElementById("category");
-        const serviceType = document.getElementById("serviceType");
-        const dateGroup = document.getElementById("desiredDateGroup");
-        const picker = document.getElementById("professionalPicker");
-        const reviewPanel = document.getElementById("reviewPanel");
-        let draft = null;
-        try {
-            const categories = await C.api("/categorias");
-            categorySelect.innerHTML = '<option value="">Selecione uma categoria</option>' + categories.map(c => `<option value="${c.id}">${safe(c.nome)}</option>`).join("");
-        } catch (e) { categorySelect.innerHTML = '<option value="">Não foi possível carregar categorias</option>'; setMessage("formMessage", e.message); }
-
-        document.querySelectorAll('input[name="distribution"]').forEach(r => r.addEventListener("change", () => {
-            const manual = document.querySelector('input[name="distribution"]:checked')?.value === "manual";
-            picker.hidden = !manual;
-        }));
-        serviceType.addEventListener("change", () => {
-            const scheduled = serviceType.value === "AGENDADO";
-            dateGroup.hidden = !scheduled;
-            document.getElementById("desiredDate").required = scheduled;
-        });
-        document.getElementById("searchProfessionals").addEventListener("click", async () => {
-            const categoryId = categorySelect.value;
-            const city = document.getElementById("city").value.trim();
-            const bairro = document.getElementById("neighborhood").value.trim();
-            if (!categoryId || !city) { setMessage("formMessage", "Informe categoria e cidade antes de buscar profissionais."); return; }
-            if (serviceType.value === "AGENDADO" && !document.getElementById("desiredDate").value) { setMessage("formMessage", "Informe a data e o horário desejados."); return; }
-            const target = document.getElementById("professionalList");
-            target.innerHTML = '<p class="empty-state">Buscando profissionais…</p>';
+        const form = document.getElementById('createOrderForm');
+        const categorySelect = document.getElementById('category');
+        const city = document.getElementById('city');
+        const serviceType = document.getElementById('serviceType');
+        const dateGroup = document.getElementById('desiredDateGroup');
+        const picker = document.getElementById('professionalPicker');
+        const reviewPanel = document.getElementById('reviewPanel');
+        const button = document.getElementById('confirmOrder');
+        let draft = null, submitting = false, professionalSearchVersion = 0, finalStep = false, professionalSelectionLoaded = false;
+        const params = new URLSearchParams(location.search || '');
+        let favoriteId = Number(params.get('profissionalId')) || null;
+        if (!Number.isSafeInteger(favoriteId) || favoriteId < 1) favoriteId = null;
+        const uploadedFiles = new WeakMap(), dirty = new Set();
+        let municipalities = [];
+        let lastCity = null;
+        const categoryPicker = window.ChamaproCombobox?.mount(categorySelect, { label: 'Categoria', placeholder: 'Ex.: pedreiro, eletricista…' });
+        const cityPicker = window.ChamaproCombobox?.mount(city, { label: 'Cidade e estado', placeholder: 'Pesquise sua cidade…' });
+        const notify = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+        const selectedMode = () => document.querySelector('input[name="distribution"]:checked')?.value;
+        function summary() {
+            const category = categoryPicker?.selection?.label || categorySelect.selectedOptions?.[0]?.text || '';
+            document.getElementById('reviewSummary').innerHTML = [
+                ['Serviço', document.getElementById('title').value], ['Categoria', category], ['O que precisa', document.getElementById('description').value],
+                ['Local', [cityPicker?.selection?.label || city.value, document.getElementById('neighborhood').value, document.getElementById('address').value].filter(Boolean).join(' · ')],
+                ['Quando', serviceType.value === 'AGENDADO' && document.getElementById('desiredDate').value ? new Date(document.getElementById('desiredDate').value).toLocaleString('pt-BR') : 'O mais rápido possível, conforme disponibilidade'],
+                ['Envio', selectedMode() === 'manual' ? 'Para os profissionais que você selecionar abaixo.' : 'Vamos procurar profissionais compatíveis com o seu serviço.']
+            ].map(([label, value]) => `<p><strong>${label}:</strong> ${safe(value || 'Ainda não informado')}</p>`).join('');
+            if (finalStep) reviewPanel.hidden = false;
+        }
+        function changed() { if (!submitting) { draft = null; setMessage('reviewMessage', ''); if (finalStep) summary(); } }
+        form.addEventListener('input', changed); form.addEventListener('change', changed);
+        for (const id of ['city', 'neighborhood', 'address']) document.getElementById(id).addEventListener('input', () => dirty.add(id));
+        async function categories() {
+            categoryPicker?.setState('loading', 'Carregando categorias…');
             try {
-                const query = new URLSearchParams({ categoriaId: categoryId, cidade: city, pagina: "1", tamanho: "50", tipoAtendimento: serviceType.value });
-                if (bairro) query.set("bairro", bairro);
-                if (serviceType.value === "AGENDADO") query.set("dataDesejada", new Date(document.getElementById("desiredDate").value).toISOString());
-                const result = await C.api(`/profissionais?${query}`);
-                const list = result.itens || [];
-                target.innerHTML = list.length ? list.map(p => `<label class="app-row"><span><input type="checkbox" name="professionalId" value="${p.id}"> <strong>${safe(p.nome)}</strong><small class="app-muted"> · nota ${C.formatarNota(p.notaMedia)} ${p.verificado ? "· verificado" : ""}</small></span><a href="perfil-profissional.html?id=${p.id}" target="_blank" rel="noopener">Ver perfil</a></label>`).join("") : '<p class="empty-state">Não encontramos profissionais verificados que atendam esta região.</p>';
-            } catch (e) { target.innerHTML = `<p class="empty-state">${safe(e.message)}</p>`; }
-        });
-        form.addEventListener("submit", event => {
-            event.preventDefault();
-            if (!form.reportValidity()) return;
-            const distribution = document.querySelector('input[name="distribution"]:checked')?.value;
-            const ids = [...document.querySelectorAll('input[name="professionalId"]:checked')].map(x => Number(x.value));
-            if (distribution === "manual" && (!ids.length || ids.length > 5)) { setMessage("formMessage", "Selecione de um a cinco profissionais compatíveis."); return; }
-            const type = serviceType.value;
-            const dateValue = document.getElementById("desiredDate").value;
-            draft = {
-                categoriaId: Number(categorySelect.value), titulo: document.getElementById("title").value.trim(),
-                descricao: document.getElementById("description").value.trim(), cidade: document.getElementById("city").value.trim(),
-                bairro: document.getElementById("neighborhood").value.trim() || null,
-                endereco: document.getElementById("address").value.trim() || null,
-                tipoAtendimento: type, dataDesejada: type === "AGENDADO" ? new Date(dateValue).toISOString() : null,
-                distribuirParaCompativeis: distribution === "auto", profissionalIds: ids, fotoUrls: []
-            };
-            const summary = [`<p><strong>Categoria:</strong> ${safe(categorySelect.selectedOptions[0].text)}</p>`,`<p><strong>Serviço:</strong> ${safe(draft.titulo)}</p>`,`<p><strong>Descrição:</strong> ${safe(draft.descricao)}</p>`,`<p><strong>Região:</strong> ${safe([draft.cidade,draft.bairro,draft.endereco].filter(Boolean).join(" · "))}</p>`,`<p><strong>Atendimento:</strong> ${safe(type === "AGENDADO" ? new Date(dateValue).toLocaleString("pt-BR") : "Imediato")}</p>`,`<p><strong>Direcionamento:</strong> ${distribution === "auto" ? "até cinco profissionais compatíveis" : `${ids.length} profissionais selecionados`}</p>`].join("");
-            document.getElementById("reviewSummary").innerHTML = summary;
-            reviewPanel.hidden = false;
-            reviewPanel.scrollIntoView({ behavior: "smooth", block: "center" });
-            setMessage("formMessage", "Confira os dados e confirme a criação do chamado.", true);
-        });
-        document.getElementById("backToEdit").addEventListener("click", () => { reviewPanel.hidden = true; form.scrollIntoView({ behavior: "smooth" }); });
-        document.getElementById("confirmOrder").addEventListener("click", async () => {
-            if (!draft) return;
-            const button = document.getElementById("confirmOrder"); button.disabled = true; button.textContent = "Enviando…";
+                const rows = await C.api('/categorias');
+                const old = categorySelect.value;
+                categorySelect.innerHTML = '<option value="">Escolha o serviço</option>' + rows.map(row => `<option value="${row.id}">${safe(row.nome)}</option>`).join('');
+                if (rows.some(row => String(row.id) === old)) categorySelect.value = old;
+                categoryPicker?.setItems(rows.map(row => ({ value: String(row.id), label: row.nome })));
+                if (!rows.length) notify('categoryHelp', 'Nenhuma categoria disponível. Tente novamente mais tarde.');
+            } catch {
+                categoryPicker?.setState('error', 'Não foi possível carregar as categorias.', categories);
+                if (!categoryPicker) setMessage('formMessage', 'Não foi possível carregar categorias. Atualize a página e tente novamente.');
+            }
+        }
+        async function cities() {
+            if (!cityPicker) return;
+            cityPicker.setState('loading', 'Carregando cidades…');
             try {
-                const files = [...(document.getElementById("photos")?.files || [])];
-                if (files.length > 5) throw new Error("Envie no máximo cinco fotos.");
-                draft.fotoUrls = [];
-                for (const file of files) {
-                    if (file.size > 5 * 1024 * 1024) throw new Error("Cada imagem deve ter até 5 MB.");
-                    const formData = new FormData();
-                    formData.append("arquivo", file);
-                    formData.append("privado", "false");
-                    const uploaded = await C.api("/arquivos", { method: "POST", body: formData });
-                    draft.fotoUrls.push(uploaded.url);
+                const response = await fetch('/data/municipios-ibge.json?v=20261102');
+                if (!response.ok) throw new Error('cities');
+                municipalities = await response.json();
+                cityPicker.setItems(municipalities.map(row => ({ value: String(row.id), payload: row.nome, label: `${row.nome} — ${row.uf}`, uf: row.uf })));
+            } catch { cityPicker.setState('error', 'Não foi possível carregar as cidades.', cities); }
+        }
+        city.addEventListener('change', () => {
+            const key = city.dataset?.municipioId || city.value;
+            if (lastCity && lastCity !== key) {
+                document.getElementById('neighborhood').value = '';
+                document.getElementById('address').value = '';
+                notify('locationMessage', 'Cidade alterada. Confira o bairro e o endereço do serviço.');
+            }
+            lastCity = key;
+            const normalize = window.ChamaproCombobox?.normalize;
+            const matches = normalize ? municipalities.filter(row => normalize(row.nome) === normalize(city.value)) : [];
+            notify('cityWarning', matches.length > 1 ? 'Atenção: este nome existe em mais de um estado. A busca atual identifica a cidade somente pelo nome, sem distinguir a UF. Confirme a região com o profissional.' : '');
+        });
+        async function locationFromProfile() {
+            try {
+                const profile = await C.api('/clientes/me');
+                if (!dirty.has('city') && profile?.cidade && cityPicker && municipalities.length) {
+                    const matches = municipalities.filter(row => window.ChamaproCombobox.normalize(row.nome) === window.ChamaproCombobox.normalize(profile.cidade));
+                    if (matches.length === 1) cityPicker.select(String(matches[0].id));
+                    else { cityPicker.search(profile.cidade); notify('locationMessage', 'Escolha a cidade com a UF correta para confirmar sua localização.'); }
+                } else if (!dirty.has('city') && profile?.cidade && !cityPicker) city.value = profile.cidade;
+                for (const [id, value] of [['neighborhood', profile?.bairro], ['address', profile?.enderecoPrincipal]]) if (!dirty.has(id) && value) document.getElementById(id).value = value;
+                if (!profile?.cidade) notify('locationMessage', 'Informe onde será o serviço. Você também pode salvar sua localização em Minha conta.');
+            } catch { notify('locationMessage', 'Não foi possível recuperar sua localização. Informe o local do serviço abaixo.'); }
+        }
+        const clearProfessionalSelection = () => { professionalSearchVersion++; professionalSelectionLoaded = false; document.getElementById('professionalList').innerHTML = ''; if (favoriteId) notify('favoriteMessage', 'Vamos conferir se o favorito atende ao serviço, local e horário escolhidos.'); changed(); };
+        document.querySelectorAll('input[name="distribution"]').forEach(radio => radio.addEventListener('change', () => { picker.hidden = selectedMode() !== 'manual'; clearProfessionalSelection(); }));
+        serviceType.addEventListener('change', () => {
+            const scheduled = serviceType.value === 'AGENDADO'; dateGroup.hidden = !scheduled; document.getElementById('desiredDate').required = scheduled;
+        });
+        [categorySelect, city, serviceType, ...['neighborhood', 'desiredDate'].map(id => document.getElementById(id))].forEach(input => {
+            input.addEventListener('change', clearProfessionalSelection); input.addEventListener('input', clearProfessionalSelection);
+        });
+        async function searchProfessionals() {
+            const searchVersion = ++professionalSearchVersion;
+            const categoryId = categorySelect.value, region = city.value.trim(), neighborhood = document.getElementById('neighborhood').value.trim();
+            if (!categoryId || !region) { setMessage('formMessage', 'Escolha o serviço e a cidade antes de buscar profissionais.'); return; }
+            const date = document.getElementById('desiredDate').value;
+            if (serviceType.value === 'AGENDADO' && (!date || !Number.isFinite(new Date(date).getTime()) || new Date(date) <= new Date())) { setMessage('formMessage', 'Escolha uma data e horário no futuro.'); return; }
+            const target = document.getElementById('professionalList');
+            target.innerHTML = '<p class="empty-state" role="status">Buscando profissionais…</p>';
+            try {
+                const query = new URLSearchParams({ categoriaId: categoryId, cidade: region, pagina: '1', tamanho: '50', tipoAtendimento: serviceType.value, verificado: 'true' });
+                if (neighborhood) query.set('bairro', neighborhood);
+                if (serviceType.value === 'AGENDADO') query.set('dataDesejada', new Date(date).toISOString());
+                let result = await C.api(`/profissionais?${query}`);
+                if (searchVersion !== professionalSearchVersion) return;
+                const rows = [...(result.itens || [])];
+                let page = 1;
+                while (favoriteId && !rows.some(row => row.id === favoriteId) && page * 50 < result.total) {
+                    query.set('pagina', String(++page)); result = await C.api(`/profissionais?${query}`);
+                    if (searchVersion !== professionalSearchVersion) return; rows.push(...result.itens);
                 }
-                const created = await C.api("/pedidos", { method: "POST", body: draft });
-                C.toast("Chamado criado e direcionado aos profissionais compatíveis.", "success");
-                location.assign(`painel.html?pedidoId=${created.id}`);
-            } catch (e) { setMessage("reviewMessage", e.message); button.disabled = false; button.textContent = "Confirmar chamado"; }
+                const compatible = rows.filter(row => row.verificado === true);
+                professionalSelectionLoaded = true;
+                target.innerHTML = compatible.length ? compatible.map(pro => `<label class="app-row"><span><input type="checkbox" name="professionalId" value="${pro.id}" ${favoriteId === pro.id ? 'checked' : ''}> <strong>${safe(pro.nome)}</strong><small class="app-muted"> · nota ${C.formatarNota(pro.notaMedia)} · verificado</small></span><a href="perfil-profissional.html?id=${pro.id}" target="_blank" rel="noopener">Ver perfil</a></label>`).join('') : '<p class="empty-state">Não há profissionais verificados disponíveis para esta categoria, região e horário. Tente outro horário ou confira a localização.</p>';
+                if (favoriteId) notify('favoriteMessage', compatible.some(row => row.id === favoriteId) ? 'Seu favorito é compatível e está selecionado. Você pode mudar a escolha.' : 'Seu favorito não está disponível para esta categoria, região ou horário, ou não está verificado. Escolha outro profissional ou use a busca automática.');
+            } catch {
+                if (searchVersion === professionalSearchVersion) {
+                    target.innerHTML = '<p class="empty-state" role="alert">Não foi possível buscar os profissionais. Use o botão de busca para tentar novamente ou deixe a plataforma procurar por você.</p>';
+                }
+            }
+        }
+        document.getElementById('searchProfessionals').addEventListener('click', searchProfessionals);
+        document.getElementById('useAutomatic')?.addEventListener('click', () => {
+            favoriteId = null;
+            const auto = document.querySelector('input[name="distribution"][value="auto"]');
+            const manual = document.querySelector('input[name="distribution"][value="manual"]');
+            auto.checked = true; manual.checked = false; auto.dispatchEvent(new Event('change', { bubbles: true })); notify('favoriteMessage', 'Vamos procurar profissionais compatíveis com o seu serviço.');
         });
+        if (favoriteId) {
+            const manual = document.querySelector('input[name="distribution"][value="manual"]');
+            const auto = document.querySelector('input[name="distribution"][value="auto"]');
+            if (manual && auto) { manual.checked = true; auto.checked = false; picker.hidden = false; }
+            notify('favoriteMessage', 'Você veio de um profissional favorito. Vamos conferir se ele atende ao serviço, local e horário escolhidos.');
+        }
+        form.addEventListener('chamapro:stepchange', event => {
+            finalStep = event.detail === 2;
+            if (finalStep) { summary(); if (favoriteId && selectedMode() === 'manual' && !professionalSelectionLoaded) searchProfessionals(); }
+        });
+        function prepareDraft() {
+            if (!form.reportValidity()) return false;
+            const distribution = selectedMode();
+            if (!['auto', 'manual'].includes(distribution)) { setMessage('formMessage', 'Escolha como receber as propostas.'); return false; }
+            const ids = distribution === 'manual' ? [...document.querySelectorAll('input[name="professionalId"]:checked')].map(input => Number(input.value)) : [];
+            if (distribution === 'manual' && (!ids.length || ids.length > 5)) { setMessage('formMessage', 'Selecione de um a cinco profissionais compatíveis.'); return false; }
+            const date = document.getElementById('desiredDate').value;
+            if (serviceType.value === 'AGENDADO' && (!date || !Number.isFinite(new Date(date).getTime()) || new Date(date) <= new Date())) { setMessage('formMessage', 'Escolha uma data e horário no futuro.'); return false; }
+            draft = { categoriaId: Number(categorySelect.value), titulo: document.getElementById('title').value.trim(), descricao: document.getElementById('description').value.trim(), cidade: city.value.trim(), bairro: document.getElementById('neighborhood').value.trim() || null, endereco: document.getElementById('address').value.trim() || null, tipoAtendimento: serviceType.value, dataDesejada: serviceType.value === 'AGENDADO' ? new Date(date).toISOString() : null, distribuirParaCompativeis: distribution === 'auto', profissionalIds: ids, fotoUrls: [] };
+            summary(); reviewPanel.hidden = false; return true;
+        }
+        form.addEventListener('submit', event => { event.preventDefault(); if (prepareDraft()) button.focus?.(); });
+        document.getElementById('backToEdit').addEventListener('click', () => { reviewPanel.hidden = true; form.scrollIntoView({ behavior: 'auto' }); });
+        button.addEventListener('click', async () => {
+            if (submitting || !prepareDraft()) return;
+            submitting = true; form.inert = true; button.disabled = true; button.textContent = 'Enviando pedido…'; document.getElementById('backToEdit').disabled = true;
+            try {
+                const files = [...(document.getElementById('photos').files || [])];
+                if (files.length > 5) throw { codigo: 'ARQUIVO_MUITO_GRANDE' };
+                for (const file of files) if (file.size > 5 * 1024 * 1024 || (file.type && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) throw { codigo: 'ARQUIVO_MUITO_GRANDE' };
+                for (const file of files) {
+                    if (!uploadedFiles.has(file)) { const data = new FormData(); data.append('arquivo', file); data.append('privado', 'false'); const uploaded = await C.api('/arquivos', { method: 'POST', body: data }); uploadedFiles.set(file, uploaded.url); }
+                    draft.fotoUrls.push(uploadedFiles.get(file));
+                }
+                const created = await C.api('/pedidos', { method: 'POST', body: draft });
+                C.toast('Pedido enviado! Acompanhe as respostas dos profissionais.', 'success'); location.assign(`orcamentos.html?pedidoId=${created.id}`);
+            } catch (error) {
+                setMessage('reviewMessage', orderError(error)); submitting = false; form.inert = false; button.disabled = false; button.textContent = 'Confirmar pedido'; document.getElementById('backToEdit').disabled = false;
+            }
+        });
+        document.getElementById('description').addEventListener('change', () => {
+            const title = document.getElementById('title');
+            const description = document.getElementById('description').value.trim();
+            if (!title.value && description.length >= 10) title.value = description.split(/[.!?\n]/)[0].slice(0, 80);
+        });
+        categories();
+        await cities(); await locationFromProfile();
     }
 
     async function carregarPerfil() {
+        document.getElementById('photo').addEventListener('invalid', () => {
+            const advanced = document.getElementById('photoAdvanced');
+            if (advanced) advanced.open = true;
+        });
         try {
             const p = await C.api("/clientes/me");
             const contato = await C.api("/whatsapp/contato/me");
@@ -198,6 +245,6 @@
         if (!user || user.perfil !== "CLIENTE") return;
         if (document.getElementById("createOrderForm")) iniciarCriacao().catch(e => setMessage("formMessage", e.message));
         if (document.getElementById("clientProfileForm")) carregarPerfil();
-        if (document.getElementById("ordersList")) carregarPainel();
+
     });
 })();

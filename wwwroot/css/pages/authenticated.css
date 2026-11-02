@@ -1,0 +1,193 @@
+/* Authenticated design system. Public pages keep their existing appearance. */
+body.app-auth {
+    color-scheme: dark;
+    --color-background: #111411;
+    --color-sidebar: #191c16;
+    --color-surface: #1C211D;
+    --color-card: #1C211D;
+    --color-card-hover: #2b3026;
+    --color-border: #2B332D;
+    --color-text: #F5F7F2;
+    --color-text-muted: #a3aa9a;
+    --radius-lg: 20px;
+    background: radial-gradient(ellipse at 95% 0, #ffc92808, transparent 45%), var(--color-background);
+}
+.app-auth [hidden] { display: none !important; }
+.app-auth :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; }
+.app-auth .skip-link { position: fixed; top: -100px; left: 20px; z-index: 100; padding: 12px 20px; border-radius: 10px; background: var(--color-primary); color: var(--color-text-dark); font-weight: 700; }
+.app-auth .skip-link:focus { top: 12px; }
+.app-auth .app-topbar { height: 80px; padding: 0 32px; background: #191c16f5; gap: 20px; }
+.app-auth .brand { display: inline-flex; align-items: center; gap: 11px; flex-shrink: 0; }
+.app-auth .brand-symbol { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--color-primary); color: #171812; font-size: 27px; font-weight: 800; transform: rotate(-6deg); }
+.app-auth .brand-name { font-size: 21px; font-weight: 800; letter-spacing: -.7px; }
+.app-auth .brand-name span { color: var(--color-primary); }
+.app-auth .topbar-actions { gap: 18px; min-width: 0; }
+.app-auth .topbar-user { padding-left: 18px; border-left: 1px solid var(--color-border); min-width: 0; }
+.app-auth .topbar-user strong { display: block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.app-auth .account-role { display: block; color: var(--color-text-muted); font-size: 11px; }
+.app-auth .avatar { background: var(--color-primary-soft); color: var(--color-primary); border: 1px solid #ffc92830; }
+.app-auth .icon-button { display: inline-grid; place-items: center; min-width: 44px; height: 44px; border-radius: 12px; color: var(--color-text-secondary); background: transparent; }
+.app-auth .app-topbar svg,
+.app-auth .sidebar-link > svg { display: block; width: 20px; height: 20px; max-width: 20px; flex: 0 0 20px; }
+.app-auth .app-layout { grid-template-columns: 248px minmax(0, 1fr); min-height: calc(100vh - 80px); }
+.app-auth .app-sidebar { position: sticky; top: 80px; height: calc(100vh - 80px); padding: 30px 16px; display: flex; flex-direction: column; justify-content: space-between; }
+.app-auth .sidebar-label { font-size: 12px; letter-spacing: .12em; margin-bottom: 18px; }
+.app-auth .sidebar-link { display: flex; align-items: center; gap: 12px; min-height: 48px; margin: 6px 0; padding: 12px 14px; border: 1px solid transparent; font-size: 14px; font-weight: 500; }
+.app-auth .sidebar-link > svg { color: var(--color-text-muted); width: 19px; max-width: 19px; flex-basis: 19px; }
+.app-auth .sidebar-link:hover { background: #ffffff05; color: var(--color-text); }
+.app-auth .sidebar-link.active { background: var(--color-primary-soft); border-color: #ffc92824; color: var(--color-primary); }
+.app-auth .sidebar-link.active svg { color: inherit; }
+.app-auth .sidebar-footer { margin: 24px 12px 0; padding-top: 20px; border-top: 1px solid var(--color-border); color: var(--color-text-muted); font-size: 12px; }
+.app-auth .sidebar-footer strong { display: block; color: var(--color-text-secondary); margin-bottom: 4px; }
+.app-auth .app-main { padding: 40px clamp(24px, 3.5vw, 60px) 64px; }
+.app-auth .app-content { max-width: 1280px; }
+.app-auth .page-heading { padding-bottom: 26px; margin-bottom: 26px; border-bottom: 1px solid var(--color-border); }
+.app-auth .page-heading > .text-primary { display: block; margin-bottom: 10px; font-size: 10px; font-weight: 700; letter-spacing: .16em; }
+.app-auth h1 { font-size: clamp(26px, 2.8vw, 36px); letter-spacing: -.035em; line-height: 1.2; }
+.app-auth .page-heading p { font-size: 14px; margin-top: 10px; }
+.app-auth h2 { font-size: 18px; letter-spacing: -.025em; line-height: 1.4; }
+.app-auth h3 { font-size: 16px; }
+.app-auth .app-grid, .app-auth .app-grid-two { gap: 20px; align-items: start; }
+.app-auth .app-card { min-width: 0; padding: 26px; border-radius: 20px; background: linear-gradient(145deg, #ffffff02, transparent 65%), var(--color-card); box-shadow: 0 8px 28px #00000012; }
+.app-auth .app-card > h2 { margin-bottom: 20px; }
+.app-auth .app-grid > .app-card { position: relative; overflow: hidden; min-height: 142px; }
+.app-auth .app-grid > .app-card::after { content: ''; position: absolute; right: 24px; top: 26px; width: 7px; height: 7px; border-radius: 50%; background: var(--color-primary); box-shadow: 0 0 0 6px var(--color-primary-soft); }
+.app-auth .app-grid > .app-card > h2 { font-size: 36px; font-weight: 700; margin: 14px 0 0; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+.app-auth .app-grid > .app-card > .app-muted:first-child { padding-right: 20px; display: block; font-size: 12px; }
+.app-auth .app-muted { line-height: 1.65; font-size: 14px; }
+.app-auth .app-row { padding: 20px 0; align-items: center; }
+.app-auth .app-row > * { min-width: 0; }
+.app-auth .app-row strong { font-size: 14px; }
+.app-auth .app-row .app-actions { margin-top: 0; }
+.app-auth .app-stack { gap: 18px; }
+.app-auth .app-stack > .app-row { margin-bottom: -18px; }
+.app-auth .app-stack > .app-row:last-child { margin-bottom: 0; }
+.app-auth .btn { min-height: 44px; border-radius: 11px; padding: 11px 18px; transition: background .15s, border-color .15s, box-shadow .15s; }
+.app-auth .btn-primary { box-shadow: 0 3px 12px #ffc92812; font-weight: 700; }
+.app-auth .btn-secondary { background: #ffffff03; }
+.app-auth .btn-secondary:hover:not(:disabled), .app-auth .icon-button:hover { background: var(--color-card-hover); border-color: var(--color-border-light); }
+.app-auth .btn-outline { border-color: #ffc92850; }
+.app-auth .btn-danger { background: var(--color-danger-soft); color: #ffaaaa; border-color: #e76f6f40; }
+.app-auth .btn-small { min-height: 44px; font-size: 12px; padding: 8px 14px; }
+.app-auth .badge { border: 1px solid currentColor; font-size: 10px; letter-spacing: .025em; padding: 4px 10px; }
+.app-auth .app-form { max-width: 920px; }
+.app-auth .app-form-grid { gap: 0 24px; }
+.app-auth .form-group { margin-bottom: 24px; gap: 6px; }
+.app-auth label { font-size: 14px; font-weight: 600; }
+.app-auth input, .app-auth select, .app-auth textarea { min-width: 0; min-height: 48px; background-color: var(--color-background); border-radius: 11px; font-size: 14px; }
+.app-auth input:focus, .app-auth select:focus, .app-auth textarea:focus { box-shadow: 0 0 0 3px var(--color-primary-soft); }
+.app-auth input[type='checkbox'], .app-auth input[type='radio'] { width: 18px; height: 18px; min-height: 18px; padding: 0; flex-shrink: 0; accent-color: var(--color-primary); vertical-align: middle; margin-right: 6px; }
+.app-auth input[type='file'] { padding: 10px; font-size: 12px; }
+.app-auth input::file-selector-button { padding: 8px 12px; border: 0; border-radius: 7px; margin-right: 12px; background: var(--color-card-hover); color: var(--color-text); cursor: pointer; }
+.app-auth fieldset { min-width: 0; padding: 18px; border: 1px solid var(--color-border); border-radius: 12px; }
+.app-auth legend { padding: 0 8px; font-size: 12px; color: var(--color-text-secondary); }
+.app-auth .app-toolbar { padding: 16px; background: #00000016; border: 1px solid var(--color-border); border-radius: 14px; }
+.app-auth .app-toolbar input, .app-auth .app-toolbar select { flex: 1 1 160px; max-width: none; }
+.app-auth .empty-state { padding: 22px 20px; background: #00000012; border: 1px solid var(--color-border); border-radius: 14px; font-size: 14px; line-height: 1.7; }
+.app-auth .empty-state h2 { color: var(--color-text); }
+.app-auth .empty-state .btn { margin-top: 18px; }
+.app-auth .app-message:empty { display: none; }
+.app-auth .app-message:not(:empty) { padding: 12px 16px; border-radius: 10px; background: #ffffff04; border-left: 3px solid currentColor; font-size: 13px; }
+.app-auth .app-message.success { color: var(--color-success); }
+.app-auth .app-dialog { margin: auto; max-height: calc(100dvh - 40px); overflow-y: auto; box-shadow: var(--shadow-dropdown); }
+.app-auth .app-dialog .app-card { border-color: var(--color-border-light); }
+.app-auth .notification-panel { top: 72px; padding: 12px; border-radius: 18px; }
+.app-auth .notification-heading { flex-wrap: wrap; padding-bottom: 16px; }
+.app-auth .notification-heading button { min-height: 44px; }
+.app-auth .notification-item { padding: 18px 12px; border-radius: 8px; }
+.app-auth .notification-item:hover { background: var(--color-card-hover); }
+.app-auth .app-card img { border-radius: 12px; max-height: 360px; object-fit: contain; }
+.app-auth .onboarding-card { margin-bottom: 24px; }
+.app-auth .onboarding-progress { padding: 20px; background: var(--color-background); border-radius: 14px; }
+.app-auth .onboarding-progress li { font-size: 12px; }
+.app-auth .category-option { background: var(--color-background); min-height: 52px; }
+.app-auth .app-main { overflow-wrap: anywhere; }
+.app-auth th { background: var(--color-background); letter-spacing: .06em; }
+.app-auth tbody tr:hover { background: #ffffff03; }
+.app-auth .menu-toggle { display: none; }
+@media (max-width: 1100px) {
+    .app-auth .app-layout { grid-template-columns: 218px minmax(0, 1fr); }
+    .app-auth .app-main { padding: 28px 24px 48px; }
+    .app-auth .app-grid-two { grid-template-columns: 1fr; }
+    .app-auth .app-card { padding: 22px; }
+}
+@media (max-width: 850px) {
+    .app-auth .app-topbar { height: 72px; padding: 0 16px; gap: 12px; }
+    .app-auth .app-layout { display: block; min-height: calc(100vh - 72px); }
+    .app-auth .app-sidebar { position: static; height: auto; padding: 12px 16px; border-bottom: 1px solid var(--color-border); }
+    .app-auth .app-sidebar nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; }
+    .app-auth .sidebar-link { font-size: 12px; margin: 0; padding: 10px; }
+    .app-auth .sidebar-footer { display: none; }
+    .app-auth .menu-toggle { display: inline-grid; }
+    .app-auth .app-sidebar.menu-collapsed { display: none; }
+    .app-auth .topbar-actions { gap: 8px; }
+    .app-auth .topbar-user { border: 0; padding: 0; }
+    .app-auth .topbar-user .account-text { display: none; }
+    .app-auth .app-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+    .app-auth .app-main { padding: 24px 16px 40px; }
+    .app-auth .app-grid, .app-auth .app-grid-two, .app-auth .app-form-grid { grid-template-columns: 1fr; }
+    .app-auth .app-grid > .app-card { min-height: 118px; }
+    .app-auth .app-card { padding: 20px; border-radius: 16px; }
+    .app-auth .app-row { align-items: flex-start; gap: 12px; }
+    .app-auth .app-actions { width: 100%; }
+    .app-auth .app-actions .btn { flex: 1 1 auto; }
+    .app-auth .card-header { align-items: flex-start; flex-wrap: wrap; }
+    .app-auth .topbar-user { display: none; }
+    .app-auth .brand-name { display: none; }
+    .app-auth .notification-panel { right: 12px; }
+    .app-auth .page-heading { margin-bottom: 22px; padding-bottom: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    html:has(body.app-auth) { scroll-behavior: auto; }
+    .app-auth *, .app-auth *::before, .app-auth *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* Simple service experience: useful actions first, comfortable text and compact summaries. */
+.app-auth .service-hero { display: grid; grid-template-columns: 1.4fr 1fr; align-items: center; gap: 32px; padding: clamp(24px, 4vw, 40px); margin-bottom: 24px; border-radius: 22px; border: 1px solid #ffc92830; background: radial-gradient(ellipse at 100% 0, #ffc92812, transparent 65%), var(--color-card); }
+.app-auth .service-hero h2 { max-width: 540px; margin: 10px 0; font-size: clamp(23px, 2.4vw, 30px); line-height: 1.25; }
+.app-auth .service-hero p { max-width: 520px; font-size: 15px; }
+.app-auth .service-cta { min-height: 54px; margin-top: 24px; padding: 14px 24px; font-size: 16px; }
+.app-auth .step-label { color: var(--color-primary); font-size: 12px; font-weight: 600; letter-spacing: .04em; }
+.app-auth .hero-guide { border-left: 1px solid var(--color-border); padding-left: 28px; }
+.app-auth .hero-guide h3 { margin-bottom: 16px; }
+.app-auth .hero-guide ol { list-style: decimal; padding-left: 22px; color: var(--color-text-secondary); }
+.app-auth .hero-guide li { padding: 6px 0; font-size: 15px; }
+.app-auth .client-summary { display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 0 0 24px; color: var(--color-text-secondary); font-size: 14px; }
+.app-auth .client-summary strong { color: var(--color-text); font-variant-numeric: tabular-nums; }
+.app-auth .client-summary a { text-decoration: underline; text-underline-offset: 4px; }
+.app-auth .compact-details summary { cursor: pointer; font-size: 15px; font-weight: 600; min-height: 28px; }
+.app-auth .compact-details[open] summary { margin-bottom: 24px; }
+.app-auth .compact-details h2 { margin-bottom: 14px; }
+.app-auth .form-section { border-bottom: 1px solid var(--color-border); margin-bottom: 28px; padding-bottom: 4px; }
+.app-auth .form-section:last-of-type { border-bottom: 0; }
+.app-auth .section-intro { margin-bottom: 24px; }
+.app-auth .section-intro h2 { margin: 8px 0; font-size: 22px; }
+.app-auth .section-intro p { font-size: 14px; }
+.app-auth .service-progress { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 32px; }
+.app-auth .service-progress li { display: flex; align-items: center; gap: 8px; padding: 0 0 14px; border-bottom: 2px solid var(--color-border); font-size: 13px; color: var(--color-text-muted); }
+.app-auth .service-progress li > span { display: inline-grid; place-items: center; flex: 0 0 28px; height: 28px; border-radius: 50%; background: var(--color-background); border: 1px solid var(--color-border); }
+.app-auth .service-progress [aria-current='step'] { border-color: var(--color-primary); color: var(--color-primary); }
+.app-auth .service-progress .is-complete { color: var(--color-success); border-color: var(--color-success); }
+.app-auth .step-navigation { display: flex; justify-content: space-between; gap: 12px; }
+.app-auth .step-navigation:has(:only-child) { justify-content: flex-end; }
+.app-auth .step-navigation:empty { display: none; }
+.app-auth .service-step:focus { outline: none; }
+.app-auth #reviewPanel { border-color: #ffc92850; }
+.app-auth #reviewSummary { display: grid; gap: 12px; padding: 18px 0; }
+.app-auth .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-text-secondary); font-size: 14px; text-decoration: underline; text-underline-offset: 4px; }
+.app-auth .work-metrics > .app-card { min-height: 112px; }
+.app-auth .work-metrics > .app-card > h2 { font-size: 28px; }
+.app-auth .app-toolbar :is(input, select) { font-size: 16px; }
+@media (max-width: 650px) {
+    .app-auth .service-hero { grid-template-columns: 1fr; gap: 24px; padding: 24px; }
+    .app-auth .hero-guide { border-left: 0; border-top: 1px solid var(--color-border); padding: 20px 0 0; }
+    .app-auth .service-cta { width: 100%; }
+    .app-auth .service-progress { gap: 8px; }
+    .app-auth .service-progress li { flex-direction: column; align-items: flex-start; font-size: 12px; line-height: 1.5; }
+    .app-auth input, .app-auth select, .app-auth textarea { font-size: 16px; }
+    .app-auth .step-navigation .btn { flex: 1; }
+    .app-auth .sidebar-link { font-size: 14px; }
+    .app-auth .client-summary { font-size: 13px; gap: 10px 16px; }
+}

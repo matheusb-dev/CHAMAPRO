@@ -1,0 +1,36 @@
+using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+using Chamapro.Api.Data;
+using Chamapro.Api.DTOs.Requests;
+using Chamapro.Api.Models.Enums;
+using Chamapro.Api.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Npgsql;
+using Npgsql.NameTranslation;
+try {
+    if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development") throw new Exception();
+    var config=new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").AddJsonFile("appsettings.Development.json",true).AddUserSecrets(typeof(AppDbContext).Assembly,true).AddEnvironmentVariables().Build();
+    var cs=new NpgsqlConnectionStringBuilder(config.GetConnectionString("DefaultConnection"));
+    if(cs.Host is not("localhost" or "127.0.0.1" or "::1")||cs.Port!=5432||cs.Database!="chamapro_local")throw new Exception();
+    var translator=new NpgsqlNullNameTranslator();
+    var options=new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(cs.ConnectionString,p=>{p.MapEnum<TipoUsuario>("tipo_usuario",nameTranslator:translator);p.MapEnum<StatusPedido>("status_pedido",nameTranslator:translator);p.MapEnum<StatusAgendamento>("status_agendamento",nameTranslator:translator);p.MapEnum<StatusVerificacao>("status_verificacao",nameTranslator:translator);}).Options;
+    await using var db=new AppDbContext(options);
+    var user=await db.Usuarios.AsNoTracking().SingleAsync(u=>u.Email=="profissional01@v1.demo.chamapro.invalid");
+    if(!user.Ativo||user.Tipo!=TipoUsuario.Profissional||!user.Nome.StartsWith("[DEMO LOCAL:"))throw new Exception();
+    using var http=new HttpClient{BaseAddress=new Uri("http://localhost:5088/api/v1/"),Timeout=TimeSpan.FromSeconds(15)};
+    http.DefaultRequestHeaders.Authorization=new AuthenticationHeaderValue("Bearer",new TokenService(config).GerarToken(user));
+    var profile=await http.GetFromJsonAsync<JsonElement>("profissionais/me");
+    var json=new JsonSerializerOptions(JsonSerializerDefaults.Web);
+    var services=profile.GetProperty("servicos").Deserialize<List<ServicoProfissionalRequest>>(json)!;
+    var areas=profile.GetProperty("areas").Deserialize<List<AreaAtendimentoRequest>>(json)!;
+    var hours=profile.GetProperty("disponibilidade").Deserialize<List<DisponibilidadeProfissionalRequest>>(json)!;
+    foreach(object dto in services.Cast<object>().Concat(areas).Concat(hours)) if(!Validator.TryValidateObject(dto,new ValidationContext(dto),new List<ValidationResult>(),true))throw new Exception();
+    var panel=await http.GetFromJsonAsync<JsonElement>("painel/profissional");
+    var categories=await http.GetFromJsonAsync<JsonElement>("categorias");
+    (await http.GetAsync("whatsapp/contato/me")).EnsureSuccessStatusCode();
+    Console.WriteLine($"PASS API real local: perfil profissional com {services.Count} serviços, {areas.Count} regiões, {hours.Count} intervalos; DTOs válidos. Categorias: {categories.GetArrayLength()}. Cadastro completo: {panel.GetProperty("cadastroCompleto").GetBoolean()}.");
+    Console.WriteLine("SOMENTE LEITURA. Sem PUT, exclusões, alteração de senha ou token exibido. Salvamento continua coberto por testes simulados.");
+}catch(Exception error){Console.Error.WriteLine("Verificação local não concluída: "+error.GetType().Name+". Nenhum segredo foi exibido.");Environment.ExitCode=1;}

@@ -1,1 +1,18 @@
 .admin-metric{display:flex;flex-direction:column;gap:8px}.admin-metric strong{font-size:30px}.admin-list{display:grid;gap:12px}.admin-status{white-space:nowrap}.private-document{color:var(--color-primary);text-decoration:underline}
+.app-auth .admin-workspace { display: grid; gap: 20px; }
+.app-auth .admin-workspace #adminView { display: grid; gap: 18px; min-width: 0; }
+.app-auth .admin-workspace .app-card { min-width: 0; overflow-wrap: anywhere; }
+.app-auth .admin-workspace details > summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+.app-auth .admin-workspace details[open] > summary { margin-bottom: 12px; }
+.app-auth .admin-workspace fieldset { display: grid; gap: 12px; margin-top: 16px; }
+.app-auth .admin-workspace .app-toolbar { margin: 0; }
+.app-auth .admin-workspace .app-toolbar label { flex: 0 1 auto; }
+.app-auth .admin-workspace [aria-current='page'] { border-color: var(--color-primary); color: var(--color-primary); }
+.app-auth .admin-workspace :is(summary, a, button, input, textarea, select):focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
+.app-auth .admin-workspace p { margin-bottom: 10px; }
+.app-auth .admin-workspace [aria-busy='true'] { cursor: progress; }
+@media (max-width: 650px) {
+    .app-auth .admin-workspace .app-toolbar { align-items: stretch; }
+    .app-auth .admin-workspace .app-toolbar > :is(label, input, select, button) { flex: 1 1 100%; width: 100%; }
+    .app-auth .admin-workspace .app-actions > .btn { width: 100%; }
+}
