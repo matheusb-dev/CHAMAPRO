@@ -190,6 +190,29 @@ public class AppDbContext : DbContext
             .HasKey(x => new { x.PedidoId, x.ProfissionalId });
 
         // Relacionamentos de Pedido
+        modelBuilder.Entity<Profissional>()
+            .HasIndex(x => x.UsuarioId).IsUnique();
+
+        modelBuilder.Entity<Pedido>()
+            .HasOne<Usuario>().WithMany()
+            .HasForeignKey(x => x.CanceladoPorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Agendamento>()
+            .HasOne<Profissional>().WithMany()
+            .HasForeignKey(x => x.ProfissionalId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Avaliacao>()
+            .HasOne<Usuario>().WithMany()
+            .HasForeignKey(x => x.AvaliadorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Avaliacao>()
+            .HasOne<Usuario>().WithMany()
+            .HasForeignKey(x => x.AvaliadoId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<Pedido>()
             .HasOne(x => x.Cliente)
             .WithMany()

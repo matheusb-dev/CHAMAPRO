@@ -6,3 +6,5 @@ uploads/
 uploads-privado/
 private-uploads/
 appsettings.Local.json
+
+.migration-local/

@@ -243,18 +243,21 @@ public class ProfissionalRepository : IProfissionalRepository
             join cliente in _db.Usuarios.AsNoTracking()
                 on avaliacao.AvaliadorId equals cliente.Id
             where avaliacao.AvaliadoId == usuarioId.Value
-            select new AvaliacaoPublicaResponse(
+            select new
+            {
                 avaliacao.Id,
                 avaliacao.Nota,
                 avaliacao.Comentario,
-                cliente.Nome,
-                avaliacao.CriadoEm);
+                NomeCliente = cliente.Nome,
+                Data = avaliacao.CriadoEm
+            };
 
         var total = await consulta.CountAsync(ct);
 
         var itens = await consulta.OrderByDescending(a => a.Data)
             .Skip((paginacao.Pagina - 1) * paginacao.Tamanho)
             .Take(paginacao.Tamanho)
+            .Select(a => new AvaliacaoPublicaResponse(a.Id, a.Nota, a.Comentario, a.NomeCliente, a.Data))
             .ToListAsync(ct);
 
         return new RespostaPaginada<AvaliacaoPublicaResponse>

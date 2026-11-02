@@ -12,7 +12,8 @@ var testes = new (string Nome, Action Executar)[]
     ("denúncia rejeita campos fora dos limites", TestarValidacaoDenuncia),
     ("denúncia aceita campos válidos", TestarDenunciaValida),
     ("serviço profissional aceita preço adiado e rejeita faixa parcial", TestarFaixaPrecoServico),
-    ("agenda converte UTC para horário de Brasília", TestarFusoHorario)
+    ("agenda converte UTC para horário de Brasília", TestarFusoHorario),
+    ("orçamento valida valores na cultura pt-BR", TestarOrcamentoPtBr)
 };
 
 var falhas = 0;
@@ -32,6 +33,18 @@ foreach (var (nome, executar) in testes)
 
 Console.WriteLine($"{testes.Length - falhas}/{testes.Length} testes passaram.");
 return falhas == 0 ? 0 : 1;
+
+static void TestarOrcamentoPtBr()
+{
+    var original = System.Globalization.CultureInfo.CurrentCulture;
+    try
+    {
+        System.Globalization.CultureInfo.CurrentCulture = new("pt-BR");
+        Exigir(Validar(new OrcamentoCriarRequest { Valor = 0.01m, PrazoEstimado = "1 dia" }), "valor mínimo válido foi rejeitado");
+        Exigir(!Validar(new OrcamentoCriarRequest { Valor = 0m, PrazoEstimado = "1 dia" }), "valor zero foi aceito");
+    }
+    finally { System.Globalization.CultureInfo.CurrentCulture = original; }
+}
 
 static void TestarTransicoes()
 {

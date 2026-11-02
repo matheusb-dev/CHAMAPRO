@@ -53,7 +53,7 @@ builder.Services
     });
 
 // ======================================================
-// BANCO DE DADOS - POSTGRESQL / SUPABASE
+// BANCO DE DADOS - POSTGRESQL
 // ======================================================
 
 var connectionString =
@@ -74,12 +74,11 @@ try
 
     if (string.IsNullOrWhiteSpace(connectionBuilder.Host) ||
         string.IsNullOrWhiteSpace(connectionBuilder.Database) ||
-        string.IsNullOrWhiteSpace(connectionBuilder.Username) ||
-        string.IsNullOrWhiteSpace(connectionBuilder.Password))
+        string.IsNullOrWhiteSpace(connectionBuilder.Username))
     {
         throw new InvalidOperationException(
             "A connection string do PostgreSQL está incompleta. " +
-            "Verifique Host, Database, Username e Password."
+            "Verifique Host, Database e Username; use User Secrets ou Passfile para autenticação."
         );
     }
 }
@@ -91,36 +90,35 @@ catch (ArgumentException ex)
     );
 }
 
+var enumNameTranslator = new NpgsqlNullNameTranslator();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(
         connectionString,
         npgsql =>
         {
-            npgsql.EnableRetryOnFailure(
-                maxRetryCount: 3,
-                maxRetryDelay: TimeSpan.FromSeconds(5),
-                errorCodesToAdd: null
-            );
+            // As operações de negócio controlam transações explícitas.
+            // A estratégia padrão permite preservá-las sem repetir gravações.
 
             npgsql.MapEnum<TipoUsuario>(
                 "tipo_usuario",
-                nameTranslator: new NpgsqlNullNameTranslator()
+                nameTranslator: enumNameTranslator
             );
 
             npgsql.MapEnum<StatusPedido>(
                 "status_pedido",
-                nameTranslator: new NpgsqlNullNameTranslator()
+                nameTranslator: enumNameTranslator
             );
 
             npgsql.MapEnum<StatusAgendamento>(
                 "status_agendamento",
-                nameTranslator: new NpgsqlNullNameTranslator()
+                nameTranslator: enumNameTranslator
             );
 
             npgsql.MapEnum<StatusVerificacao>(
                 "status_verificacao",
-                nameTranslator: new NpgsqlNullNameTranslator()
+                nameTranslator: enumNameTranslator
             );
         }
     );
@@ -150,7 +148,9 @@ if (string.IsNullOrWhiteSpace(jwtKey))
 {
     throw new InvalidOperationException(
         "Jwt:Key não foi configurada. " +
-        "Verifique o appsettings.json ou a variável de ambiente."
+        $"Ambiente atual: {builder.Environment.EnvironmentName}. " +
+        "Em desenvolvimento, execute run-local.ps1 para carregar os User Secrets; " +
+        "em outros ambientes, configure Jwt__Key."
     );
 }
 

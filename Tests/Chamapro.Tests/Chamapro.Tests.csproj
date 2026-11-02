@@ -10,6 +10,7 @@
     <Compile Include="..\..\Application\Common\BusinessException.cs" Link="Source\BusinessException.cs" />
     <Compile Include="..\..\Application\DTOs\Requests\DenunciaCriarRequest.cs" Link="Source\DenunciaCriarRequest.cs" />
     <Compile Include="..\..\Application\DTOs\Requests\ServicoProfissionalRequest.cs" Link="Source\ServicoProfissionalRequest.cs" />
+    <Compile Include="..\..\Application\DTOs\Requests\OrcamentoCriarRequest.cs" Link="Source\OrcamentoCriarRequest.cs" />
     <Compile Include="..\..\Application\Services\PedidoErros.cs" Link="Source\PedidoErros.cs" />
     <Compile Include="..\..\Application\Services\PedidoTransicoes.cs" Link="Source\PedidoTransicoes.cs" />
     <Compile Include="..\..\Domain\Enums\EnumJson.cs" Link="Source\EnumJson.cs" />
