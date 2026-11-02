@@ -217,7 +217,7 @@ test('retrying quotes successfully restores the existing accept and reject actio
     env.run('pages/cliente-orcamentos.js'); await tick();
     const target = env.elements.get('quotesSection');
     await target.querySelector('#retryQuotes').emit('click');
-    assert.match(target.innerHTML, /Propostas recebidas \(1\)/);
+    assert.match(target.innerHTML, /1 proposta para “Teste”/);
     await target.querySelector(`[data-${action}-quote="7"]`).emit('click');
     assert.deepEqual(calls, [action === 'accept' ? '/orcamentos/7/aceitar' : '/orcamentos/7/recusar']);
     }

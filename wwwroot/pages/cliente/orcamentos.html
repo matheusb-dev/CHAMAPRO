@@ -1,2 +1,160 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CHAMAPRO | Meus pedidos</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/variables.css?v=20261102-simple1"><link rel="stylesheet" href="/css/global.css?v=20261102-simple1"><link rel="stylesheet" href="/css/components.css?v=20261102-simple1"><link rel="stylesheet" href="/css/pages/app.css?v=20261102-simple1"><link rel="stylesheet" href="/css/pages/cliente-orcamentos.css?v=20261102-simple1"><link rel="stylesheet" href="/css/pages/cliente.css?v=20261102-stage2"><link rel="stylesheet" href="/css/pages/authenticated.css?v=20261102-simple1"></head>
-<body class="app-auth"><a class="skip-link" href="#mainContent">Pular para o conteúdo</a><header data-app-header></header><div class="app-layout"><aside data-app-sidebar></aside><main class="app-main" id="mainContent" tabindex="-1"><div class="app-content client-area"><section class="page-heading"><span class="text-primary">MEUS PEDIDOS</span><h1 id="ordersHeading">Meus pedidos</h1><p>Compare propostas, combine o agendamento e acompanhe o serviço.</p></section><section id="ordersPage" hidden><div class="app-toolbar"><label for="ordersStatus">Mostrar pedidos</label><select id="ordersStatus"><option value="">Todas as situações</option><option value="PENDENTE">Aguardando propostas</option><option value="ACEITO">Profissional escolhido</option><option value="AGENDADO">Agendados</option><option value="EM_ANDAMENTO">Em andamento</option><option value="CONCLUIDO">Concluídos</option><option value="CANCELADO">Cancelados</option></select></div><div id="ordersPageList" class="app-card" aria-live="polite"></div><nav class="app-actions" id="ordersPagination" aria-label="Páginas de pedidos" hidden><button class="btn btn-secondary" id="previousOrders" type="button">Anterior</button><span class="app-muted" id="ordersPageLabel" role="status"></span><button class="btn btn-secondary" id="nextOrders" type="button">Próxima</button></nav></section><div id="orderContent" class="app-stack"><p class="empty-state">Carregando chamado…</p></div><section id="scheduleBox" class="app-card app-form" hidden><h2>Confirmar agendamento</h2><form id="scheduleForm"><div class="form-group"><label for="scheduleDate">Data e horário</label><input id="scheduleDate" type="datetime-local" required></div><p id="scheduleMessage" class="app-message"></p><button class="btn btn-primary" type="submit">Confirmar agendamento</button></form></section><span id="avaliar" aria-hidden="true"></span><section id="reviewBox" class="app-card app-form" hidden style="margin-top:18px"><h2>Avaliar atendimento</h2><form id="reviewForm"><div class="form-group"><label for="reviewRating">Nota</label><select id="reviewRating" required><option value="">Escolha de 1 a 5</option><option value="5">5 · Excelente</option><option value="4">4 · Muito bom</option><option value="3">3 · Bom</option><option value="2">2 · Regular</option><option value="1">1 · Ruim</option></select></div><div class="form-group"><label for="reviewComment">Comentário (opcional)</label><textarea id="reviewComment" maxlength="1000"></textarea></div><p id="reviewMessage" class="app-message"></p><button class="btn btn-primary" type="submit">Enviar avaliação</button></form></section></div></main></div><script src="/js/api.js?v=20261102-simple1" defer></script><script src="/js/components/header.js?v=20261102-simple1" defer></script><script src="/js/components/sidebar.js?v=20261102-stage5" defer></script><script src="/js/components/notifications.js?v=20261102-stage7" defer></script><script src="/js/app.js?v=20261102-stage7" defer></script><script src="/js/pages/cliente-pedidos.js?v=20261102-stage2" defer></script><script src="/js/pages/cliente-orcamentos.js?v=20261102-stage7" defer></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>CHAMAPRO | Meus pedidos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/variables.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/global.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/components.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/pages/app.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/pages/cliente-orcamentos.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/pages/cliente.css?v=20261102-stage2">
+    <link rel="stylesheet" href="/css/pages/figma.css?v=20261102-simple1">
+    <link rel="stylesheet" href="/css/pages/authenticated.css?v=20261102-simple1">
+</head>
+<body class="app-auth">
+    <a class="skip-link" href="#mainContent">Pular para o conteúdo</a>
+    <header data-app-header data-figma></header>
+    <div class="app-layout" data-figma>
+        <aside data-app-sidebar></aside>
+        <main class="app-main" id="mainContent" tabindex="-1">
+            <div class="app-content client-area">
+
+                <section class="page-heading">
+                    <span class="text-primary">CONTRATAÇÃO</span>
+                    <h1 id="ordersHeading">Meus pedidos</h1>
+                    <p id="ordersSubtitle">Compare propostas, combine o agendamento e acompanhe o serviço.</p>
+                </section>
+
+                <!-- LISTA DE PEDIDOS (sem ?pedidoId) -->
+                <section id="ordersPage" hidden>
+                    <div class="app-toolbar">
+                        <label for="ordersStatus">Mostrar pedidos</label>
+                        <select id="ordersStatus">
+                            <option value="">Todas as situações</option>
+                            <option value="PENDENTE">Aguardando propostas</option>
+                            <option value="ACEITO">Profissional escolhido</option>
+                            <option value="AGENDADO">Agendados</option>
+                            <option value="EM_ANDAMENTO">Em andamento</option>
+                            <option value="CONCLUIDO">Concluídos</option>
+                            <option value="CANCELADO">Cancelados</option>
+                        </select>
+                    </div>
+                    <div id="ordersPageList" class="app-card" aria-live="polite"></div>
+                    <nav class="app-actions" id="ordersPagination" aria-label="Páginas de pedidos" hidden>
+                        <button class="btn btn-secondary" id="previousOrders" type="button">Anterior</button>
+                        <span class="app-muted" id="ordersPageLabel" role="status"></span>
+                        <button class="btn btn-secondary" id="nextOrders" type="button">Próxima</button>
+                    </nav>
+                </section>
+
+                <!-- DETALHE DO PEDIDO (?pedidoId=ID) -->
+                <div class="fg-grid">
+
+                    <div id="orderContent" class="fg-stack">
+                        <p class="empty-state">Carregando chamado…</p>
+                    </div>
+
+                    <aside class="fg-stack" aria-label="Agendamento e avaliação">
+
+                        <!-- Agendamento (pedido com proposta aceita ou remarcação) -->
+                        <section id="scheduleBox" class="fg-card fg-card-lg" hidden>
+                            <h2 class="fg-title fg-title-lg">Agendamento</h2>
+                            <form id="scheduleForm" class="fg-stack" novalidate>
+
+                                <div class="fg-field">
+                                    <label for="scheduleDay">Data escolhida</label>
+                                    <div class="fg-control fg-has-left">
+                                        <svg class="fg-icon-left" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.33333 3.33337H12.6667C13.403 3.33337 14 3.93033 14 4.66671V12.6667C14 13.4031 13.403 14 12.6667 14H3.33333C2.59695 14 2 13.4031 2 12.6667V4.66671C2 3.93033 2.59695 3.33337 3.33333 3.33337Z" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 6.66667H14M5.33333 2V4.66667M10.6667 2V4.66667" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        <input id="scheduleDay" type="date">
+                                        <svg class="fg-icon-right" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </div>
+                                </div>
+
+                                <div class="fg-field">
+                                    <label for="scheduleTime">Horário</label>
+                                    <div class="fg-control fg-has-left">
+                                        <svg class="fg-icon-left" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2C11.3137 2 14 4.68629 14 8Z" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 4.66663V7.99996L10 9.33329" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        <select id="scheduleTime">
+                                            <option value="08:00">08:00 – 10:00</option>
+                                            <option value="10:00">10:00 – 12:00</option>
+                                            <option value="14:00" selected>14:00 – 16:00</option>
+                                            <option value="16:00">16:00 – 18:00</option>
+                                            <option value="18:00">18:00 – 20:00</option>
+                                        </select>
+                                        <svg class="fg-icon-right" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </div>
+                                </div>
+
+                                <!-- Valor enviado à API: data + horário escolhidos acima -->
+                                <input id="scheduleDate" type="hidden" required>
+
+                                <button class="fg-btn fg-btn-primary fg-btn-block" type="submit">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.33325 8L6.66659 11.3333L12.6666 4.66663" stroke="currentColor" stroke-width="1.46667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    Confirmar agendamento
+                                </button>
+
+                                <p id="scheduleMessage" class="app-message"></p>
+
+                                <p class="fg-note">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1.75L12.5416 11.6667H1.45825L7 1.75Z" stroke="currentColor" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 5.83337V8.16671M7 9.91671H7.00583" stroke="currentColor" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    Você pode remarcar até 24h antes do horário.
+                                </p>
+                            </form>
+                        </section>
+
+                        <!-- Situação do agendamento quando o formulário não está disponível -->
+                        <section id="scheduleStatus" class="fg-card fg-card-lg" hidden>
+                            <h2 class="fg-title fg-title-lg">Agendamento</h2>
+                            <p id="scheduleStatusText" class="fg-text"></p>
+                        </section>
+
+                        <!-- Avaliação (pedido concluído) -->
+                        <span id="avaliar" aria-hidden="true"></span>
+                        <section id="reviewBox" class="fg-card fg-card-lg" hidden>
+                            <h2 class="fg-title fg-title-lg">Avaliar atendimento</h2>
+                            <form id="reviewForm" class="fg-stack">
+                                <div class="fg-field">
+                                    <label for="reviewRating">Nota</label>
+                                    <div class="fg-control">
+                                        <select id="reviewRating" required>
+                                            <option value="">Escolha de 1 a 5</option>
+                                            <option value="5">5 · Excelente</option>
+                                            <option value="4">4 · Muito bom</option>
+                                            <option value="3">3 · Bom</option>
+                                            <option value="2">2 · Regular</option>
+                                            <option value="1">1 · Ruim</option>
+                                        </select>
+                                        <svg class="fg-icon-right" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </div>
+                                </div>
+                                <div class="fg-field">
+                                    <label for="reviewComment">Comentário (opcional)</label>
+                                    <div class="fg-control">
+                                        <textarea id="reviewComment" maxlength="1000" placeholder="Conte como foi o atendimento..."></textarea>
+                                    </div>
+                                </div>
+                                <p id="reviewMessage" class="app-message"></p>
+                                <button class="fg-btn fg-btn-primary fg-btn-block" type="submit">Enviar avaliação</button>
+                            </form>
+                        </section>
+
+                    </aside>
+                </div>
+
+            </div>
+        </main>
+    </div>
+    <script src="/js/api.js?v=20261102-simple1" defer></script>
+    <script src="/js/components/header.js?v=20261102-simple1" defer></script>
+    <script src="/js/components/sidebar.js?v=20261102-stage5" defer></script>
+    <script src="/js/components/notifications.js?v=20261102-stage7" defer></script>
+    <script src="/js/app.js?v=20261102-stage7" defer></script>
+    <script src="/js/pages/cliente-pedidos.js?v=20261102-stage2" defer></script>
+    <script src="/js/pages/cliente-orcamentos.js?v=20261102-stage7" defer></script>
+</body>
+</html>
