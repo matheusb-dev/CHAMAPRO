@@ -1,0 +1,1457 @@
+/* =========================================
+   CHAMAPRO - VISUAL DO FIGMA "VERSÃO VITORIA"
+   Arquivo: css/pages/figma.css
+
+   Usado só pelas telas 05 a 08 (orçamentos, gestão,
+   verificação e perfil profissional). Tudo fica dentro de
+   [data-figma], então as outras telas não são afetadas.
+   O shell (header e sidebar) continua sendo o compartilhado;
+   aqui ele só recebe as cores e medidas do Figma.
+========================================= */
+
+.app-auth [data-figma] {
+    --fg-bg: #171816;
+    --fg-header: #20211D;
+    --fg-sidebar: #1D1F1B;
+    --fg-card: #242621;
+    --fg-border: #474940;
+    --fg-border-soft: rgba(71, 73, 64, 0.6);
+    --fg-text: #F5F2E8;
+    --fg-text-2: #B0B0A5;
+    --fg-primary: #FFC928;
+    --fg-primary-hover: #EAB51B;
+    --fg-primary-soft: #3A3420;
+    --fg-success: #8BCB67;
+    --fg-danger: #E45D50;
+    --fg-danger-soft: #3A2220;
+}
+
+body.app-auth:has([data-figma]) {
+    background: #171816;
+    font-family: "Inter", Arial, sans-serif;
+}
+
+/* =========================================
+   SHELL: HEADER
+========================================= */
+
+.app-auth [data-figma].app-topbar {
+    min-height: 76px;
+    padding: 0 30px;
+    background: var(--fg-header);
+    border-bottom: none;
+}
+
+.app-auth [data-figma] .brand {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.app-auth [data-figma] .brand-symbol {
+    display: none;
+}
+
+.app-auth [data-figma] .brand-name {
+    color: var(--fg-text);
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 30px;
+    letter-spacing: 0;
+}
+
+    .app-auth [data-figma] .brand-name span {
+        color: var(--fg-text);
+    }
+
+.app-auth [data-figma] .brand::after {
+    content: "SERVIÇOS E PROFISSIONAIS AO SEU ALCANCE";
+    color: var(--fg-primary);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 12px;
+    white-space: nowrap;
+}
+
+.app-auth [data-figma] .icon-button {
+    width: 40px;
+    height: 40px;
+    color: var(--fg-text);
+    background: transparent;
+    border: 1px solid var(--fg-border);
+    border-radius: 999px;
+}
+
+.app-auth [data-figma] .avatar {
+    width: 40px;
+    height: 40px;
+    color: var(--fg-bg);
+    background: var(--fg-primary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.app-auth [data-figma] .topbar-user strong {
+    color: var(--fg-text);
+    font-size: 13px;
+}
+
+.app-auth [data-figma] .account-role {
+    color: var(--fg-text-2);
+    font-size: 12px;
+}
+
+.app-auth [data-figma] #logoutButton {
+    color: var(--fg-text-2);
+    background: transparent;
+    border-color: var(--fg-border);
+}
+
+/* =========================================
+   SHELL: SIDEBAR
+========================================= */
+
+.app-auth [data-figma] .app-sidebar {
+    width: 225px;
+    padding: 26px 12px;
+    background: var(--fg-sidebar);
+    border-right: none;
+}
+
+/* O Figma mostra o papel do usuário no topo da sidebar. */
+.app-auth [data-figma] .sidebar-label {
+    padding: 0 14px 14px;
+    color: transparent;
+    font-size: 0;
+}
+
+    .app-auth [data-figma] .sidebar-label::after {
+        color: var(--fg-text-2);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+body[data-perfil="cliente"] [data-figma] .sidebar-label::after { content: "CLIENTE"; }
+body[data-perfil="profissional"] [data-figma] .sidebar-label::after { content: "TRABALHADOR"; }
+body[data-perfil="admin"] [data-figma] .sidebar-label::after { content: "ADMINISTRADOR"; }
+
+.app-auth [data-figma] .sidebar-link {
+    gap: 12px;
+    margin-bottom: 6px;
+    padding: 11px 14px;
+    color: var(--fg-text-2);
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+    .app-auth [data-figma] .sidebar-link > svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .app-auth [data-figma] .sidebar-link:hover {
+        color: var(--fg-text);
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .app-auth [data-figma] .sidebar-link.active {
+        color: var(--fg-primary);
+        background: var(--fg-primary-soft);
+        font-weight: 700;
+    }
+
+        .app-auth [data-figma] .sidebar-link.active svg {
+            color: var(--fg-primary);
+        }
+
+.app-auth [data-figma] .sidebar-footer {
+    display: none;
+}
+
+/* Medidas do Figma: header de 76px e sidebar de 225px (telas largas;
+   no mobile vale o menu recolhível do shell compartilhado). */
+@media (min-width: 851px) {
+    .app-auth [data-figma].app-topbar {
+        height: 76px;
+    }
+
+    .app-auth [data-figma].app-layout {
+        grid-template-columns: 225px minmax(0, 1fr);
+        min-height: calc(100vh - 76px);
+    }
+
+    .app-auth [data-figma] .app-sidebar {
+        top: 76px;
+        height: calc(100vh - 76px);
+        justify-content: flex-start;
+    }
+}
+
+/* =========================================
+   CONTEÚDO
+========================================= */
+
+.app-auth [data-figma] .app-main {
+    padding: 0;
+    background: var(--fg-bg);
+}
+
+.app-auth [data-figma] .app-content {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    width: 100%;
+    max-width: 1215px;
+    margin: 0;
+    padding: 30px 40px 30px 35px;
+    color: var(--fg-text);
+}
+
+    .app-auth [data-figma] .app-content > * {
+        max-width: 1140px;
+    }
+
+.app-auth [data-figma] .page-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+    .app-auth [data-figma] .page-heading > .text-primary,
+    .app-auth [data-figma] .fg-eyebrow {
+        color: var(--fg-primary);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 14px;
+        letter-spacing: 0.02em;
+    }
+
+    .app-auth [data-figma] .page-heading h1,
+    .app-auth [data-figma] #adminHeading {
+        margin: 0;
+        color: var(--fg-text);
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 40px;
+    }
+
+    .app-auth [data-figma] .page-heading p {
+        margin: 0;
+        color: var(--fg-text-2);
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+.app-auth [data-figma] h2 {
+    color: var(--fg-text);
+}
+
+.app-auth [data-figma] .app-muted,
+.app-auth [data-figma] .fg-muted {
+    color: var(--fg-text-2);
+}
+
+/* Cards genéricos do restante da tela (lista de pedidos, admin) */
+.app-auth [data-figma] .app-card {
+    color: var(--fg-text);
+    background: var(--fg-card);
+    border: 1px solid transparent;
+    border-radius: 14px;
+    box-shadow: none;
+}
+
+.app-auth [data-figma] .btn {
+    min-height: 40px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.app-auth [data-figma] .btn-primary {
+    color: var(--fg-bg);
+    background: var(--fg-primary);
+    border-color: var(--fg-primary);
+}
+
+    .app-auth [data-figma] .btn-primary:hover:not(:disabled) {
+        background: var(--fg-primary-hover);
+    }
+
+.app-auth [data-figma] .btn-secondary,
+.app-auth [data-figma] .btn-outline {
+    color: var(--fg-text);
+    background: transparent;
+    border: 1px solid var(--fg-border);
+}
+
+.app-auth [data-figma] .btn-small {
+    min-height: 34px;
+    padding: 8px 14px;
+    font-size: 12px;
+}
+
+.app-auth [data-figma] input,
+.app-auth [data-figma] select,
+.app-auth [data-figma] textarea {
+    min-height: 46px;
+    color: var(--fg-text);
+    background: var(--fg-bg);
+    border: 1px solid var(--fg-border);
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+    .app-auth [data-figma] input:focus,
+    .app-auth [data-figma] select:focus,
+    .app-auth [data-figma] textarea:focus {
+        border-color: var(--fg-primary);
+    }
+
+.app-auth [data-figma] label {
+    color: var(--fg-text-2);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.app-auth [data-figma] .badge {
+    padding: 5px 10px;
+    color: var(--fg-primary);
+    background: var(--fg-primary-soft);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.app-auth [data-figma] .badge-success {
+    color: var(--fg-success);
+    background: var(--fg-bg);
+}
+
+.app-auth [data-figma] .empty-state {
+    padding: 16px 0;
+    color: var(--fg-text-2);
+    background: none;
+    border: none;
+    border-radius: 0;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* =========================================
+   COMPONENTES DO FIGMA
+========================================= */
+
+/* Grade principal: coluna larga + coluna lateral */
+.app-auth [data-figma] .fg-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 776fr) minmax(300px, 340fr);
+    align-items: start;
+    gap: 24px;
+}
+
+.app-auth [data-figma] .fg-grid-wide {
+    grid-template-columns: minmax(0, 736fr) minmax(300px, 380fr);
+}
+
+.app-auth [data-figma] .fg-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.app-auth [data-figma] .fg-card {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 24px;
+    color: var(--fg-text);
+    background: var(--fg-card);
+    border: 1px solid transparent;
+    border-radius: 14px;
+}
+
+.app-auth [data-figma] .fg-card-lg {
+    padding: 28px;
+}
+
+.app-auth [data-figma] .fg-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+    .app-auth [data-figma] .fg-card-header > .fg-small {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+.app-auth [data-figma] .fg-title {
+    margin: 0;
+    color: var(--fg-text);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 22px;
+}
+
+.app-auth [data-figma] .fg-title-lg {
+    font-size: 18px;
+    line-height: 24px;
+}
+
+.app-auth [data-figma] .fg-text {
+    margin: 0;
+    color: var(--fg-text-2);
+    font-size: 13px;
+    line-height: 19px;
+}
+
+.app-auth [data-figma] .fg-small {
+    color: var(--fg-text-2);
+    font-size: 12px;
+    line-height: 16px;
+}
+
+/* Linha de lista com divisória */
+.app-auth [data-figma] .fg-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--fg-border-soft);
+}
+
+    .app-auth [data-figma] .fg-row:last-child {
+        border-bottom: none;
+    }
+
+.app-auth [data-figma] .fg-row-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+    .app-auth [data-figma] .fg-row-info strong {
+        color: var(--fg-text);
+        font-size: 14px;
+        line-height: 18px;
+    }
+
+    .app-auth [data-figma] .fg-row-info span {
+        color: var(--fg-text-2);
+        font-size: 12px;
+        line-height: 16px;
+    }
+
+/* Avatar de iniciais */
+.app-auth [data-figma] .fg-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    color: var(--fg-primary);
+    background: var(--fg-primary-soft);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.app-auth [data-figma] .fg-avatar-md { width: 52px; height: 52px; font-size: 16px; }
+.app-auth [data-figma] .fg-avatar-sm { width: 38px; height: 38px; }
+.app-auth [data-figma] .fg-avatar-lg { width: 80px; height: 80px; color: var(--fg-bg); background: var(--fg-primary); font-size: 26px; }
+
+/* Tags */
+.app-auth [data-figma] .fg-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    color: var(--fg-text-2);
+    background: var(--fg-bg);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 14px;
+    white-space: nowrap;
+}
+
+.app-auth [data-figma] .fg-tag-success { color: var(--fg-success); background: var(--fg-bg); }
+.app-auth [data-figma] .fg-tag-warning { color: var(--fg-primary); background: var(--fg-primary-soft); }
+.app-auth [data-figma] .fg-tag-danger { color: var(--fg-danger); background: var(--fg-danger-soft); }
+
+/* Botões */
+.app-auth [data-figma] .fg-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 12px 18px;
+    color: var(--fg-text);
+    background: transparent;
+    border: 1px solid var(--fg-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 16px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+    .app-auth [data-figma] .fg-btn:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--fg-text-2);
+    }
+
+    .app-auth [data-figma] .fg-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+    }
+
+.app-auth [data-figma] .fg-btn-primary {
+    color: var(--fg-bg);
+    background: var(--fg-primary);
+    border-color: var(--fg-primary);
+}
+
+    .app-auth [data-figma] .fg-btn-primary:hover:not(:disabled) {
+        background: var(--fg-primary-hover);
+        border-color: var(--fg-primary-hover);
+    }
+
+.app-auth [data-figma] .fg-btn-sm {
+    min-height: 38px;
+    padding: 10px 16px;
+    font-size: 12px;
+}
+
+.app-auth [data-figma] .fg-btn-block {
+    width: 100%;
+}
+
+.app-auth [data-figma] .fg-link {
+    padding: 0;
+    color: var(--fg-text-2);
+    background: none;
+    border: none;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+    .app-auth [data-figma] .fg-link:hover {
+        color: var(--fg-text);
+        text-decoration: underline;
+    }
+
+/* Campos */
+.app-auth [data-figma] .fg-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+}
+
+    .app-auth [data-figma] .fg-field > label {
+        margin: 0;
+        color: var(--fg-text-2);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px;
+    }
+
+.app-auth [data-figma] .fg-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+    .app-auth [data-figma] .fg-control > svg {
+        position: absolute;
+        pointer-events: none;
+    }
+
+        .app-auth [data-figma] .fg-control > svg.fg-icon-left {
+            left: 17px;
+            color: var(--fg-primary);
+        }
+
+        .app-auth [data-figma] .fg-control > svg.fg-icon-right {
+            right: 17px;
+            color: var(--fg-text-2);
+        }
+
+    .app-auth [data-figma] .fg-control select,
+    .app-auth [data-figma] .fg-control input,
+    .app-auth [data-figma] .fg-control textarea {
+        width: 100%;
+        margin: 0;
+        padding: 13px 16px;
+        appearance: none;
+        line-height: 18px;
+    }
+
+    .app-auth [data-figma] .fg-control.fg-has-left select,
+    .app-auth [data-figma] .fg-control.fg-has-left input {
+        padding-left: 43px;
+    }
+
+    .app-auth [data-figma] .fg-control select {
+        padding-right: 43px;
+        cursor: pointer;
+    }
+
+    .app-auth [data-figma] .fg-control textarea {
+        min-height: 96px;
+        resize: vertical;
+    }
+
+        .app-auth [data-figma] .fg-control textarea::placeholder {
+            color: var(--fg-text-2);
+        }
+
+    .app-auth [data-figma] .fg-control input[type="date"]::-webkit-calendar-picker-indicator {
+        opacity: 0;
+        cursor: pointer;
+    }
+
+/* Aviso pequeno com ícone */
+.app-auth [data-figma] .fg-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--fg-text-2);
+    font-size: 12px;
+    line-height: 16px;
+}
+
+    .app-auth [data-figma] .fg-note.fg-ok { color: var(--fg-success); }
+    .app-auth [data-figma] .fg-note.fg-error { color: var(--fg-danger); }
+
+/* Mensagens de status das ações */
+.app-auth [data-figma] .app-message {
+    margin: 0;
+    font-size: 12px;
+}
+
+/* Estrelas */
+.app-auth [data-figma] .fg-stars {
+    display: inline-flex;
+    gap: 2px;
+    color: var(--fg-primary);
+}
+
+    .app-auth [data-figma] .fg-stars .star-off {
+        display: inline-flex;
+        color: var(--fg-border);
+    }
+
+/* Modal */
+.app-auth [data-figma] .app-dialog,
+.app-auth [data-figma] .fg-dialog {
+    width: min(480px, calc(100% - 32px));
+    padding: 0;
+    color: var(--fg-text);
+    background: var(--fg-card);
+    border: 1px solid var(--fg-border);
+    border-radius: 14px;
+}
+
+    .app-auth [data-figma] .app-dialog::backdrop,
+    .app-auth [data-figma] .fg-dialog::backdrop {
+        background: rgba(0, 0, 0, 0.6);
+    }
+
+    .app-auth [data-figma] .app-dialog .app-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin: 0;
+        padding: 24px;
+    }
+
+/* Toast de feedback (criado no body pelo api.js) */
+.app-auth .toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 100;
+    max-width: 360px;
+    padding: 14px 18px;
+    color: #F5F2E8;
+    background: #242621;
+    border: 1px solid #474940;
+    border-left: 4px solid #FFC928;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    font-size: 13px;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+    .app-auth .toast.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .app-auth .toast.toast-success { border-left-color: #8BCB67; }
+    .app-auth .toast.toast-error { border-left-color: #E45D50; }
+
+/* =========================================
+   TELA 05 - ORÇAMENTOS E AGENDA
+========================================= */
+
+.app-auth [data-figma] .fg-back {
+    color: var(--fg-text-2);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+    .app-auth [data-figma] .fg-back:hover {
+        color: var(--fg-text);
+    }
+
+.app-auth [data-figma] .fg-proposta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+    background: var(--fg-card);
+    border: 1px solid transparent;
+    border-radius: 14px;
+}
+
+    .app-auth [data-figma] .fg-proposta.fg-destaque {
+        border-color: rgba(255, 201, 40, 0.5);
+    }
+
+.app-auth [data-figma] .fg-proposta-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.app-auth [data-figma] .fg-proposta-nome {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+    .app-auth [data-figma] .fg-proposta-nome a {
+        color: var(--fg-text);
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 22px;
+    }
+
+        .app-auth [data-figma] .fg-proposta-nome a:hover {
+            text-decoration: underline;
+        }
+
+.app-auth [data-figma] .fg-proposta-avaliacao {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--fg-text-2);
+    font-size: 12px;
+    line-height: 16px;
+}
+
+    .app-auth [data-figma] .fg-proposta-avaliacao svg {
+        color: var(--fg-primary);
+    }
+
+.app-auth [data-figma] .fg-proposta-descricao {
+    margin: 0;
+    color: var(--fg-text);
+    font-size: 13px;
+    line-height: 19px;
+}
+
+.app-auth [data-figma] .fg-proposta-valor {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+    .app-auth [data-figma] .fg-proposta-valor strong {
+        color: var(--fg-text);
+        font-size: 22px;
+        line-height: 28px;
+    }
+
+.app-auth [data-figma] .fg-proposta-acoes {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.app-auth [data-figma] .fg-whatsapp {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 18px;
+}
+
+.app-auth [data-figma] .fg-whatsapp-icone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    color: var(--fg-success);
+    background: var(--fg-bg);
+    border-radius: 12px;
+}
+
+.app-auth [data-figma] .fg-whatsapp-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+    .app-auth [data-figma] .fg-whatsapp-texto strong {
+        color: var(--fg-text);
+        font-size: 15px;
+        line-height: 20px;
+    }
+
+/* Resumo do pedido */
+.app-auth [data-figma] .fg-pedido-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.app-auth [data-figma] .fg-pedido-acoes {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+    .app-auth [data-figma] .fg-pedido-acoes:empty {
+        display: none;
+    }
+
+.app-auth [data-figma] .fg-fotos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+    .app-auth [data-figma] .fg-fotos img {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+/* =========================================
+   TELA 06 - GESTÃO (ADMIN)
+========================================= */
+
+.app-auth [data-figma] .admin-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+    .app-auth [data-figma] .admin-workspace > .app-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 0;
+        background: none;
+        border: none;
+    }
+
+        .app-auth [data-figma] .admin-workspace > .app-toolbar .btn {
+            min-height: 34px;
+            padding: 8px 14px;
+            color: var(--fg-text-2);
+            background: transparent;
+            border: 1px solid var(--fg-border);
+            border-radius: 999px;
+            font-size: 12px;
+        }
+
+            .app-auth [data-figma] .admin-workspace > .app-toolbar .btn[aria-current="page"] {
+                color: var(--fg-primary);
+                background: var(--fg-primary-soft);
+                border-color: var(--fg-primary-soft);
+            }
+
+.app-auth [data-figma] #adminView {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+    .app-auth [data-figma] #adminView > p {
+        margin: -16px 0 0;
+        color: var(--fg-text-2);
+        font-size: 14px;
+    }
+
+.app-auth [data-figma] .fg-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+    .app-auth [data-figma] .fg-metrics > #platformSummary {
+        display: contents;
+    }
+
+        /* Carregando / erro do resumo ocupam o lugar dos 3 primeiros indicadores */
+        .app-auth [data-figma] #platformSummary > :is([role="alert"], [role="status"]) {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            grid-column: span 3;
+            margin: 0;
+            padding: 16px 18px;
+            color: var(--fg-text-2);
+            background: var(--fg-card);
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+            .app-auth [data-figma] #platformSummary > [role="alert"] p {
+                margin: 0;
+            }
+
+.app-auth [data-figma] .fg-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 18px;
+    background: var(--fg-card);
+    border-radius: 12px;
+}
+
+    .app-auth [data-figma] .fg-metric-rotulo {
+        color: var(--fg-text-2);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px;
+    }
+
+    .app-auth [data-figma] .fg-metric-valor {
+        color: var(--fg-text);
+        font-size: 26px;
+        font-weight: 700;
+        line-height: 30px;
+    }
+
+    .app-auth [data-figma] .fg-metric-detalhe {
+        font-size: 11px;
+        line-height: 14px;
+    }
+
+.app-auth [data-figma] .fg-metric-erro {
+    grid-column: span 3;
+}
+
+.app-auth [data-figma] .fg-verde { color: var(--fg-success); }
+.app-auth [data-figma] .fg-amarelo { color: var(--fg-primary); }
+.app-auth [data-figma] .fg-vermelho { color: var(--fg-danger); }
+
+.app-auth [data-figma] .fg-barras {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.app-auth [data-figma] .fg-barra {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+    .app-auth [data-figma] .fg-barra span {
+        display: flex;
+        justify-content: space-between;
+        color: var(--fg-text);
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 16px;
+    }
+
+        .app-auth [data-figma] .fg-barra span small {
+            color: var(--fg-text-2);
+            font-size: 12px;
+            font-weight: 400;
+        }
+
+.app-auth [data-figma] .fg-trilho {
+    height: 8px;
+    overflow: hidden;
+    background: var(--fg-bg);
+    border-radius: 999px;
+}
+
+.app-auth [data-figma] .fg-preenchimento {
+    height: 100%;
+    background: var(--fg-primary);
+    border-radius: 999px;
+}
+
+/* Demais seções do admin (listas, formulários) no visual do Figma */
+.app-auth [data-figma] #adminView .app-toolbar {
+    padding: 16px;
+    background: var(--fg-card);
+    border: none;
+    border-radius: 12px;
+}
+
+.app-auth [data-figma] #adminView .app-card {
+    padding: 24px;
+}
+
+    .app-auth [data-figma] #adminView .app-card h2 {
+        margin: 0 0 8px;
+        font-size: 16px;
+        line-height: 22px;
+    }
+
+    .app-auth [data-figma] #adminView .app-card p {
+        margin: 0 0 6px;
+        color: var(--fg-text-2);
+        font-size: 13px;
+        line-height: 19px;
+    }
+
+.app-auth [data-figma] #adminView .form-hint,
+.app-auth [data-figma] #adminView [role="status"] {
+    color: var(--fg-text-2);
+    font-size: 12px;
+}
+
+.app-auth [data-figma] #adminView details summary {
+    color: var(--fg-primary);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.app-auth [data-figma] #adminView fieldset {
+    border-color: var(--fg-border);
+    border-radius: 10px;
+}
+
+/* =========================================
+   TELA 07 - VERIFICAÇÃO E DENÚNCIAS
+========================================= */
+
+.app-auth [data-figma] .fg-status-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.app-auth [data-figma] .fg-status-categoria {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--fg-primary);
+}
+
+    .app-auth [data-figma] .fg-status-categoria h2 {
+        margin: 0;
+        color: var(--fg-text);
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 28px;
+    }
+
+.app-auth [data-figma] .fg-progresso {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.app-auth [data-figma] .fg-etapas {
+    display: flex;
+    align-items: center;
+    height: 14px;
+}
+
+.app-auth [data-figma] .fg-ponto {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    background: var(--fg-bg);
+    border: 2px solid var(--fg-border);
+    border-radius: 999px;
+}
+
+    .app-auth [data-figma] .fg-ponto.fg-feito {
+        background: var(--fg-text);
+        border: none;
+    }
+
+    .app-auth [data-figma] .fg-ponto.fg-atual {
+        width: 14px;
+        height: 14px;
+        background: var(--fg-primary);
+        border: none;
+        box-shadow: 0 0 0 3px var(--fg-primary-soft);
+    }
+
+.app-auth [data-figma] .fg-linha {
+    flex: 1;
+    height: 2px;
+    background: var(--fg-border);
+}
+
+    .app-auth [data-figma] .fg-linha.fg-feito {
+        background: var(--fg-text);
+    }
+
+.app-auth [data-figma] .fg-rotulos {
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0;
+    color: var(--fg-text-2);
+    font-size: 11px;
+    line-height: 14px;
+    list-style: none;
+}
+
+    .app-auth [data-figma] .fg-rotulos li.fg-atual {
+        color: var(--fg-primary);
+        font-weight: 700;
+    }
+
+.app-auth [data-figma] .fg-doc-icone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    color: var(--fg-primary);
+    background: var(--fg-primary-soft);
+    border-radius: 10px;
+}
+
+.app-auth [data-figma] .fg-doc-acoes {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.app-auth [data-figma] .fg-titulo-icone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--fg-primary);
+}
+
+.app-auth [data-figma] input[type="file"] {
+    padding: 12px;
+    border-style: dashed;
+    font-size: 13px;
+}
+
+/* =========================================
+   TELA 08 - PERFIL PROFISSIONAL
+========================================= */
+
+.app-auth [data-figma] .fg-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 6px;
+    color: var(--fg-text-2);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+    .app-auth [data-figma] .fg-breadcrumb a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--fg-text-2);
+    }
+
+        .app-auth [data-figma] .fg-breadcrumb a:hover {
+            color: var(--fg-text);
+        }
+
+    .app-auth [data-figma] .fg-breadcrumb strong {
+        color: var(--fg-text);
+    }
+
+.app-auth [data-figma] .fg-perfil-id {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.app-auth [data-figma] .fg-perfil-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+    .app-auth [data-figma] .fg-perfil-info h2 {
+        margin: 0;
+        color: var(--fg-text);
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 28px;
+    }
+
+.app-auth [data-figma] .fg-linha-icone {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: var(--fg-text-2);
+    font-size: 13px;
+    line-height: 16px;
+}
+
+.app-auth [data-figma] .fg-favoritar {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 999px;
+}
+
+    .app-auth [data-figma] .fg-favoritar[aria-pressed="true"] {
+        color: var(--fg-danger);
+        border-color: var(--fg-danger);
+    }
+
+        .app-auth [data-figma] .fg-favoritar[aria-pressed="true"] path {
+            fill: currentColor;
+        }
+
+.app-auth [data-figma] .fg-descricao {
+    margin: 0;
+    color: var(--fg-text);
+    font-size: 15px;
+    line-height: 23px;
+}
+
+.app-auth [data-figma] .fg-secao {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid var(--fg-border-soft);
+}
+
+.app-auth [data-figma] .fg-secao-titulo {
+    color: var(--fg-text-2);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 14px;
+}
+
+.app-auth [data-figma] .fg-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.app-auth [data-figma] .fg-chip {
+    padding: 8px 14px;
+    color: var(--fg-text);
+    border: 1px solid var(--fg-border);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+}
+
+    .app-auth [data-figma] .fg-chip small {
+        color: var(--fg-text-2);
+        font-size: 11px;
+    }
+
+.app-auth [data-figma] .fg-disponibilidade {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.app-auth [data-figma] .fg-ponto-online {
+    width: 8px;
+    height: 8px;
+    background: var(--fg-success);
+    border-radius: 999px;
+}
+
+.app-auth [data-figma] .fg-valor-destaque {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--fg-text);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.app-auth [data-figma] .fg-nota {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0 18px;
+    border-bottom: 1px solid var(--fg-border-soft);
+}
+
+    .app-auth [data-figma] .fg-nota strong {
+        color: var(--fg-text);
+        font-size: 44px;
+        font-weight: 700;
+        line-height: 48px;
+    }
+
+.app-auth [data-figma] .fg-avaliacao {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--fg-border-soft);
+}
+
+    .app-auth [data-figma] .fg-avaliacao:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+.app-auth [data-figma] .fg-avaliacao-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+    .app-auth [data-figma] .fg-avaliacao-topo strong {
+        color: var(--fg-text);
+        font-size: 14px;
+    }
+
+.app-auth [data-figma] .fg-portfolio {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+    .app-auth [data-figma] .fg-portfolio img {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+/* =========================================
+   RESPONSIVIDADE
+========================================= */
+
+@media (max-width: 1100px) {
+    .app-auth [data-figma] .fg-grid,
+    .app-auth [data-figma] .fg-grid-wide {
+        grid-template-columns: 1fr;
+    }
+
+    .app-auth [data-figma] .fg-metrics,
+    .app-auth [data-figma] .fg-barras {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .app-auth [data-figma] .fg-metric-erro,
+    .app-auth [data-figma] #platformSummary > :is([role="alert"], [role="status"]) {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 850px) {
+    .app-auth [data-figma].app-topbar {
+        padding: 0 16px;
+    }
+
+    .app-auth [data-figma] .brand::after {
+        display: none;
+    }
+
+    .app-auth [data-figma] .app-content {
+        padding: 24px 16px;
+    }
+
+    .app-auth [data-figma] .page-heading h1,
+    .app-auth [data-figma] #adminHeading {
+        font-size: 26px;
+        line-height: 32px;
+    }
+}
+
+@media (max-width: 640px) {
+    .app-auth [data-figma] .fg-proposta,
+    .app-auth [data-figma] .fg-whatsapp,
+    .app-auth [data-figma] .fg-perfil-id {
+        flex-wrap: wrap;
+    }
+
+    .app-auth [data-figma] .fg-proposta-valor {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .app-auth [data-figma] .fg-whatsapp .fg-btn,
+    .app-auth [data-figma] .fg-disponibilidade .fg-btn {
+        width: 100%;
+    }
+
+    .app-auth [data-figma] .fg-disponibilidade {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .app-auth [data-figma] .fg-metrics,
+    .app-auth [data-figma] .fg-barras {
+        grid-template-columns: 1fr;
+    }
+
+    .app-auth [data-figma] .fg-metric-erro,
+    .app-auth [data-figma] #platformSummary > :is([role="alert"], [role="status"]) {
+        grid-column: auto;
+    }
+}
