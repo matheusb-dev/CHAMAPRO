@@ -1,2 +1,277 @@
-.professional-order{display:grid;gap:14px}.professional-order h2{margin:8px 0}.professional-order-meta{display:flex;flex-wrap:wrap;gap:12px;color:var(--color-text-muted);font-size:13px}.professional-profile-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
-@media(max-width:760px){.professional-profile-grid{grid-template-columns:1fr}}
+.professional-order {
+    display: grid;
+    gap: 14px
+}
+
+    .professional-order h2 {
+        margin: 8px 0
+    }
+
+.professional-order-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: var(--color-text-muted);
+    font-size: 13px
+}
+
+.professional-profile-grid {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: 18px
+}
+
+@media(max-width:760px) {
+    .professional-profile-grid {
+        grid-template-columns: 1fr
+    }
+}
+/* Metáfora do prego: martelo animado (dois cliques = duas marteladas) */
+.hammer-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 6px 18px 6px 10px;
+    border-radius: 14px;
+    background: var(--color-primary-soft);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background .2s,transform .2s,box-shadow .2s
+}
+
+    .hammer-cta:hover, .hammer-cta:focus-visible {
+        background: rgba(255,201,40,.22);
+        box-shadow: 0 0 0 4px rgba(255,201,40,.12);
+        transform: translateY(-1px)
+    }
+
+    .hammer-cta:focus-visible {
+        outline: 3px solid var(--color-primary);
+        outline-offset: 3px
+    }
+
+    .hammer-cta.is-opening {
+        pointer-events: none
+    }
+
+.hammer-svg {
+    display: block;
+    width: 120px;
+    height: 90px;
+    overflow: visible
+}
+
+.hammer-wood {
+    fill: #6B4423
+}
+
+.hammer-wood-top {
+    fill: #8A5A2B
+}
+
+.hammer-grain {
+    fill: none;
+    stroke: #573719;
+    stroke-width: 1.6;
+    stroke-linecap: round
+}
+
+.nail-shaft {
+    fill: #B9BBB2
+}
+
+.nail-head {
+    fill: #E3E4DD
+}
+
+.hammer-handle {
+    fill: #C98B4B
+}
+
+.hammer-grip {
+    fill: #8F5A28
+}
+
+.hammer-head {
+    fill: #B5B7AE
+}
+
+.hammer-shine {
+    fill: #E3E4DD;
+    opacity: .8
+}
+
+.hammer-face {
+    fill: #85887E
+}
+
+.hammer-claw {
+    fill: #9A9C93
+}
+
+.hammer-spark {
+    fill: var(--color-primary);
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center
+}
+
+.hammer-tool {
+    transform-box: view-box;
+    transform-origin: 40px 86px;
+    transform: rotate(-30deg);
+    animation: hammer-idle 2.4s ease-in-out infinite
+}
+
+.hammer-nail {
+    transition: transform .12s ease-in .2s
+}
+
+.hammer-cta[data-hits="1"] .hammer-nail {
+    transform: translateY(7px)
+}
+
+.hammer-cta[data-hits="2"] .hammer-nail {
+    transform: translateY(14px)
+}
+
+.hammer-cta:hover .hammer-tool, .hammer-cta:focus-visible .hammer-tool {
+    animation: hammer-ready .7s ease-in-out infinite alternate
+}
+
+.hammer-cta.hit-a .hammer-tool {
+    animation: hammer-hit-a .45s ease-in,hammer-idle 2.4s ease-in-out .45s infinite
+}
+
+.hammer-cta.hit-b .hammer-tool {
+    animation: hammer-hit-b .45s ease-in,hammer-idle 2.4s ease-in-out .45s infinite
+}
+
+.hammer-cta.hit-a .hammer-spark, .hammer-cta.hit-b .hammer-spark {
+    animation: hammer-spark .3s ease-out .2s
+}
+
+.hammer-hint {
+    position: relative;
+    min-width: 150px;
+    font-size: .8125rem;
+    font-weight: 700;
+    line-height: 1.2;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity .2s,transform .2s
+}
+
+.hammer-cta:hover .hammer-hint, .hammer-cta:focus-visible .hammer-hint, .hammer-cta:not([data-hits="0"]) .hammer-hint {
+    opacity: 1;
+    transform: none
+}
+
+.hammer-hint span {
+    display: none
+}
+
+.hammer-cta[data-hits="0"] .hint-0, .hammer-cta[data-hits="1"] .hint-1, .hammer-cta[data-hits="2"] .hint-2 {
+    display: inline
+}
+
+.hammer-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap
+}
+
+@keyframes hammer-idle {
+    0%,100% {
+        transform: rotate(-30deg)
+    }
+
+    50% {
+        transform: rotate(-21deg)
+    }
+}
+
+@keyframes hammer-ready {
+    from {
+        transform: rotate(-36deg)
+    }
+
+    to {
+        transform: rotate(-6deg)
+    }
+}
+
+@keyframes hammer-hit-a {
+    0% {
+        transform: rotate(-36deg)
+    }
+
+    44% {
+        transform: rotate(31deg)
+    }
+
+    58% {
+        transform: rotate(25deg)
+    }
+
+    100% {
+        transform: rotate(-30deg)
+    }
+}
+
+@keyframes hammer-hit-b {
+    0% {
+        transform: rotate(-36deg)
+    }
+
+    44% {
+        transform: rotate(36deg)
+    }
+
+    58% {
+        transform: rotate(30deg)
+    }
+
+    100% {
+        transform: rotate(-30deg)
+    }
+}
+
+@keyframes hammer-spark {
+    0% {
+        opacity: .7;
+        transform: scale(.3)
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1.4)
+    }
+}
+
+@media(prefers-reduced-motion:reduce) {
+    .hammer-cta, .hammer-hint, .hammer-nail {
+        transition: none
+    }
+
+        .hammer-cta .hammer-tool {
+            animation: none !important
+        }
+
+        .hammer-cta .hammer-spark {
+            animation: none !important
+        }
+}
+
+@media(max-width:480px) {
+    .hammer-hint {
+        min-width: 0
+    }
+}
