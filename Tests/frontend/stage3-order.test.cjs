@@ -62,7 +62,7 @@ function environment({ search='', profile={cidade:'São Paulo',bairro:'Centro',e
     };
     const cities=[{id:3550308,nome:'São Paulo',uf:'SP'},{id:3509502,nome:'Campinas',uf:'SP'},{id:4104303,nome:'Campo Mourão',uf:'PR'},{id:1,nome:'Bom Jesus',uf:'PI'},{id:2,nome:'Bom Jesus',uf:'RS'}];
     const context={document:doc,Event:UIEvent,CustomEvent:UIEvent,URLSearchParams,FormData,location:{search,assign:url=>redirects.push(url)},fetch:async()=>({ok:true,json:async()=>cities}),window:{Chamapro:{api,escaparHtml:v=>String(v??'').replaceAll('<','&lt;'),formatarNota:String,toast(){}},ChamaproApp:{ready:Promise.resolve({perfil:'CLIENTE'})}}};
-    vm.createContext(context);
+    vm.createContext(context);require('./helpers/api.cjs').install(context);
     vm.runInContext(read('wwwroot/js/components/combobox.js'),context);
     vm.runInContext(read('wwwroot/js/pages/cliente.js'),context);
     return {nodes,doc,context,calls,redirects,radios,cities,setPending:p=>{createResolver=p;}};
@@ -113,7 +113,7 @@ test('automatic creation blocks duplicate requests and redirects to the created 
 });
 test('long selectors cap DOM options, provide internal scrolling and preserve selected values on refresh',async()=>{
     const e=await ready();const control=e.doc.createElement('input');control.id='large';e.nodes.get('createOrderForm').append(control);const combo=e.context.window.ChamaproCombobox.mount(control,{label:'Lista'});
-    const items=Array.from({length:200},(_,i)=>({value:String(i),label:'Opção '+i}));combo.setItems(items);combo.select('150');combo.input.focus();await combo.input.emit('keydown',{key:'ArrowDown'});assert.equal(e.doc.getElementById('largeOptions').children.length,80);assert.match(e.doc.getElementById('largeStatus').textContent,/200/);combo.setItems(items);assert.equal(control.value,'150');assert.match(read('wwwroot/css/pages/pedido.css'),/max-height: 240px; overflow-y: auto/);
+    const items=Array.from({length:200},(_,i)=>({value:String(i),label:'Opção '+i}));combo.setItems(items);combo.select('150');combo.input.focus();await combo.input.emit('keydown',{key:'ArrowDown'});assert.equal(e.doc.getElementById('largeOptions').children.length,80);assert.match(e.doc.getElementById('largeStatus').textContent,/200/);combo.setItems(items);assert.equal(control.value,'150');assert.match(read('wwwroot/css/pages/pedido.css'),/max-height: 240px;\s+overflow-y: auto/);
 });
 test('official local snapshot contains all 27 UFs, unique IBGE identifiers and Campo Mourão',()=>{
     const rows=JSON.parse(read('wwwroot/data/municipios-ibge.json'));assert.ok(rows.length>=5500);assert.equal(new Set(rows.map(r=>r.uf)).size,27);assert.equal(new Set(rows.map(r=>r.id)).size,rows.length);assert.ok(rows.some(r=>r.id===4104303&&r.nome==='Campo Mourão'&&r.uf==='PR'));
@@ -125,9 +125,8 @@ test('categories failure offers retry and recovers without a duplicated category
     const old=e.context.window.Chamapro.api;e.context.window.Chamapro.api=async route=>route==='/categorias'?[{id:55,nome:'Serviço da API'}]:old(route);
     await retry.emit('click');await tick();const input=e.doc.getElementById('categorySearch');input.focus();assert.equal(e.doc.getElementById('categoryOptions').children[0].textContent,'Serviço da API');
 });
-test('scheduled mode sends future ISO date and canonical city without changing API contract',async()=>{
-    const e=await ready();e.nodes.get('serviceType').value='AGENDADO';await e.nodes.get('serviceType').emit('change');assert.equal(e.nodes.get('desiredDate').required,true);
-    e.nodes.get('desiredDate').value='2099-11-03T10:00';await e.nodes.get('confirmOrder').emit('click');const body=e.calls.find(c=>c.route==='/pedidos').body;assert.equal(body.tipoAtendimento,'AGENDADO');assert.ok(body.dataDesejada.endsWith('Z'));assert.equal(body.cidade,'São Paulo');assert.deepEqual(Object.keys(body).sort(),['categoriaId','titulo','descricao','cidade','bairro','endereco','tipoAtendimento','dataDesejada','distribuirParaCompativeis','profissionalIds','fotoUrls'].sort());
+test('urgent mode always sends no desired date, even with stale legacy controls',async()=>{
+    const e=await ready();e.nodes.get('serviceType').value='AGENDADO';e.nodes.get('desiredDate').value='2099-11-03T10:00';await e.nodes.get('confirmOrder').emit('click');const body=e.calls.find(c=>c.route==='/pedidos').body;assert.equal(body.tipoAtendimento,'IMEDIATO');assert.equal(body.dataDesejada,null);assert.equal(body.cidade,'São Paulo');
 });
 test('favorite selection, editable data and file references survive back/forward without a redundant search',async()=>{
     const e=await ready({search:'?profissionalId=7'});const file={name:'foto.png'};e.nodes.get('photos').files=[file];const form=e.nodes.get('createOrderForm');
@@ -135,6 +134,6 @@ test('favorite selection, editable data and file references survive back/forward
     await form.emit('chamapro:stepchange',{detail:1});await form.emit('chamapro:stepchange',{detail:2});await tick();assert.equal(e.calls.filter(c=>c.route.startsWith('/profissionais?')).length,queries);assert.equal(e.nodes.get('photos').files[0],file);assert.equal(e.nodes.get('description').value,'Descrição do serviço de teste');
 });
 test('API helper preserves status and business code for confirmation error handling',async()=>{
-    const context={FormData,Intl,sessionStorage:{getItem:()=>null},document:{addEventListener(){}},window:{},fetch:async()=>({ok:false,status:422,text:async()=>JSON.stringify({codigo:'SEM_PROFISSIONAIS_COMPATIVEIS',detalhe:'Não há profissionais',titulo:'Operação não permitida'})})};vm.createContext(context);vm.runInContext(read('wwwroot/js/api.js'),context);
+    const context={FormData,Intl,sessionStorage:{getItem:()=>null},document:{addEventListener(){}},window:{},fetch:async()=>({ok:false,status:422,text:async()=>JSON.stringify({codigo:'SEM_PROFISSIONAIS_COMPATIVEIS',detalhe:'Não há profissionais',titulo:'Operação não permitida'})})};vm.createContext(context);require('./helpers/api.cjs').install(context);vm.runInContext(read('wwwroot/js/api.js'),context);
     await assert.rejects(context.window.Chamapro.api('/pedidos',{method:'POST',body:{}}),error=>error.status===422&&error.codigo==='SEM_PROFISSIONAIS_COMPATIVEIS'&&error.message==='Não há profissionais');
 });

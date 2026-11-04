@@ -1,0 +1,9 @@
+/* Shared header logo: public home and authenticated pages. */
+.app-auth .brand, .home-page .brand { display: inline-flex; align-items: center; gap: 11px; flex-shrink: 0; }
+.app-auth .brand-symbol, .home-page .brand-symbol { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--color-primary); color: #171812; font-size: 27px; font-weight: 800; transform: rotate(-6deg); }
+.app-auth .brand-name, .home-page .brand-name { font-size: 21px; font-weight: 800; letter-spacing: -.7px; }
+.app-auth .brand-name span, .home-page .brand-name span { color: var(--color-primary); }
+.home-page .brand { color: #F5F7F2; }
+@media (max-width: 560px) {
+    .home-page .brand-name { display: none; }
+}

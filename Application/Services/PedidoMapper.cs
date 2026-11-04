@@ -15,17 +15,17 @@ public static class PedidoMapper
         => new(p.Id, p.Titulo, p.Categoria.Nome, p.Status, p.CriadoEm, p.Cidade, p.Bairro,
             profissionalId is null
                 ? null
-                : p.Destinatarios.FirstOrDefault(d => d.ProfissionalId == profissionalId)?.Situacao);
+                : p.Destinatarios.FirstOrDefault(d => d.ProfissionalId == profissionalId)?.Situacao ?? SituacaoDestinatario.Pendente);
 
     /// <summary>ehCliente = true: visão do cliente dono. Senão, visão do profissional destinatário (só a própria situação).</summary>
     public static PedidoDetalheResponse ToDetalhe(this Pedido p, bool ehCliente, int? profissionalId)
     {
-        var destinatarios = (ehCliente ? p.Destinatarios : p.Destinatarios.Where(d => d.ProfissionalId == profissionalId))
+        var destinatarios = (ehCliente ? p.Destinatarios.Where(d => d.Profissional?.Usuario?.Ativo == true || d.ProfissionalId == p.ProfissionalId) : p.Destinatarios.Where(d => d.ProfissionalId == profissionalId))
             .Select(d => new DestinatarioResponse(d.ProfissionalId, d.Profissional?.Usuario?.Nome, d.Situacao))
             .ToList();
 
         var aceito = p.Orcamentos.FirstOrDefault(o => o.Status == StatusOrcamento.Aceito);
-        var orcamentoAceito = aceito is not null && (ehCliente || aceito.ProfissionalId == profissionalId)
+        var orcamentoAceito = aceito is not null && ((ehCliente && aceito.Profissional?.Usuario?.Ativo == true) || aceito.ProfissionalId == profissionalId)
             ? aceito.ToResponse()
             : null;
 
@@ -67,5 +67,6 @@ public static class PedidoMapper
                 o.Profissional.Id,
                 o.Profissional.Usuario.Nome,
                 o.Profissional.MediaAvaliacao,
-                o.Profissional.Usuario.IdentidadeVerificada));
+                o.Profissional.Usuario.IdentidadeVerificada,
+                o.Profissional.Usuario.Telefone));
 }

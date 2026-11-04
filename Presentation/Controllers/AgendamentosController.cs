@@ -16,11 +16,20 @@ namespace Chamapro.Api.Controllers;
 [ApiController]
 [Route(ApiRotas.Prefixo + "/agendamentos")]
 [Authorize(Roles = "CLIENTE,PROFISSIONAL,ADMIN")]
-public class AgendamentosController : ApiControllerBase
+public class AgendamentosController : ApiControllerBase, Microsoft.AspNetCore.Mvc.Filters.IActionFilter
 {
     private readonly AppDbContext _context;
     private readonly ICurrentUser _currentUser;
     private readonly INotificacaoService _notificacoes;
+
+    public void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
+    {
+        if (!HttpMethods.IsGet(context.HttpContext.Request.Method))
+            context.Result = StatusCode(410, new { codigo = "AGENDAMENTO_DESCONTINUADO", message = "O CHAMAPRO recebe apenas solicitações urgentes, sem agendamento." });
+
+    }
+
+    public void OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context) { }
 
     public AgendamentosController(AppDbContext context, ICurrentUser currentUser, INotificacaoService notificacoes)
     {

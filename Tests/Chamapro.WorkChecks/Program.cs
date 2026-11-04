@@ -20,7 +20,7 @@ try {
     await using var db=new AppDbContext(options);
     var user=await db.Usuarios.AsNoTracking().SingleAsync(u=>u.Email=="profissional01@v1.demo.chamapro.invalid");
     if(!user.Ativo||user.Tipo!=TipoUsuario.Profissional||!user.Nome.StartsWith("[DEMO LOCAL:"))throw new Exception();
-    using var http=new HttpClient{BaseAddress=new Uri("http://localhost:5088/api/v1/"),Timeout=TimeSpan.FromSeconds(15)};
+    using var http=new HttpClient{BaseAddress=new Uri(Environment.GetEnvironmentVariable("CHAMAPRO_TEST_BASE_URL") ?? "http://localhost:5088/api/v1/"),Timeout=TimeSpan.FromSeconds(15)};
     http.DefaultRequestHeaders.Authorization=new AuthenticationHeaderValue("Bearer",new TokenService(config).GerarToken(user));
     var profile=await http.GetFromJsonAsync<JsonElement>("profissionais/me");
     var panel=await http.GetFromJsonAsync<JsonElement>("painel/profissional");

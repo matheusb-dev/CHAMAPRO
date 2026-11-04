@@ -23,9 +23,31 @@ public class PedidoRepository : IPedidoRepository
 
     public Task<int?> ObterProfissionalIdPorUsuarioAsync(int usuarioId)
         => _db.Set<Profissional>().AsNoTracking()
-            .Where(p => p.UsuarioId == usuarioId)
+            .Where(p => p.UsuarioId == usuarioId && p.Usuario.Ativo)
             .Select(p => (int?)p.Id)
             .FirstOrDefaultAsync();
+
+    // The creation history marks automatic distribution without adding a schema column.
+    // Manual orders never enter this open queue, including when their recipients are blocked.
+    private IQueryable<Pedido> OportunidadesAbertas(int profissionalId)
+        => ConsultarAbertas(_db, profissionalId);
+
+    internal static IQueryable<Pedido> ConsultarAbertas(AppDbContext db, int profissionalId)
+        => db.Pedidos.Where(p => p.Status == StatusPedido.Pendente
+            && db.HistoricosPedidos.Any(h => h.PedidoId == p.Id
+                && h.Detalhe == "Chamado urgente aberto a profissionais compatíveis.")
+            && db.Profissionais.Any(pr => pr.Id == profissionalId
+                && pr.Usuario.Ativo && pr.Usuario.IdentidadeVerificada
+                && pr.Categorias.Any(c => c.CategoriaId == p.CategoriaId && c.Categoria.Ativa)
+                && pr.Areas.Any(a => a.Cidade.ToLower() == p.Cidade.ToLower()
+                    && (p.Bairro == null || a.Bairro == null || a.Bairro.ToLower() == p.Bairro.ToLower()))));
+
+    public Task<bool> DistribuicaoAbertaAsync(int pedidoId)
+        => _db.HistoricosPedidos.AnyAsync(h => h.PedidoId == pedidoId
+            && h.Detalhe == "Chamado urgente aberto a profissionais compatíveis.");
+
+    public Task<bool> PodeReceberAbertoAsync(int pedidoId, int profissionalId)
+        => OportunidadesAbertas(profissionalId).AnyAsync(p => p.Id == pedidoId);
 
     public Task<bool> CategoriaExisteAsync(int categoriaId)
         => _db.Set<Categoria>().AsNoTracking().AnyAsync(c => c.Id == categoriaId && c.Ativa);
@@ -54,7 +76,7 @@ public class PedidoRepository : IPedidoRepository
         var autorizado = await _db.Pedidos.AsNoTracking().AnyAsync(p => p.Id == pedidoId
             && ((clienteId.HasValue && p.ClienteId == clienteId.Value)
                 || (profissionalId.HasValue && p.Destinatarios.Any(d => d.ProfissionalId == profissionalId.Value))));
-        if (!autorizado) return null;
+        if (!autorizado && !(profissionalId.HasValue && await PodeReceberAbertoAsync(pedidoId, profissionalId.Value))) return null;
 
         return await _db.HistoricosPedidos.AsNoTracking()
             .Where(h => h.PedidoId == pedidoId)
@@ -70,10 +92,6 @@ public class PedidoRepository : IPedidoRepository
         var ids = profissionalIds.ToList();
         var cidadeNormalizada = cidade.Trim().ToLower();
         var bairroNormalizado = string.IsNullOrWhiteSpace(bairro) ? null : bairro.Trim().ToLower();
-        var data = HorarioBrasil.ParaLocal(tipoAtendimento == TipoAtendimento.Agendado
-            ? dataDesejada!.Value : DateTime.UtcNow);
-        var diaSemana = (short)data.DayOfWeek;
-        var hora = TimeOnly.FromDateTime(data);
 
         var atendem = await _db.Set<Profissional>().AsNoTracking()
             .Where(p => ids.Contains(p.Id)
@@ -83,10 +101,7 @@ public class PedidoRepository : IPedidoRepository
                     && pc.CategoriaId == categoriaId && pc.Categoria.Ativa)
                 && _db.Set<AreaAtendimento>().Any(a => a.ProfissionalId == p.Id
                     && a.Cidade.ToLower() == cidadeNormalizada
-                    && (bairroNormalizado == null || a.Bairro == null || a.Bairro.ToLower() == bairroNormalizado))
-                && (tipoAtendimento == TipoAtendimento.Imediato
-                    ? p.AtendeUrgencia && p.Disponibilidade.Any(d => d.DiaSemana == diaSemana && d.AtendeImediato && d.HoraInicio <= hora && d.HoraFim > hora)
-                    : p.Disponibilidade.Any(d => d.DiaSemana == diaSemana && d.AtendeAgendado && d.HoraInicio <= hora && d.HoraFim > hora)))
+                    && (bairroNormalizado == null || a.Bairro == null || a.Bairro.ToLower() == bairroNormalizado)))
             .Select(p => p.Id)
             .ToListAsync();
 
@@ -99,19 +114,12 @@ public class PedidoRepository : IPedidoRepository
     {
         var cidadeNormalizada = cidade.Trim().ToLower();
         var bairroNormalizado = string.IsNullOrWhiteSpace(bairro) ? null : bairro.Trim().ToLower();
-        var data = HorarioBrasil.ParaLocal(tipoAtendimento == TipoAtendimento.Agendado
-            ? dataDesejada!.Value : DateTime.UtcNow);
-        var diaSemana = (short)data.DayOfWeek;
-        var hora = TimeOnly.FromDateTime(data);
 
         return _db.Set<Profissional>().AsNoTracking()
             .Where(p => p.Usuario.Ativo && p.Usuario.IdentidadeVerificada
                 && p.Categorias.Any(pc => pc.CategoriaId == categoriaId && pc.Categoria.Ativa)
                 && p.Areas.Any(a => a.Cidade.ToLower() == cidadeNormalizada
-                    && (bairroNormalizado == null || a.Bairro == null || a.Bairro.ToLower() == bairroNormalizado))
-                && (tipoAtendimento == TipoAtendimento.Imediato
-                    ? p.AtendeUrgencia && p.Disponibilidade.Any(d => d.DiaSemana == diaSemana && d.AtendeImediato && d.HoraInicio <= hora && d.HoraFim > hora)
-                    : p.Disponibilidade.Any(d => d.DiaSemana == diaSemana && d.AtendeAgendado && d.HoraInicio <= hora && d.HoraFim > hora)))
+                    && (bairroNormalizado == null || a.Bairro == null || a.Bairro.ToLower() == bairroNormalizado)))
             .OrderByDescending(p => p.MediaAvaliacao)
             .ThenBy(p => p.Id)
             .Select(p => p.Id)
@@ -130,7 +138,7 @@ public class PedidoRepository : IPedidoRepository
     public Task<Pedido?> ObterParaAtualizacaoAsync(int id)
         => _db.Set<Pedido>()
             .Include(p => p.Destinatarios)
-            .Include(p => p.Orcamentos)
+            .Include(p => p.Orcamentos).ThenInclude(o => o.Profissional).ThenInclude(pr => pr.Usuario)
             .Include(p => p.Agendamento)
             .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Id == id);
@@ -140,7 +148,7 @@ public class PedidoRepository : IPedidoRepository
             .Include(p => p.Cliente)
             .Include(p => p.Categoria)
             .Include(p => p.Destinatarios).ThenInclude(d => d.Profissional).ThenInclude(pr => pr.Usuario)
-            .Include(p => p.Orcamentos)
+            .Include(p => p.Orcamentos).ThenInclude(o => o.Profissional).ThenInclude(pr => pr.Usuario)
             .Include(p => p.Agendamento)
             .Include(p => p.Avaliacao)
             .AsSplitQuery()
@@ -155,7 +163,11 @@ public class PedidoRepository : IPedidoRepository
             consulta = consulta.Where(p => p.ClienteId == clienteId.Value);
 
         if (profissionalId.HasValue)
-            consulta = consulta.Where(p => p.Destinatarios.Any(d => d.ProfissionalId == profissionalId.Value));
+        {
+            var abertas = OportunidadesAbertas(profissionalId.Value).Select(p => p.Id);
+            consulta = consulta.Where(p => p.Destinatarios.Any(d => d.ProfissionalId == profissionalId.Value)
+                || abertas.Contains(p.Id));
+        }
 
         if (status.HasValue)
             consulta = consulta.Where(p => p.Status == status.Value);

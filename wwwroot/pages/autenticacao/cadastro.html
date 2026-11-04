@@ -127,7 +127,7 @@
             <div class="auth-form-wrapper cadastro-form-wrapper">
 
                 <!-- LOGO MOBILE -->
-                <div class="mobile-brand">
+                <a class="mobile-brand brand" href="/" aria-label="CHAMAPRO início">
 
                     <span class="brand-symbol">C</span>
 
@@ -135,7 +135,7 @@
                         CHAMA<span>PRO</span>
                     </span>
 
-                </div>
+                </a>
 
                 <!-- CABEÇALHO -->
                 <div class="auth-heading">
@@ -319,6 +319,11 @@
                     <div class="form-group">
                         <label for="telefone">Telefone com DDD</label>
                         <div class="input-wrapper">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.58 2.8.7A2 2 0 0 1 22 16.92Z"></path>
+                                </svg>
+                            </span>
                             <input type="tel" id="telefone" name="telefone" inputmode="numeric"
                                    autocomplete="tel" placeholder="11987654321" pattern="[0-9]{10,11}"
                                    minlength="10" maxlength="11" required>

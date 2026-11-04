@@ -43,7 +43,7 @@ public class PedidoService : IPedidoService
                 request.TipoAtendimento, request.DataDesejada)
             : request.ProfissionalIds;
 
-        if (profissionalIds.Count == 0)
+        if (profissionalIds.Count == 0 && !request.DistribuirParaCompativeis)
             throw PedidoErros.Regra("SEM_PROFISSIONAIS_COMPATIVEIS", "Não encontramos profissionais verificados que atendam a região informada.");
 
         var atendem = await _pedidos.FiltrarProfissionaisQueAtendemAsync(
@@ -62,8 +62,8 @@ public class PedidoService : IPedidoService
             Cidade = cidade,
             Bairro = string.IsNullOrWhiteSpace(request.Bairro) ? null : request.Bairro.Trim(),
             Endereco = string.IsNullOrWhiteSpace(request.Endereco) ? null : request.Endereco.Trim(),
-            TipoAtendimento = request.TipoAtendimento,
-            DataDesejada = request.TipoAtendimento == TipoAtendimento.Agendado ? request.DataDesejada : null,
+            TipoAtendimento = TipoAtendimento.Imediato,
+            DataDesejada = null,
             FotoUrls = request.FotoUrls.Select(f => f.Trim()).ToList(),
             Status = StatusPedido.Pendente,
             CriadoEm = DateTime.UtcNow,
@@ -75,7 +75,7 @@ public class PedidoService : IPedidoService
         await using var tx = await _pedidos.IniciarTransacaoAsync();
         await _pedidos.AdicionarAsync(pedido);
         await _pedidos.SalvarAsync();
-        _pedidos.AdicionarHistorico(pedido.Id, _user.Id, null, pedido.Status, "Chamado criado.");
+        _pedidos.AdicionarHistorico(pedido.Id, _user.Id, null, pedido.Status, request.DistribuirParaCompativeis ? "Chamado urgente aberto a profissionais compatíveis." : "Chamado criado.");
 
         var destinatariosUsuarios = await _pedidos.ListarUsuarioIdsProfissionaisAsync(profissionalIds);
         foreach (var usuarioId in destinatariosUsuarios)
@@ -124,7 +124,7 @@ public class PedidoService : IPedidoService
 
         await using var tx = await _pedidos.IniciarTransacaoAsync();
         var pedido = await CarregarBloqueadoAsync(id);
-        var destinatario = ObterDestinatario(pedido, profissionalId);
+        var destinatario = await ObterOuAdicionarDestinatarioAsync(pedido, profissionalId);
 
         if (pedido.Status != StatusPedido.Pendente || destinatario.Situacao != SituacaoDestinatario.Pendente)
             throw PedidoErros.StatusInvalido("Só é possível aceitar um pedido pendente que você ainda não respondeu.");
@@ -146,7 +146,7 @@ public class PedidoService : IPedidoService
 
         await using var tx = await _pedidos.IniciarTransacaoAsync();
         var pedido = await CarregarBloqueadoAsync(id);
-        var destinatario = ObterDestinatario(pedido, profissionalId);
+        var destinatario = await ObterOuAdicionarDestinatarioAsync(pedido, profissionalId);
         var statusAnterior = pedido.Status;
 
         if (pedido.Status != StatusPedido.Pendente || destinatario.Situacao != SituacaoDestinatario.Pendente)
@@ -155,8 +155,9 @@ public class PedidoService : IPedidoService
         destinatario.Situacao = SituacaoDestinatario.Recusado;
         destinatario.MotivoRecusa = string.IsNullOrWhiteSpace(request?.Motivo) ? null : request!.Motivo!.Trim();
 
-        // Se todos os destinatários recusaram, o pedido é cancelado pelo sistema.
-        if (pedido.Destinatarios.All(d => d.Situacao == SituacaoDestinatario.Recusado))
+        // Pedidos manuais mantêm a regra anterior; a distribuição aberta aguarda novos profissionais.
+        if (pedido.Destinatarios.All(d => d.Situacao == SituacaoDestinatario.Recusado)
+            && !await _pedidos.DistribuicaoAbertaAsync(pedido.Id))
         {
             PedidoTransicoes.Garantir(pedido.Status, StatusPedido.Cancelado, AtorTransicao.Sistema, "PEDIDO_STATUS_INVALIDO");
             pedido.Status = StatusPedido.Cancelado;
@@ -283,9 +284,16 @@ public class PedidoService : IPedidoService
         return await _pedidos.ObterParaAtualizacaoAsync(id) ?? throw PedidoErros.PedidoNaoEncontrado();
     }
 
-    private static PedidoDestinatario ObterDestinatario(Pedido pedido, int profissionalId)
-        => pedido.Destinatarios.FirstOrDefault(d => d.ProfissionalId == profissionalId)
-           ?? throw PedidoErros.PedidoNaoEncontrado();
+    private async Task<PedidoDestinatario> ObterOuAdicionarDestinatarioAsync(Pedido pedido, int profissionalId)
+    {
+        var destinatario = pedido.Destinatarios.FirstOrDefault(d => d.ProfissionalId == profissionalId);
+        if (destinatario is not null) return destinatario;
+        if (!await _pedidos.PodeReceberAbertoAsync(pedido.Id, profissionalId))
+            throw PedidoErros.PedidoNaoEncontrado();
+        destinatario = new PedidoDestinatario { PedidoId = pedido.Id, ProfissionalId = profissionalId };
+        pedido.Destinatarios.Add(destinatario);
+        return destinatario;
+    }
 
     /// <summary>Lê o pedido e aplica a visibilidade (RN13): outro cliente ou profissional que não recebeu o pedido recebe 404.</summary>
     private async Task<PedidoDetalheResponse> MontarDetalheAsync(int id)
@@ -300,7 +308,10 @@ public class PedidoService : IPedidoService
 
         var profissionalId = await ProfissionalIdAtualAsync();
         if (pedido.Destinatarios.All(d => d.ProfissionalId != profissionalId))
-            throw PedidoErros.PedidoNaoEncontrado();
+        {
+            if (!await _pedidos.PodeReceberAbertoAsync(id, profissionalId)) throw PedidoErros.PedidoNaoEncontrado();
+            pedido.Destinatarios.Add(new PedidoDestinatario { ProfissionalId = profissionalId });
+        }
 
         return pedido.ToDetalhe(ehCliente: false, profissionalId);
     }

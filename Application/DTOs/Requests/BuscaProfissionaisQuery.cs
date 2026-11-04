@@ -30,9 +30,6 @@ public class BuscaProfissionaisQuery : PaginacaoQuery, IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (TipoAtendimento == Chamapro.Api.Models.Enums.TipoAtendimento.Agendado && DataDesejada is null)
-            yield return new ValidationResult("Informe a data para filtrar disponibilidade.", [nameof(DataDesejada)]);
-        if (DataDesejada <= DateTime.UtcNow)
-            yield return new ValidationResult("A data desejada precisa estar no futuro.", [nameof(DataDesejada)]);
+        yield break; // Legacy filter properties are accepted but no longer restrict hours.
     }
 }

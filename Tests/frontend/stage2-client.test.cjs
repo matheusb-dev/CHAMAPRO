@@ -18,7 +18,7 @@ class Node {
 function setup(ids, api, search = '') {
     const nodes = new Map(ids.map(id => [id, new Node()]));
     const context = { URLSearchParams, location: { search, reload() {}, assign() {} }, setTimeout, document: { getElementById: id => nodes.get(id) || null }, window: { Chamapro: { api, escaparHtml: value => String(value ?? '').replaceAll('<', '&lt;'), formatarData: value => String(value || ''), formatarMoeda: String, formatarNota: String }, ChamaproApp: { ready: Promise.resolve({ perfil: 'CLIENTE' }) } } };
-    vm.createContext(context);
+    vm.createContext(context);require('./helpers/api.cjs').install(context);
     return { nodes, context, run: file => vm.runInContext(script(file), context) };
 }
 const listIds = ['ordersPageList','ordersPage','orderContent','previousOrders','nextOrders','ordersStatus','ordersPagination','ordersPageLabel'];

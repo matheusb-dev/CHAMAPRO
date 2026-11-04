@@ -368,7 +368,17 @@
 /* LEMBRAR DE MIM */
 
 .remember-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
     margin: 4px 0 26px;
+}
+
+.remember-row .forgot-password {
+    margin-left: auto;
+    text-align: right;
+    white-space: nowrap;
 }
 
 .remember-label {

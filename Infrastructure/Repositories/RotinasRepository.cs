@@ -37,7 +37,7 @@ public class RotinasRepository : IRotinasRepository
 
     public Task<int> CancelarPedidosPendentesAsync(DateTime criadosAntesDeUtc, CancellationToken ct = default)
         => _db.Pedidos
-            .Where(p => p.Status == StatusPedido.Pendente && p.CriadoEm <= criadosAntesDeUtc)
+            .Where(p => p.Status == StatusPedido.Pendente && p.TipoAtendimento != TipoAtendimento.Imediato && p.CriadoEm <= criadosAntesDeUtc)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(p => p.Status, StatusPedido.Cancelado)
                 .SetProperty(p => p.MotivoCancelamento, "Cancelado automaticamente após sete dias sem propostas.")

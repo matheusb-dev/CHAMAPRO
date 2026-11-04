@@ -57,13 +57,17 @@
             body = JSON.stringify(body);
         }
 
-        const response = await fetch(`${API_BASE}${caminho}`, {
-            ...opcoes,
-            headers,
-            body
-        });
-
-        const texto = await response.text();
+        let response, texto;
+        try {
+            response = await fetch(`${API_BASE}${caminho}`, { ...opcoes, headers, body });
+            texto = await response.text();
+        } catch (cause) {
+            if (cause?.name === "AbortError") throw cause;
+            const erro = new Error("Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.");
+            erro.status = 0;
+            erro.codigo = "FALHA_REDE";
+            throw erro;
+        }
         let resultado = null;
 
         try {
@@ -157,8 +161,30 @@
         return moeda.format(Number(valor) || 0);
     }
 
+    function normalizarWhatsApp(value) {
+        const raw=String(value||'').trim();
+        if (!raw || /[^\d\s()+.\-]/.test(raw)) return null;
+        let digits=raw.replace(/\D/g,'');
+        const international=raw.startsWith('+')||raw.startsWith('00');
+        if(raw.startsWith('00'))digits=digits.slice(2);
+        if(!international && [10,11].includes(digits.length))digits='55'+digits;
+        if(!/^[1-9]\d{7,14}$/.test(digits)||/^(\d)\1+$/.test(digits))return null;
+        if(digits.startsWith('55')) {
+            const local=digits.slice(2), ddd=Number(local.slice(0,2));
+            const validDDD=[11,12,13,14,15,16,17,18,19,21,22,24,27,28,31,32,33,34,35,37,38,41,42,43,44,45,46,47,48,49,51,53,54,55,61,62,63,64,65,66,67,68,69,71,73,74,75,77,79,81,82,83,84,85,86,87,88,89,91,92,93,94,95,96,97,98,99];
+            if(!validDDD.includes(ddd)||!(/^[1-9]\d[2-5]\d{7}$/.test(local)||/^[1-9]\d9\d{8}$/.test(local)))return null;
+        } else if(!international)return null;
+        return digits;
+    }
+    function contatoWhatsApp(telefone, mensagem='Olá! Estou entrando em contato pelo CHAMAPRO.') {
+        const number=normalizarWhatsApp(telefone);
+        return number ? '<a class="btn btn-primary btn-small" target="_blank" rel="noopener noreferrer" href="https://wa.me/'+number+'?text='+encodeURIComponent(mensagem)+'">Entrar em contato</a>' : '<span class="app-muted">WhatsApp não disponível</span>';
+    }
+    function inicioDoUsuario(user) {
+        return ({CLIENTE:'/pages/cliente/painel.html',PROFISSIONAL:'/pages/trabalhador/painel.html',ADMIN:'/pages/admin/gestao.html'})[String(user?.perfil||'').toUpperCase()]||'/';
+    }
     function formatarNota(nota) {
-        return (Number(nota) || 0).toFixed(1).replace(".", ",");
+        return (Number(nota) > 0 ? Number(nota) : 5).toFixed(1).replace(".", ",");
     }
 
     function formatarData(data) {
@@ -193,7 +219,7 @@
     function estrelas(nota, tamanho = 14) {
 
         const icone = tamanho === 11 ? ICONES.estrela11 : ICONES.estrela14;
-        const cheias = Math.round(Number(nota) || 0);
+        const cheias = Math.round(Number(nota) > 0 ? Number(nota) : 5);
 
         return Array.from({ length: 5 }, (_, i) =>
             i < cheias ? icone : `<span class="star-off">${icone}</span>`
@@ -214,12 +240,18 @@
         toast,
         formatarMoeda,
         formatarNota,
+        normalizarWhatsApp,
+        contatoWhatsApp,
+        inicioDoUsuario,
         formatarData,
         escaparHtml,
         estrelas,
         ICONES
     };
 
-    document.addEventListener("DOMContentLoaded", preencherUsuario);
+    document.addEventListener("DOMContentLoaded", () => {
+        preencherUsuario();
+        document.querySelectorAll('a.brand, a.logo').forEach(link => link.href=inicioDoUsuario(obterUsuario()));
+    });
 
 })();

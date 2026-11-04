@@ -22,6 +22,16 @@ public class WhatsAppController : ApiControllerBase
         _currentUser = currentUser;
     }
 
+    [HttpGet("profissionais/{profissionalId:int}/contato")]
+    [Authorize(Roles = Perfis.Admin)]
+    public async Task<ActionResult<WhatsAppContatoResponse>> GetContatoAdministrativo(int profissionalId, CancellationToken ct)
+    {
+        var usuario = await _context.Profissionais.AsNoTracking().Where(p => p.Id == profissionalId)
+            .Select(p => p.Usuario).FirstOrDefaultAsync(ct);
+        if (usuario is null) return NotFound();
+        return Ok(new WhatsAppContatoResponse { UsuarioId = usuario.Id, Telefone = usuario.Telefone, WhatsAppAtivo = true });
+    }
+
     [HttpGet("contato/me")]
     [Authorize]
     public async Task<ActionResult<WhatsAppContatoResponse>> GetMeuContato(CancellationToken ct)
@@ -69,7 +79,7 @@ public class WhatsAppController : ApiControllerBase
     public async Task<ActionResult<WhatsAppContatoResponse>> GetContato(int usuarioId, CancellationToken ct)
     {
         var usuario = await _context.Usuarios.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == usuarioId && x.Ativo && x.WhatsAppAtivo && x.Telefone != null, ct);
+            .FirstOrDefaultAsync(x => x.Id == usuarioId && (_currentUser.EhAdmin || (x.Ativo && (x.Tipo == TipoUsuario.Profissional || x.WhatsAppAtivo))) && x.Telefone != null, ct);
 
         if (usuario is null || !await PodeContatarAsync(usuarioId, ct))
             throw BusinessException.NaoEncontrado("CONTATO_NAO_DISPONIVEL", "Contato não disponível para este pedido.");
@@ -149,14 +159,15 @@ public class WhatsAppController : ApiControllerBase
 
     private async Task<bool> PodeContatarAsync(int usuarioAlvoId, CancellationToken ct)
     {
+        if (_currentUser.EhAdmin)
+            return await _context.Profissionais.AnyAsync(p => p.UsuarioId == usuarioAlvoId, ct);
+
         if (_currentUser.EhCliente)
             return await _context.Pedidos.AsNoTracking().AnyAsync(p =>
                 p.ClienteId == _currentUser.Id
-                && p.ProfissionalId != null
-                && p.Profissional!.UsuarioId == usuarioAlvoId
-                && p.Status != StatusPedido.Pendente
-                && p.Status != StatusPedido.Orcado
-                && p.Status != StatusPedido.Cancelado, ct);
+                && p.Status != StatusPedido.Cancelado
+                && (p.Orcamentos.Any(o => o.Profissional.UsuarioId == usuarioAlvoId && o.Profissional.Usuario.Ativo)
+                    || (p.ProfissionalId != null && p.Profissional!.UsuarioId == usuarioAlvoId)), ct);
 
         if (_currentUser.EhProfissional)
             return await _context.Pedidos.AsNoTracking().AnyAsync(p =>

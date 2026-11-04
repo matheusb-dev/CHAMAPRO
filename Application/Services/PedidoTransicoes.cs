@@ -21,6 +21,7 @@ public static class PedidoTransicoes
     {
         [(Pendente, Aceito)]        = [Cliente],                 // POST /orcamentos/{id}/aceitar
         [(Pendente, Cancelado)]     = [Cliente, Sistema],        // cancelar; todos recusaram; 7 dias sem orçamento aceito
+        [(Aceito, EmAndamento)]    = [Profissional],            // atendimento urgente
         [(Aceito, Agendado)]        = [Profissional],            // POST /agendamentos/{id}/confirmar
         [(Aceito, Cancelado)]       = [Cliente, Profissional],   // POST /pedidos/{id}/cancelar
         [(Agendado, EmAndamento)]   = [Profissional],            // PATCH /pedidos/{id}/status

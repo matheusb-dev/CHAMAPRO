@@ -15,7 +15,8 @@ const stage4Assets = new Set(['/js/components/professional-data.js', '/js/compon
 const stage5Assets = new Set(['/js/components/sidebar.js','/js/components/notifications.js','/js/components/professional-work.js','/js/pages/trabalhador.js','/js/pages/painel-trabalhador.js']);
 const stage6Assets = new Set(['/js/pages/admin.js','/css/pages/admin.css']);
 const stage7Assets = new Set(['/js/components/professional-work.js','/js/components/professional-editor.js','/js/app.js','/js/components/notifications.js','/js/components/private-document.js','/js/pages/admin.js','/js/pages/trabalhador-verificacao.js','/js/pages/cliente-orcamentos.js']);
-const expectedVersion = (page, url) => stage7Assets.has(url) ? '20261102-stage7' : stage6Assets.has(url) ? '20261102-stage6' : stage5Assets.has(url) ? '20261102-stage5' : stage4Assets.has(url) ? '20261102-stage4' : stage3Assets.has(url) || (page.endsWith('/criar-chamado.html') && ['/js/api.js', '/js/pages/cliente.js'].includes(url)) ? '20261102-stage3' : page.includes('/cliente/') && (stage2Scripts.has(url) || url === '/js/components/sidebar.js' || url === '/css/pages/cliente.css') ? '20261102-stage2' : stage1Scripts.has(url) ? '20261102-stage1' : version;
+const finalScripts = new Set(["/js/api.js","/js/components/header.js","/js/components/professional-data.js","/js/components/professional-editor.js","/js/components/professional-work.js","/js/components/sidebar.js","/js/pages/admin.js","/js/pages/cliente-favoritos.js","/js/pages/cliente-inicio.js","/js/pages/cliente-orcamentos.js","/js/pages/cliente-perfil-profissional.js","/js/pages/cliente.js","/js/pages/trabalhador-verificacao.js"]);
+const expectedVersion = (page, url) => url === "/js/api.js" ? "20261104-homologacao1" : finalScripts.has(url) ? '20261104-final1' : url === '/css/pages/trabalhador.css' && page.endsWith('/fila-chamados.html') ? '20261102-martelo2' : page.endsWith('/criar-chamado.html') && ['/css/pages/pedido.css','/js/pages/cliente-sino-confirmar.js'].includes(url) ? '20261102-sino1' : stage7Assets.has(url) ? '20261102-stage7' : stage6Assets.has(url) ? '20261102-stage6' : stage5Assets.has(url) ? '20261102-stage5' : stage4Assets.has(url) ? '20261102-stage4' : stage3Assets.has(url) || (page.endsWith('/criar-chamado.html') && ['/js/api.js', '/js/pages/cliente.js'].includes(url)) ? '20261102-stage3' : page.includes('/cliente/') && (stage2Scripts.has(url) || url === '/js/components/sidebar.js' || url === '/css/pages/cliente.css') ? '20261102-stage2' : stage1Scripts.has(url) ? '20261102-stage1' : version;
 const stylesheet = `/css/pages/authenticated.css?v=${version}`;
 const pages = ['cliente', 'trabalhador', 'admin'].flatMap(role => fs.readdirSync(path.join(root, 'wwwroot/pages', role)).filter(f => f.endsWith('.html')).map(f => `wwwroot/pages/${role}/${f}`));
 
@@ -27,7 +28,7 @@ test('all authenticated pages load the same versioned shared styles, shell and s
         const styles = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]);
         assert.deepEqual(styles.slice(0, 4), shared.map(url => `${url}?v=${version}`), page);
         assert.ok(styles.includes(stylesheet), page);
-        assert.equal(styles.at(-1), page.includes('/admin/') ? '/css/pages/admin.css?v=20261102-stage6' : page.endsWith('/criar-chamado.html') ? '/css/pages/pedido.css?v=20261102-stage3' : page.includes('/trabalhador/') && ['perfil.html', 'cadastro-profissional.html'].some(name=>page.endsWith('/'+name)) ? '/css/pages/professional-editor.css?v=20261102-stage4' : stylesheet, page);
+        assert.equal(styles.at(-1), page.includes('/admin/') ? '/css/pages/admin.css?v=20261102-stage6' : page.endsWith('/criar-chamado.html') ? '/css/pages/pedido.css?v=20261102-sino1' : page.includes('/trabalhador/') && ['perfil.html', 'cadastro-profissional.html'].some(name=>page.endsWith('/'+name)) ? '/css/pages/professional-editor.css?v=20261102-stage4' : stylesheet, page);
         for (const match of html.matchAll(/(?:href|src)="((?:\/css\/|\/js\/)[^"]+)"/g)) {
             const url = new URL(match[1], 'http://localhost');
             assert.equal(url.searchParams.get('v'), expectedVersion(page, url.pathname), `${page}: ${url.pathname}`);
@@ -49,7 +50,7 @@ function renderHeader({ legacy = false, existing = true } = {}) {
         head: { append: link => links.push(link) }
     };
     const context = { URL, document, window: { location: { origin: 'http://localhost', href: 'http://localhost/pages/cliente/criar-chamado.html' }, Chamapro: { escaparHtml: text => text } } };
-    vm.createContext(context);
+    vm.createContext(context);require('./helpers/api.cjs').install(context);
     vm.runInContext(read('wwwroot/js/components/header.js'), context);
     const container = { querySelector: () => ({ addEventListener() {} }) };
     context.window.ChamaproHeader.render(container, { nome: 'Teste de layout', perfil: 'CLIENTE' });
@@ -85,7 +86,7 @@ test('header and every role menu have intrinsic SVG dimensions and preserve dest
             });
         }};
         const context = { location: { pathname, hash: '' }, document: { getElementById: () => null }, window: { addEventListener() {} } };
-        vm.createContext(context);
+        vm.createContext(context);require('./helpers/api.cjs').install(context);
         vm.runInContext(read('wwwroot/js/components/sidebar.js'), context);
         context.window.ChamaproSidebar.render(container, { perfil: role });
         assert.equal(anchors.length, count);

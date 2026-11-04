@@ -19,7 +19,7 @@
         <aside data-app-sidebar></aside><main class="app-main" id="mainContent" tabindex="-1">
             <div class="app-content">
                 <section class="page-heading"><span class="text-primary">NOVO SERVIÇO</span><h1>Pedir um serviço</h1><p>Conte o que precisa. Depois, você poderá comparar as propostas.</p></section><form id="createOrderForm" class="app-card app-form order-wizard">
-                    <ol class="service-progress" aria-label="Etapas do pedido"><li data-service-progress="0"><span>1</span>O que você precisa?</li><li data-service-progress="1"><span>2</span>Onde e quando?</li><li data-service-progress="2"><span>3</span>Conferir e pedir</li></ol>
+                    <ol class="service-progress" aria-label="Etapas do pedido"><li data-service-progress="0"><span>1</span>O que você precisa?</li><li data-service-progress="1"><span>2</span>Onde precisa?</li><li data-service-progress="2"><span>3</span>Conferir e pedir</li></ol>
                     <section class="service-step" data-service-step="0" aria-labelledby="serviceStep0" tabindex="-1">
                         <div class="section-intro"><span class="step-label">Etapa 1 de 3</span><h2 id="serviceStep0">Qual serviço você precisa?</h2></div>
                         <div class="form-group"><label for="category">Tipo de serviço</label><select id="category" required><option value="">Carregando categorias…</option></select><small id="categoryHelp" class="form-hint"></small></div>
@@ -28,11 +28,10 @@
                         <div class="step-navigation"><a class="btn btn-secondary" href="painel.html">Voltar ao início</a><button class="btn btn-primary" type="button" data-service-next="1">Continuar</button></div>
                     </section>
                     <section class="service-step" data-service-step="1" aria-labelledby="serviceStep1" tabindex="-1">
-                        <div class="section-intro"><span class="step-label">Etapa 2 de 3</span><h2 id="serviceStep1">Onde e quando você precisa?</h2><p id="locationMessage" role="status">Vamos recuperar a localização da sua conta. Você pode alterá-la.</p></div>
+                        <div class="section-intro"><span class="step-label">Etapa 2 de 3</span><h2 id="serviceStep1">Onde você precisa?</h2><p id="locationMessage" role="status">Vamos recuperar a localização da sua conta. Você pode alterá-la.</p></div>
                         <div class="form-group"><label for="city">Cidade e estado</label><input id="city" required maxlength="100" autocomplete="address-level2"><small id="cityWarning" class="form-hint" role="status"></small></div>
                         <div class="app-form-grid"><div class="form-group"><label for="neighborhood">Bairro (opcional)</label><input id="neighborhood" maxlength="100" autocomplete="address-level3"></div><div class="form-group"><label for="address">Rua, número e complemento (opcional)</label><input id="address" maxlength="250" autocomplete="street-address"></div></div>
-                        <div class="form-group"><label for="serviceType">Quando você precisa?</label><select id="serviceType" aria-describedby="serviceTypeHelp"><option value="IMEDIATO">O mais rápido possível</option><option value="AGENDADO">Agendar para outro dia</option></select><small id="serviceTypeHelp" class="form-hint">A primeira opção procura profissionais com atendimento urgente e disponibilidade agora. O atendimento não é garantido. Ao agendar, a busca considera o dia e o horário escolhidos.</small></div>
-                        <div class="form-group" id="desiredDateGroup" hidden><label for="desiredDate">Dia e horário desejados</label><input type="datetime-local" id="desiredDate"></div>
+                        <p class="form-hint">Solicitação urgente. Compare propostas e combine os detalhes diretamente com o profissional. O atendimento imediato não é garantido.</p>
                         <div class="step-navigation"><button class="btn btn-secondary" type="button" data-service-back="0">Voltar</button><button class="btn btn-primary" type="button" data-service-next="2">Continuar</button></div>
                     </section>
                     <section class="service-step" data-service-step="2" aria-labelledby="serviceStep2" tabindex="-1">
@@ -47,13 +46,13 @@
             </div>
         </main>
     </div>
-    <script src="/js/api.js?v=20261102-stage3" defer></script>
-    <script src="/js/components/header.js?v=20261102-simple1" defer></script>
-    <script src="/js/components/sidebar.js?v=20261102-stage5" defer></script>
+    <script src="/js/api.js?v=20261104-homologacao1" defer></script>
+    <script src="/js/components/header.js?v=20261104-final1" defer></script>
+    <script src="/js/components/sidebar.js?v=20261104-final1" defer></script>
     <script src="/js/components/notifications.js?v=20261102-stage7" defer></script>
     <script src="/js/app.js?v=20261102-stage7" defer></script>
     <script src="/js/components/combobox.js?v=20261102-stage3" defer></script>
-    <script src="/js/pages/cliente.js?v=20261102-stage3" defer></script>
+    <script src="/js/pages/cliente.js?v=20261104-final1" defer></script>
     <script src="/js/pages/cliente-pedido-guiado.js?v=20261102-stage3" defer></script>
     <script src="/js/pages/cliente-sino-confirmar.js?v=20261102-sino1" defer></script>
 </body>

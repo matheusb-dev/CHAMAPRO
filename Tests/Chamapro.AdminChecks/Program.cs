@@ -21,7 +21,7 @@ try {
     var admin=await db.Usuarios.AsNoTracking().Where(u=>u.Tipo==TipoUsuario.Admin&&u.Ativo).OrderBy(u=>u.Id).FirstOrDefaultAsync();
     var ordinary=await db.Usuarios.AsNoTracking().SingleAsync(u=>u.Email=="profissional01@v1.demo.chamapro.invalid");
     if(!ordinary.Ativo||ordinary.Tipo!=TipoUsuario.Profissional||!ordinary.Nome.StartsWith("[DEMO LOCAL:"))throw new Exception();
-    using var http=new HttpClient{BaseAddress=new Uri("http://localhost:5088/api/v1/"),Timeout=TimeSpan.FromSeconds(15)};
+    using var http=new HttpClient{BaseAddress=new Uri(Environment.GetEnvironmentVariable("CHAMAPRO_TEST_BASE_URL") ?? "http://localhost:5088/api/v1/"),Timeout=TimeSpan.FromSeconds(15)};
     var protectedPaths=new[]{"admin/relatorios","admin/usuarios?busca=DEMO&perfil=Profissional&ativo=true","admin/pedidos","admin/auditoria?limite=10","verificacoes","denuncias"};
     foreach(var route in protectedPaths) {
         using var response=await http.GetAsync(route);
@@ -35,7 +35,7 @@ try {
     Console.WriteLine("PASS API real: 6 rotas administrativas negaram acesso anônimo (401) e profissional (403).");
     if(admin is null){Console.WriteLine("LEITURA ADMIN NÃO EXECUTADA: não há administrador ativo existente. Nenhuma conta foi criada.");Environment.ExitCode=2;return;}
     http.DefaultRequestHeaders.Authorization=new AuthenticationHeaderValue("Bearer",new TokenService(config).GerarToken(admin));
-    foreach(var route in protectedPaths) (await http.GetAsync(route)).EnsureSuccessStatusCode();
+    foreach(var route in protectedPaths) { using var response=await http.GetAsync(route); Console.WriteLine($"ADMIN GET {route}: HTTP {(int)response.StatusCode}"); response.EnsureSuccessStatusCode(); }
     var report=await http.GetFromJsonAsync<JsonElement>("admin/relatorios");
     var users=await http.GetFromJsonAsync<JsonElement>("admin/usuarios?busca=DEMO&perfil=Profissional&ativo=true");
     if(users.GetArrayLength()>200)throw new Exception("UserLimit");

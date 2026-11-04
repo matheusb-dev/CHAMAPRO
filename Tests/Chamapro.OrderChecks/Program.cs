@@ -19,7 +19,7 @@ try {
     await using var db = new AppDbContext(options);
     var client = await db.Usuarios.AsNoTracking().SingleAsync(u => u.Email == "cliente02@v1.demo.chamapro.invalid");
     if (!client.Ativo || client.Tipo != TipoUsuario.Cliente || !client.Nome.StartsWith("[DEMO LOCAL:")) throw new Exception("Conta demo inválida");
-    using var http = new HttpClient { BaseAddress = new Uri("http://localhost:5088/api/v1/"), Timeout = TimeSpan.FromSeconds(15) };
+    using var http = new HttpClient { BaseAddress = new Uri(Environment.GetEnvironmentVariable("CHAMAPRO_TEST_BASE_URL") ?? "http://localhost:5088/api/v1/"), Timeout = TimeSpan.FromSeconds(15) };
     http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", new TokenService(config).GerarToken(client));
     var me = await http.GetAsync("auth/me"); Console.WriteLine($"GET /auth/me: {(int)me.StatusCode}; conta demo CLIENTE ativa."); me.EnsureSuccessStatusCode();
     var categories = await http.GetFromJsonAsync<JsonElement>("categorias");
@@ -34,9 +34,9 @@ try {
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         if (!response.IsSuccessStatusCode) Console.WriteLine($"POST /pedidos ({city}, {(manual ? "manual" : "auto")}): HTTP {(int)response.StatusCode}; codigo={body.GetProperty("codigo").GetString()}; detalhe={body.GetProperty("detalhe").GetString()}; titulo={body.GetProperty("titulo").GetString()}");
         else Console.WriteLine($"POST /pedidos ({(manual ? "manual" : "auto")}): HTTP {(int)response.StatusCode}; pedido demo {body.GetProperty("id").GetInt32()} criado e preservado.");
-        if (city == "Campo Mourão" && ((int)response.StatusCode != 422 || body.GetProperty("codigo").GetString() != "SEM_PROFISSIONAIS_COMPATIVEIS")) throw new Exception("Resposta inesperada no cenário incompatível");
+        if (city == "Campo Mourão") { response.EnsureSuccessStatusCode(); if(body.GetProperty("destinatarios").GetArrayLength()!=0) throw new Exception("Esperado pedido aberto sem destinatários"); }
         if (city == "São Paulo") response.EnsureSuccessStatusCode();
     }
-    await Probe("Campo Mourão");
-    if (args.Contains("--create")) { await Probe("São Paulo"); await Probe("São Paulo", true); }
+    if (args.Contains("--create")) { await Probe("Campo Mourão"); await Probe("São Paulo"); await Probe("São Paulo", true); }
+    else Console.WriteLine("Somente leitura. Para criar pedidos de teste, use --create explicitamente em base autorizada.");
 } catch (Exception error) { Console.Error.WriteLine("Verificação não concluída: " + error.GetType().Name + ". Nenhum token ou segredo foi exibido."); Environment.ExitCode = 1; }

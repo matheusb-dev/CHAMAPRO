@@ -53,7 +53,7 @@
                     const panel = await C.api("/painel/profissional");
                     const complete = panel.cadastroCompleto === true;
                     if (!complete) {
-                        throw new Error("Conclua profissão, localização, preços e horários antes de finalizar.");
+                        throw new Error("Conclua profissão, localização e preços antes de finalizar.");
                     }
                     window.location.assign("painel.html");
                 } catch (error) {
@@ -81,6 +81,8 @@
             } catch (e) { message(e.message); }
             finally { sending = false; button.disabled = false; button.textContent = "Enviar para análise"; }
         });
+        if (onboarding) message('Cadastro salvo. O próximo passo é verificar seus documentos.', true);
+        try { const profile=await C.api('/profissionais/me'); if(profile.verificado){form.hidden=true;message('Sua identidade já está verificada. Não é necessário reenviar documentos.',true);} } catch { /* The history remains retryable. */ }
         await loadHistory();
     }
     window.ChamaproApp?.ready.then(user => { if (user?.perfil === "PROFISSIONAL") init(); });

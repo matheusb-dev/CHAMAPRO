@@ -24,10 +24,9 @@
     }
     async function notices() {
         const target = document.getElementById('homeNotices');
-        const results = await Promise.allSettled([C.api('/avaliacoes/pendentes'), C.api('/agendamentos/me')]);
+        const results = await Promise.allSettled([C.api('/avaliacoes/pendentes')]);
         const messages = [];
         if (results[0].status === 'fulfilled') messages.push(...results[0].value.slice(0, 3).map(review => `<article class="app-row"><div><strong>Como foi o atendimento?</strong><p>${C.escaparHtml(review.titulo)}</p></div><a class="btn btn-secondary" href="orcamentos.html?pedidoId=${review.pedidoId}#avaliar">Avaliar serviço</a></article>`));
-        if (results[1].status === 'fulfilled') messages.push(...results[1].value.slice(0, 3).map(appointment => `<article class="app-row"><div><strong>${C.escaparHtml(appointment.titulo)}</strong><p>${C.formatarData(appointment.dataHora)} · ${C.escaparHtml(appointment.profissionalNome)}</p></div><a class="btn btn-secondary" href="orcamentos.html?pedidoId=${appointment.pedidoId}">Ver agendamento</a></article>`));
         if (results.some(result => result.status === 'rejected')) messages.push('<p class="app-muted">Não foi possível verificar todos os avisos. Consulte os detalhes em Meus pedidos.</p>');
         target.innerHTML = messages.join('');
         document.getElementById('homeNoticesSection').hidden = messages.length === 0;

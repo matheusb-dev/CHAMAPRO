@@ -8,3 +8,7 @@ private-uploads/
 appsettings.Local.json
 
 .migration-local/
+
+# Artefatos locais da homologação (incluem perfis temporários de navegador)
+Tests/.runtime/
+Tests/.artifacts/

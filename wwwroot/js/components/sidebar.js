@@ -27,7 +27,7 @@
         const items = links[perfil] || [];
         container.className = 'app-sidebar';
         container.id = 'appNavigation';
-        container.innerHTML = `<nav aria-label="Menu principal"><span class="sidebar-label">SEU ESPAÇO</span>${items.map(([nome,href]) => `<a class="sidebar-link" href="${href}"><svg width="19" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[nome] || icons.profile}</svg><span>${nome}</span></a>`).join('')}</nav><div class="sidebar-footer"><strong>CHAMAPRO</strong>Conectando quem precisa<br>a quem sabe fazer.</div>`;
+        container.innerHTML = `<nav aria-label="Menu principal"><span class="sidebar-label">SEU ESPAÇO</span>${items.map(([nome,href]) => `<a class="sidebar-link" href="${href}"><svg width="19" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[nome] || icons.profile}</svg><span>${nome}</span></a>`).join('')}</nav><div class="sidebar-footer"><a class="sidebar-footer-brand" href="${window.Chamapro.inicioDoUsuario(user)}" aria-label="CHAMAPRO início">CHAMAPRO</a><p>Conectando quem precisa a quem sabe fazer.</p></div>`;
         function updateActive() {
             container.querySelectorAll('.sidebar-link').forEach(link => {
                 const sectionLink = items.some(([, href]) => href === location.pathname + location.hash && href.includes('#'));

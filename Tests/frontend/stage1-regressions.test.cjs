@@ -47,7 +47,7 @@ function environment(ids, role, api) {
     const all = () => [...elements.values()].flatMap(el => [el, ...el.children]);
     const document = { getElementById: id => elements.get(id) || null, querySelectorAll: selector => all().filter(el => matches(el, selector)), querySelector: selector => all().find(el => matches(el, selector)) || null };
     const context = { document, URLSearchParams, FormData, location: { search: '?pedidoId=1', assign() {}, reload() {} }, confirm: () => true, setTimeout, window: { scrollTo() {}, ChamaproApp: { ready: Promise.resolve({ perfil: role }) }, Chamapro: { api, escaparHtml: escape, formatarData: () => '', formatarNota: String, formatarMoeda: String, toast() {} } } };
-    vm.createContext(context);
+    vm.createContext(context);require('./helpers/api.cjs').install(context);
     return { elements, document, context, run: name => vm.runInContext(source(name), context) };
 }
 
@@ -129,7 +129,7 @@ test('manual search requires verification and excludes unverified options; empty
     assert.doesNotMatch(env.elements.get('professionalList').innerHTML, /Não verificado/);
     env.context.window.Chamapro.api = async () => ({ itens: [] });
     await env.elements.get('searchProfessionals').emit('click');
-    assert.match(env.elements.get('professionalList').innerHTML, /categoria, região e horário/);
+    assert.match(env.elements.get('professionalList').innerHTML, /categoria e região/);
 });
 test('repeated manual/automatic toggles never mix automatic distribution and selected IDs', async () => {
     for (const mode of ['manual', 'auto', 'manual', 'auto']) {
@@ -160,11 +160,11 @@ test('quotes distinguish loading, API error, retry and a genuinely empty respons
     assert.match(quotes.innerHTML, /Carregando propostas/);
     rejectFirst(new Error('Falha de rede')); await tick();
     assert.match(quotes.innerHTML, /Não foi possível carregar/);
-    assert.doesNotMatch(quotes.innerHTML, /Nenhum orçamento/);
+    assert.doesNotMatch(quotes.innerHTML, /Ainda não há propostas/);
     const retry = quotes.querySelector('#retryQuotes'); const pending = retry.emit('click'); await tick();
     assert.match(quotes.innerHTML, /Carregando propostas/);
     resolveRetry([]); await pending;
-    assert.match(quotes.innerHTML, /Nenhum orçamento/);
+    assert.match(quotes.innerHTML, /Ainda não há propostas/);
     assert.equal(quotes.attrs['aria-busy'], 'false');
 });
 

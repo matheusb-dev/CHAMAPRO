@@ -136,7 +136,7 @@ builder.Services.AddHostedService<
 
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
-builder.Services.AddServicesERepositories();
+builder.Services.AddServicesERepositories(builder.Configuration);
 
 // ======================================================
 // AUTENTICAÇÃO JWT

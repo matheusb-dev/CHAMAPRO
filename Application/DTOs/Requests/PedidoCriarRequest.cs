@@ -62,10 +62,7 @@ public class PedidoCriarRequest : IValidatableObject
         if (!DistribuirParaCompativeis && ProfissionalIds.Count == 0)
             yield return new ValidationResult("Escolha profissionais ou ative a distribuição para compatíveis.", [nameof(ProfissionalIds)]);
 
-        if (TipoAtendimento == TipoAtendimento.Agendado && DataDesejada is null)
-            yield return new ValidationResult("Informe a data e o horário desejados.", [nameof(DataDesejada)]);
-
-        if (TipoAtendimento == TipoAtendimento.Agendado && DataDesejada <= DateTime.UtcNow)
-            yield return new ValidationResult("A data desejada precisa estar no futuro.", [nameof(DataDesejada)]);
+        if (TipoAtendimento != TipoAtendimento.Imediato || DataDesejada is not null)
+            yield return new ValidationResult("Novas solicitações são urgentes e não possuem data ou horário.", [nameof(TipoAtendimento)]);
     }
 }

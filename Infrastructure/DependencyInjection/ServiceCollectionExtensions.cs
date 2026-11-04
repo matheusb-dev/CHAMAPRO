@@ -4,7 +4,7 @@ namespace Chamapro.Api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddServicesERepositories(this IServiceCollection services)
+    public static IServiceCollection AddServicesERepositories(this IServiceCollection services, IConfiguration? configuration = null)
     {
         var assembly = Assembly.GetExecutingAssembly();
 
@@ -21,8 +21,11 @@ public static class ServiceCollectionExtensions
                 services.AddScoped(contrato, implementacao);
         }
 
+        if (configuration?.GetValue<bool>("Rotinas:Habilitadas", true) == false) return services;
+
         var rotinas = assembly.GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false } && t.IsSubclassOf(typeof(BackgroundService)));
+            .Where(t => t is { IsClass: true, IsAbstract: false } && t.IsSubclassOf(typeof(BackgroundService))
+                && t.Name != "LembreteAgendamentoBackgroundService");
 
         foreach (var rotina in rotinas)
             services.AddSingleton(typeof(IHostedService), rotina);

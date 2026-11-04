@@ -38,10 +38,10 @@
             const heading = document.getElementById('ordersHeading');
             if (heading) heading.textContent = 'Detalhe do pedido';
             const guidance = {
-                PENDENTE: 'Os profissionais estão respondendo. Confira as propostas abaixo.',
+                PENDENTE: p.destinatarios?.length === 0 ? 'Pedido salvo. Ainda não há profissionais compatíveis. Ele continuará aberto para receber propostas quando houver profissionais na sua região.' : 'Solicitação urgente aberta. Confira as propostas abaixo.',
                 ORCADO: 'Confira as propostas recebidas. As ações disponíveis aparecem junto de cada proposta.',
-                ACEITO: 'Você escolheu um profissional. Combine a data e o horário do serviço.',
-                AGENDADO: 'Confira o agendamento. O profissional iniciará o atendimento.',
+                ACEITO: 'Profissional escolhido para sua solicitação urgente. Entrem em contato para combinar os detalhes do atendimento.',
+                AGENDADO: 'Este pedido possui um registro histórico de agendamento. Acompanhe o atendimento.',
                 EM_ANDAMENTO: 'O profissional está realizando o serviço. A avaliação fica disponível após a conclusão.',
                 CONCLUIDO: p.avaliacao ? 'Obrigado! Sua avaliação foi registrada.' : 'Como foi o atendimento? Avalie o profissional abaixo.',
                 CANCELADO: 'Este pedido foi encerrado. Você pode consultar o histórico ou pedir um novo serviço.'
@@ -51,7 +51,7 @@
                 if (el) el.textContent = text;
             }
             const chosen = p.destinatarios?.find(item => Number(item.profissionalId) === Number(p.profissionalId));
-            content.innerHTML = `<a class="back-link" href="orcamentos.html">← Meus pedidos</a><section class="app-card"><h2>O que acontece agora</h2><p id="orderNextStep">${safe(guidance[status] || "Acompanhe as informações deste pedido.")}</p></section><article class="app-card"><span class="badge badge-info">${safe(label(p.status))}</span><h2 style="margin:12px 0">${safe(p.titulo)}</h2><p>${safe(p.categoria)} · ${safe([p.cidade,p.bairro,p.endereco].filter(Boolean).join(" · "))}</p><p style="margin-top:12px">${safe(p.descricao)}</p><p class="app-muted">Pedido feito em ${C.formatarData(p.criadoEm)}</p>${p.dataDesejada ? `<p class="app-muted">Data desejada: ${dateTime(p.dataDesejada)}</p>` : ""}${p.fotoUrls?.length ? `<div class="app-grid-two" style="margin-top:16px">${p.fotoUrls.map(url => `<img src="${safe(url)}" alt="Foto do chamado" loading="lazy">`).join("")}</div>` : ""}<div class="app-actions" id="orderActions"></div><p id="orderMessage" class="app-message"></p></article><section class="app-stack" id="quotesSection" aria-live="polite"><p class="empty-state">Carregando propostas…</p></section>`;
+            content.innerHTML = `<a class="back-link" href="orcamentos.html">← Meus pedidos</a><section class="app-card"><h2>O que acontece agora</h2><p id="orderNextStep">${safe(guidance[status] || "Acompanhe as informações deste pedido.")}</p></section><article class="app-card"><span class="badge badge-info">${safe(label(p.status))}</span><h2 style="margin:12px 0">${safe(p.titulo)}</h2><p>${safe(p.categoria)} · ${safe([p.cidade,p.bairro,p.endereco].filter(Boolean).join(" · "))}</p><p style="margin-top:12px">${safe(p.descricao)}</p><p class="app-muted">Pedido feito em ${C.formatarData(p.criadoEm)}</p>${p.dataDesejada ? `<p class="app-muted">Data histórica: ${dateTime(p.dataDesejada)}</p>` : ""}${p.fotoUrls?.length ? `<div class="app-grid-two" style="margin-top:16px">${p.fotoUrls.map(url => `<img src="${safe(url)}" alt="Foto do chamado" loading="lazy">`).join("")}</div>` : ""}<div class="app-actions" id="orderActions"></div><p id="orderMessage" class="app-message"></p></article><section class="app-stack" id="quotesSection" aria-live="polite"><p class="empty-state">Carregando propostas…</p></section>`;
             if (p.profissionalId) content.insertAdjacentHTML('beforeend', `<section class="app-card"><h2>Profissional escolhido</h2><p>${safe(chosen?.nome || 'Profissional do seu pedido')}</p><a class="btn btn-secondary" href="perfil-profissional.html?id=${p.profissionalId}">Ver perfil</a></section>`);
             if (p.avaliacao) content.insertAdjacentHTML('beforeend', `<section class="app-card"><h2>Sua avaliação</h2><p>Nota: ${safe(String(p.avaliacao.nota))} / 5</p><p>${safe(p.avaliacao.comentario || 'Sem comentário.')}</p></section>`);
             if (status === 'CANCELADO' && p.motivoCancelamento) content.insertAdjacentHTML('beforeend', `<p class="app-muted">Motivo: ${safe(p.motivoCancelamento)}</p><a class="btn btn-primary" href="criar-chamado.html">Pedir um serviço</a>`);
@@ -63,10 +63,10 @@
                     const quotes = await C.api(`/pedidos/${pedidoId}/orcamentos`);
                     const available = quotes.filter(quote => quote.situacao === 'ENVIADO' && !quote.expirado);
                     if (status === 'PENDENTE') updateNextStep(available.length ? 'Você recebeu ' + available.length + (available.length === 1 ? ' proposta. Confira os detalhes e escolha um profissional.' : ' propostas. Compare os detalhes e escolha um profissional.') : guidance[status]);
-                    target.innerHTML = `<section class="app-stack"><h2>Propostas recebidas (${quotes.length})</h2>${quotes.length ? quotes.map(q => `<article class="app-card"><div class="app-row"><div><strong>${safe(q.profissional.nome)}</strong><div class="app-muted">Nota ${C.formatarNota(q.profissional.notaMedia)} ${q.profissional.verificado ? "· perfil verificado" : ""} · ${safe(q.prazoEstimado)}</div><p class="app-muted">${safe(q.condicoes || "Sem observações adicionais")}</p><span class="badge ${q.situacao === "ACEITO" ? "badge-success" : "badge-info"}">${safe(label(q.situacao))}${q.expirado ? " · expirado" : ""}</span></div><div><strong>${C.formatarMoeda(q.valor)}</strong><div class="app-actions">${status === "PENDENTE" && q.situacao === "ENVIADO" && !q.expirado ? `<button class="btn btn-primary btn-small" data-accept-quote="${q.id}">Aceitar</button><button class="btn btn-secondary btn-small" data-reject-quote="${q.id}">Recusar</button>` : ""}<a class="btn btn-secondary btn-small" href="perfil-profissional.html?id=${q.profissional.id}">Ver perfil</a></div></div></div></article>`).join("") : '<p class="empty-state">Nenhum orçamento está disponível para este pedido no momento.</p>'}</section>`;
+                    target.innerHTML = `<section class="app-stack"><h2>Propostas recebidas (${quotes.length})</h2>${quotes.length ? quotes.map(q => `<article class="app-card"><div class="app-row"><div><strong>${safe(q.profissional.nome)}</strong><div class="app-muted">Nota ${C.formatarNota(q.profissional.notaMedia)}${Number(q.profissional.notaMedia) > 0 ? "" : " · nota inicial, sem avaliações"} ${q.profissional.verificado ? "· perfil verificado" : ""} · ${safe(q.prazoEstimado)}</div><p class="app-muted">${safe(q.condicoes || "Sem observações adicionais")}</p><span class="badge ${q.situacao === "ACEITO" ? "badge-success" : "badge-info"}">${safe(label(q.situacao))}${q.expirado ? " · expirado" : ""}</span></div><div><strong>${C.formatarMoeda(q.valor)}</strong><div class="app-actions">${C.contatoWhatsApp(q.profissional.telefone)}</div><div class="app-actions">${status === "PENDENTE" && q.situacao === "ENVIADO" && !q.expirado ? `<button class="btn btn-primary btn-small" data-accept-quote="${q.id}">Aceitar</button><button class="btn btn-secondary btn-small" data-reject-quote="${q.id}">Recusar</button>` : ""}<a class="btn btn-secondary btn-small" href="perfil-profissional.html?id=${q.profissional.id}">Ver perfil</a></div></div></div></article>`).join("") : '<p class="empty-state">Ainda não há propostas. Seu pedido continua aberto para profissionais compatíveis.</p>'}</section>`;
                     target.querySelectorAll("[data-accept-quote]").forEach(btn => btn.addEventListener("click", async () => {
                         if (actionPending) return;
-                        if (!confirm("Aceitar este orçamento? As demais propostas serão encerradas.")) return;
+                        if (!confirm("Escolher este profissional para sua solicitação urgente? As demais propostas serão encerradas. Vocês poderão entrar em contato pelo WhatsApp para combinar os detalhes do atendimento.")) return;
                         return mutate("orderMessage", () => C.api(`/orcamentos/${btn.dataset.acceptQuote}/aceitar`, { method: "POST" }));
                     }));
                     target.querySelectorAll("[data-reject-quote]").forEach(btn => btn.addEventListener("click", async () => {
@@ -93,38 +93,21 @@
             if (!["PENDENTE", "ORCADO", "CANCELADO"].includes(status)) {
                 try {
                     const contact = await C.api(`/whatsapp/pedidos/${pedidoId}/contato`);
-                    const number = String(contact.telefone || "").replace(/\D/g, "");
-                    const text = encodeURIComponent(contact.mensagemInicialWhatsApp || `Olá! Estou entrando em contato pelo CHAMAPRO sobre o chamado “${p.titulo}”.`);
-                    actions.insertAdjacentHTML("beforeend", `<a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/${number}?text=${text}">Conversar pelo WhatsApp</a>`);
+                    actions.insertAdjacentHTML("beforeend", C.contatoWhatsApp(contact.telefone, contact.mensagemInicialWhatsApp));
                 } catch { /* Contato desativado ou ainda indisponível. */ }
             }
-            if (status === "ACEITO" && !p.agendamento) document.getElementById("scheduleBox").hidden = false;
             if (status === "CONCLUIDO" && !p.avaliacao) {
                 const review = document.getElementById('reviewBox');
                 review.hidden = false;
                 if (location.hash === '#avaliar') review.scrollIntoView({ block: 'start' });
             }
-            const appointmentOpen = p.agendamento && !['CANCELADO', 'CONCLUIDO'].includes(status) && ['AGENDADO', 'CONFIRMADO'].includes(String(p.agendamento.situacao).toUpperCase());
-            if (p.agendamento) actions.insertAdjacentHTML("beforeend", `<span class="app-muted">Agendado para ${dateTime(p.agendamento.dataHora)} · ${safe(label(p.agendamento.situacao))}</span>${appointmentOpen ? '<button class="btn btn-secondary btn-small" id="reschedule">Remarcar</button><button class="btn btn-secondary btn-small" id="cancelAppointment">Cancelar agendamento</button>' : ""}`);
+            if (p.agendamento) actions.insertAdjacentHTML("beforeend", `<p class="app-muted">Registro histórico: ${dateTime(p.agendamento.dataHora)} · ${safe(label(p.agendamento.situacao))}</p>`);
 
             document.getElementById("cancelOrder")?.addEventListener("click", async () => {
                 if (actionPending) return;
                 const motivo = prompt("Informe o motivo do cancelamento:")?.trim(); if (!motivo) return;
                 if(motivo.length<5||motivo.length>200){message('orderMessage','Explique o motivo com 5 a 200 caracteres.');return;}
                 return mutate('orderMessage',()=>C.api(`/pedidos/${pedidoId}/cancelar`,{method:'POST',body:{motivo}}));
-            });
-            document.getElementById('cancelAppointment')?.addEventListener('click', async () => {
-                if(actionPending||!confirm('Cancelar este agendamento também cancela o pedido. Deseja continuar?'))return;
-                return mutate('orderMessage',()=>C.api(`/agendamentos/${p.agendamento.id}/status`,{method:'PATCH',body:{status:'Cancelado'}}));
-            });
-            document.getElementById("reschedule")?.addEventListener("click", () => { if(actionPending)return;document.getElementById("scheduleBox").hidden = false; document.getElementById("scheduleForm").dataset.agendamentoId = p.agendamento.id; });
-            document.getElementById("scheduleForm").addEventListener("submit", async event => {
-                event.preventDefault();if(actionPending)return;
-                const appointmentId = event.currentTarget.dataset.agendamentoId;
-                if(appointmentId?!appointmentOpen:status!=='ACEITO'||p.agendamento){message('scheduleMessage','Este pedido não permite esse agendamento. Atualize os detalhes.');return;}
-                const date = new Date(document.getElementById("scheduleDate").value);
-                if(!Number.isFinite(date.getTime())||date.getTime()<=Date.now()){message('scheduleMessage','Escolha uma data e horário futuros. O que você preencheu foi mantido.');return;}
-                return mutate('scheduleMessage',()=>appointmentId?C.api(`/agendamentos/${appointmentId}`,{method:'PUT',body:{dataHora:date.toISOString()}}):C.api('/agendamentos',{method:'POST',body:{pedidoId:Number(pedidoId),dataHora:date.toISOString()}}));
             });
             document.getElementById("reviewForm").addEventListener("submit", async event => {
                 event.preventDefault();if(actionPending)return;

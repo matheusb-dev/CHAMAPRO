@@ -101,7 +101,7 @@ public class OrcamentoService : IOrcamentoService
         var agora = DateTime.UtcNow;
         var orcamentos = await _orcamentos.ListarDoPedidoAsync(pedidoId);
 
-        return orcamentos.Select(o => o.ToComProfissional(agora)).ToList();
+        return orcamentos.Where(o => o.Profissional.Usuario.Ativo).Select(o => o.ToComProfissional(agora)).ToList();
     }
 
     // ---------------------------------------------------------------- POST /orcamentos/{id}/aceitar
@@ -120,6 +120,9 @@ public class OrcamentoService : IOrcamentoService
 
             var escolhido = pedido.Orcamentos.FirstOrDefault(o => o.Id == orcamentoId)
                 ?? throw PedidoErros.OrcamentoNaoEncontrado();
+
+            if (!escolhido.Profissional.Usuario.Ativo)
+                throw PedidoErros.Regra("PROFISSIONAL_BLOQUEADO", "Este profissional não está disponível para escolha.");
 
             var statusAnterior = pedido.Status;
 
@@ -152,7 +155,7 @@ public class OrcamentoService : IOrcamentoService
             var usuarioProfissionalId = await _orcamentos.ObterUsuarioProfissionalAsync(escolhido.ProfissionalId);
             if (usuarioProfissionalId.HasValue)
                 _notificacoes.Adicionar(usuarioProfissionalId.Value, "orcamento_aceito", "Seu orçamento foi aceito",
-                    "O cliente escolheu sua proposta. Combine a data do serviço.", new { pedidoId = pedido.Id, orcamentoId = escolhido.Id });
+                    "O cliente escolheu sua proposta urgente. Entrem em contato para combinar os detalhes do atendimento.", new { pedidoId = pedido.Id, orcamentoId = escolhido.Id });
 
             await _pedidos.SalvarAsync();
             await tx.CommitAsync();

@@ -14,7 +14,7 @@ public record OrcamentoResponse(
     StatusOrcamento Situacao,
     string? Aviso);
 
-public record ProfissionalOrcamentoResponse(int Id, string Nome, decimal NotaMedia, bool Verificado);
+public record ProfissionalOrcamentoResponse(int Id, string Nome, decimal NotaMedia, bool Verificado, string? Telefone = null);
 
 /// <summary>Item de GET /pedidos/{id}/orcamentos: o cliente compara valor, prazo, nota e selo.</summary>
 public record OrcamentoComProfissionalResponse(

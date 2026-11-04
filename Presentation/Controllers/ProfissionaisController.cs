@@ -61,10 +61,9 @@ public class ProfissionaisController : ApiControllerBase
 
     [HttpPut("me/disponibilidade")]
     [Authorize(Roles = Perfis.Profissional)]
-    public async Task<IActionResult> DefinirDisponibilidade(
+    public Task<IActionResult> DefinirDisponibilidade(
         [FromBody] List<DisponibilidadeProfissionalRequest> disponibilidade, CancellationToken ct)
     {
-        await _servico.DefinirDisponibilidadeAsync(disponibilidade, ct);
-        return NoContent();
+        return Task.FromResult<IActionResult>(StatusCode(410, new { codigo = "AGENDA_DESCONTINUADA", message = "Não é mais necessário configurar horários." }));
     }
 }

@@ -21,7 +21,7 @@ function guidedHarness() {
         return ({ '[data-service-step]': steps, '[data-service-progress]': progress, '[data-service-next]': next, '[data-service-back]': back, 'input, select, textarea': fields })[selector];
     }, addEventListener(name, fn) { events[name] = fn; } };
     const context = { document: { getElementById: id => id === 'createOrderForm' ? form : id === 'backToEdit' ? edit : null } };
-    vm.createContext(context);
+    vm.createContext(context);require('./helpers/api.cjs').install(context);
     vm.runInContext(read('wwwroot/js/pages/cliente-pedido-guiado.js'), context);
     return { fields, steps, next, back, submit, events, file };
 }
@@ -62,7 +62,7 @@ test('order confirmation ignores duplicate clicks while the actual API request i
     let calls = 0;
     const document = { getElementById: id => elements.get(id) || null, querySelectorAll: () => [], querySelector: () => ({ value: 'auto' }) };
     const context = { document, URLSearchParams, FormData, location: { assign() {} }, window: { Chamapro: { escaparHtml: v => v, api: async route => { if (route === '/categorias') return []; if (route === '/pedidos') { calls++; await new Promise(() => {}); } }, toast() {} }, ChamaproApp: { ready: Promise.resolve({ perfil: 'CLIENTE' }) } } };
-    vm.createContext(context); vm.runInContext(read('wwwroot/js/pages/cliente.js'), context);
+    vm.createContext(context);require('./helpers/api.cjs').install(context); vm.runInContext(read('wwwroot/js/pages/cliente.js'), context);
     await new Promise(resolve => setImmediate(resolve));
     elements.get('createOrderForm').handlers.submit({ preventDefault() {} });
     elements.get('confirmOrder').handlers.click();
@@ -90,7 +90,7 @@ test('favorites loads and removes a saved professional using the existing endpoi
             return options?.method === 'DELETE' ? null : [{ profissionalId: 12, nome: 'Profissional de teste', notaMedia: 4 }];
         }
     } } };
-    vm.createContext(context); vm.runInContext(read('wwwroot/js/pages/cliente-favoritos.js'), context);
+    vm.createContext(context);require('./helpers/api.cjs').install(context); vm.runInContext(read('wwwroot/js/pages/cliente-favoritos.js'), context);
     await new Promise(resolve => setImmediate(resolve));
     assert.match(target.innerHTML, /perfil-profissional.html\?id=12/);
     await handlers.click();

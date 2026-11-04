@@ -1,3 +1,5 @@
+@import url('../components/brand.css?v=20261104-logo1');
+
 /* Authenticated design system. Public pages keep their existing appearance. */
 body.app-auth {
     color-scheme: dark;
@@ -17,10 +19,6 @@ body.app-auth {
 .app-auth .skip-link { position: fixed; top: -100px; left: 20px; z-index: 100; padding: 12px 20px; border-radius: 10px; background: var(--color-primary); color: var(--color-text-dark); font-weight: 700; }
 .app-auth .skip-link:focus { top: 12px; }
 .app-auth .app-topbar { height: 80px; padding: 0 32px; background: #191c16f5; gap: 20px; }
-.app-auth .brand { display: inline-flex; align-items: center; gap: 11px; flex-shrink: 0; }
-.app-auth .brand-symbol { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--color-primary); color: #171812; font-size: 27px; font-weight: 800; transform: rotate(-6deg); }
-.app-auth .brand-name { font-size: 21px; font-weight: 800; letter-spacing: -.7px; }
-.app-auth .brand-name span { color: var(--color-primary); }
 .app-auth .topbar-actions { gap: 18px; min-width: 0; }
 .app-auth .topbar-user { padding-left: 18px; border-left: 1px solid var(--color-border); min-width: 0; }
 .app-auth .topbar-user strong { display: block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
@@ -37,8 +35,9 @@ body.app-auth {
 .app-auth .sidebar-link:hover { background: #ffffff05; color: var(--color-text); }
 .app-auth .sidebar-link.active { background: var(--color-primary-soft); border-color: #ffc92824; color: var(--color-primary); }
 .app-auth .sidebar-link.active svg { color: inherit; }
-.app-auth .sidebar-footer { margin: 24px 12px 0; padding-top: 20px; border-top: 1px solid var(--color-border); color: var(--color-text-muted); font-size: 12px; }
-.app-auth .sidebar-footer strong { display: block; color: var(--color-text-secondary); margin-bottom: 4px; }
+.app-auth .sidebar-footer { margin: 24px 0 0; padding: 20px 12px 0; border-top: 1px solid var(--color-border); color: var(--color-text-muted); font-size: 12px; line-height: 1.6; text-align: left; }
+.app-auth .sidebar-footer-brand { display: block; width: fit-content; max-width: 100%; margin-bottom: 8px; color: var(--color-text-secondary); font-size: 12px; font-weight: 700; letter-spacing: .06em; line-height: 1.5; }
+.app-auth .sidebar-footer p { margin: 0; max-width: 24ch; }
 .app-auth .app-main { padding: 40px clamp(24px, 3.5vw, 60px) 64px; }
 .app-auth .app-content { max-width: 1280px; }
 .app-auth .page-heading { padding-bottom: 26px; margin-bottom: 26px; border-bottom: 1px solid var(--color-border); }
@@ -117,7 +116,7 @@ body.app-auth {
     .app-auth .app-sidebar { position: static; height: auto; padding: 12px 16px; border-bottom: 1px solid var(--color-border); }
     .app-auth .app-sidebar nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; }
     .app-auth .sidebar-link { font-size: 12px; margin: 0; padding: 10px; }
-    .app-auth .sidebar-footer { display: none; }
+    .app-auth .sidebar-footer { margin-top: 16px; padding-top: 16px; }
     .app-auth .menu-toggle { display: inline-grid; }
     .app-auth .app-sidebar.menu-collapsed { display: none; }
     .app-auth .topbar-actions { gap: 8px; }

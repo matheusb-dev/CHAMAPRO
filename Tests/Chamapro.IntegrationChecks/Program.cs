@@ -25,7 +25,7 @@ try {
     var professional=accounts.Single(u=>u.Email.StartsWith("profissional01@"));
     var otherProfessional=accounts.Single(u=>u.Email.StartsWith("profissional09@"));
     if(client.Tipo!=TipoUsuario.Cliente||otherClient.Tipo!=TipoUsuario.Cliente||professional.Tipo!=TipoUsuario.Profissional||otherProfessional.Tipo!=TipoUsuario.Profissional)throw new Exception("RoleGuard");
-    using var http=new HttpClient{BaseAddress=new Uri("http://localhost:5088/api/v1/"),Timeout=TimeSpan.FromSeconds(15)};
+    using var http=new HttpClient{BaseAddress=new Uri(Environment.GetEnvironmentVariable("CHAMAPRO_TEST_BASE_URL") ?? "http://localhost:5088/api/v1/"),Timeout=TimeSpan.FromSeconds(15)};
     void Session(Chamapro.Api.Models.Entities.Usuario? account) => http.DefaultRequestHeaders.Authorization=account is null?null:new AuthenticationHeaderValue("Bearer",new TokenService(config).GerarToken(account));
     int checks=0;
     async Task Expect(string route,int status){using var response=await http.GetAsync(route);if((int)response.StatusCode!=status)throw new Exception("UnexpectedReadStatus");checks++;}

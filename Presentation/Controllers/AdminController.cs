@@ -78,10 +78,7 @@ public class AdminController : ApiControllerBase
                 Cancelados = g.Count(p => p.Status == StatusPedido.Cancelado)
             }).FirstOrDefaultAsync(ct);
 
-        var categorias = await _context.Pedidos.AsNoTracking()
-            .GroupBy(p => p.Categoria.Nome)
-            .Select(g => new AdminCategoriaUsoResponse(g.Key, g.Count()))
-            .OrderByDescending(x => x.Chamados).ThenBy(x => x.Categoria).Take(5).ToListAsync(ct);
+        var categorias = await CategoriasMaisSolicitadas().ToListAsync(ct);
 
         var profissionais = await (from avaliacao in _context.Avaliacoes.AsNoTracking()
                                    join usuario in _context.Usuarios.AsNoTracking() on avaliacao.AvaliadoId equals usuario.Id
@@ -98,6 +95,14 @@ public class AdminController : ApiControllerBase
             pedidos?.Total ?? 0, pedidos?.Pendentes ?? 0, pedidos?.Concluidos ?? 0, pedidos?.Cancelados ?? 0,
             categorias, profissionais));
     }
+
+    // Order aggregate columns before constructing the positional DTO, so EF can translate the query.
+    private IQueryable<AdminCategoriaUsoResponse> CategoriasMaisSolicitadas()
+        => _context.Pedidos.AsNoTracking()
+            .GroupBy(p => p.Categoria.Nome)
+            .Select(g => new { Categoria = g.Key, Chamados = g.Count() })
+            .OrderByDescending(x => x.Chamados).ThenBy(x => x.Categoria).Take(5)
+            .Select(x => new AdminCategoriaUsoResponse(x.Categoria, x.Chamados));
 
     [HttpGet("pedidos")]
     public async Task<ActionResult<List<AdminPedidoResponse>>> ListarPedidos(CancellationToken ct)
@@ -154,6 +159,9 @@ public class AdminController : ApiControllerBase
             throw BusinessException.Invalido("STATUS_INVALIDO", "Status do pedido inválido.");
         if (!Enum.IsDefined(novoStatus))
             throw BusinessException.Invalido("STATUS_INVALIDO", "Status do pedido inválido.");
+
+        if (novoStatus == StatusPedido.Agendado)
+            throw BusinessException.Regra("AGENDAMENTO_DESCONTINUADO", "Novas alterações não podem agendar serviços.");
 
         var statusAnterior = pedido.Status;
         pedido.Status = novoStatus;

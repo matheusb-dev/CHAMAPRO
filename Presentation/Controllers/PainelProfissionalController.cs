@@ -3,6 +3,7 @@ using Chamapro.Api.Data;
 using Chamapro.Api.DTOs.Responses;
 using Chamapro.Api.Models.Enums;
 using Chamapro.Api.Services;
+using Chamapro.Api.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +39,6 @@ public sealed class PainelProfissionalController : ApiControllerBase
                         .All(c => (c.FaixaPrecoMin ?? p.PrecoMin) != null
                             && (c.FaixaPrecoMax ?? p.PrecoMax) != null)
                     && p.Areas.Any()
-                    && p.Disponibilidade.Any()
                     && p.DistanciaMaxKm > 0
                     && (p.AtendeDomicilio || p.AtendeEstabelecimento)
             })
@@ -52,6 +52,8 @@ public sealed class PainelProfissionalController : ApiControllerBase
 
         var novos = await destinatarios.CountAsync(x => x.Situacao == SituacaoDestinatario.Pendente
             && x.Status == StatusPedido.Pendente, ct);
+        novos += await PedidoRepository.ConsultarAbertas(_db, profissional.Id)
+            .CountAsync(p => !p.Destinatarios.Any(d => d.ProfissionalId == profissional.Id), ct);
         var aceitos = await destinatarios.CountAsync(x => x.Situacao == SituacaoDestinatario.Aceito
             && x.Status == StatusPedido.Pendente, ct);
         var orcamentos = await _db.Orcamentos.AsNoTracking().CountAsync(o => o.ProfissionalId == profissional.Id, ct);

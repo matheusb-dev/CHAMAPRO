@@ -38,28 +38,6 @@ public class ProfissionalRepository : IProfissionalRepository
                     && (bairro == null || a.Bairro == null || a.Bairro.ToLower() == bairro))
                 && (filtro.Verificado != true || p.Usuario.IdentidadeVerificada));
 
-        if (filtro.TipoAtendimento is { } tipo)
-        {
-            var data = HorarioBrasil.ParaLocal(tipo == TipoAtendimento.Agendado
-                ? filtro.DataDesejada!.Value
-                : DateTime.UtcNow);
-
-            var diaSemana = (short)data.DayOfWeek;
-            var hora = TimeOnly.FromDateTime(data);
-
-            consulta = consulta.Where(p => tipo == TipoAtendimento.Imediato
-                ? p.AtendeUrgencia && p.Disponibilidade.Any(d =>
-                    d.DiaSemana == diaSemana &&
-                    d.AtendeImediato &&
-                    d.HoraInicio <= hora &&
-                    d.HoraFim > hora)
-                : p.Disponibilidade.Any(d =>
-                    d.DiaSemana == diaSemana &&
-                    d.AtendeAgendado &&
-                    d.HoraInicio <= hora &&
-                    d.HoraFim > hora));
-        }
-
         var profissionais = await consulta.ToListAsync(ct);
 
         var usuarioIds = profissionais.Select(p => p.UsuarioId).ToArray();
@@ -180,7 +158,6 @@ public class ProfissionalRepository : IProfissionalRepository
                 .All(c => (c.FaixaPrecoMin ?? p.PrecoMin).HasValue
                     && (c.FaixaPrecoMax ?? p.PrecoMax).HasValue)
             && p.Areas.Count > 0
-            && p.Disponibilidade.Count > 0
             && p.DistanciaMaxKm > 0
             && (p.AtendeDomicilio || p.AtendeEstabelecimento);
 

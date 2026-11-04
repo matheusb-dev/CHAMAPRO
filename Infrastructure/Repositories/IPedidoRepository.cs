@@ -15,6 +15,8 @@ public interface IPedidoRepository
 
     // Consultas de apoio
     Task<int?> ObterProfissionalIdPorUsuarioAsync(int usuarioId);
+    Task<bool> DistribuicaoAbertaAsync(int pedidoId);
+    Task<bool> PodeReceberAbertoAsync(int pedidoId, int profissionalId);
     Task<bool> CategoriaExisteAsync(int categoriaId);
     Task<int> ContarPendentesDoClienteAsync(int clienteId);
     Task<bool> ClienteEhDonoAsync(int pedidoId, int clienteId);

@@ -8,17 +8,17 @@
 
     function orderError(error) {
         const rules = {
-            SEM_PROFISSIONAIS_COMPATIVEIS: 'Não encontramos profissionais disponíveis para este serviço, local e horário. Confira a cidade ou tente agendar outro horário.',
+            SEM_PROFISSIONAIS_COMPATIVEIS: 'Não encontramos profissionais disponíveis para este serviço e local. Confira a cidade e tente novamente.',
             PROFISSIONAL_NAO_ATENDE: 'Um dos profissionais escolhidos não está disponível para este pedido. Atualize a busca ou deixe a plataforma procurar por você.',
             LIMITE_PEDIDOS_PENDENTES: 'Você já tem cinco pedidos aguardando resposta. Acompanhe ou cancele um deles em Meus pedidos antes de pedir outro serviço.',
             CATEGORIA_INVALIDA: 'Esta categoria não está mais disponível. Escolha outra e tente novamente.',
-            VALIDACAO: 'Confira os campos do pedido, incluindo a data e o horário, e tente novamente.',
+            VALIDACAO: 'Confira os campos do pedido e tente novamente.',
             ARQUIVO_MUITO_GRANDE: 'Use até cinco fotos JPG, PNG ou WEBP, de até 5 MB cada.'
         };
         if (rules[error.codigo]) return rules[error.codigo];
         if (error.status === 401) return 'Sua sessão expirou. Entre novamente para enviar o pedido.';
         if (error.status === 403) return 'Esta conta não pode pedir serviços. Entre com uma conta de cliente.';
-        if (error.status === 422 || error.status === 400) return 'Não foi possível confirmar com esses dados. Confira o serviço, a localização e o horário e tente novamente.';
+        if (error.status === 422 || error.status === 400) return 'Não foi possível confirmar com esses dados. Confira o serviço e a localização e tente novamente.';
         return 'Não foi possível enviar agora. Seus dados continuam aqui. Verifique a conexão e tente novamente.';
     }
     window.ChamaproOrderErrors = { message: orderError };
@@ -27,8 +27,6 @@
         const form = document.getElementById('createOrderForm');
         const categorySelect = document.getElementById('category');
         const city = document.getElementById('city');
-        const serviceType = document.getElementById('serviceType');
-        const dateGroup = document.getElementById('desiredDateGroup');
         const picker = document.getElementById('professionalPicker');
         const reviewPanel = document.getElementById('reviewPanel');
         const button = document.getElementById('confirmOrder');
@@ -48,7 +46,7 @@
             document.getElementById('reviewSummary').innerHTML = [
                 ['Serviço', document.getElementById('title').value], ['Categoria', category], ['O que precisa', document.getElementById('description').value],
                 ['Local', [cityPicker?.selection?.label || city.value, document.getElementById('neighborhood').value, document.getElementById('address').value].filter(Boolean).join(' · ')],
-                ['Quando', serviceType.value === 'AGENDADO' && document.getElementById('desiredDate').value ? new Date(document.getElementById('desiredDate').value).toLocaleString('pt-BR') : 'O mais rápido possível, conforme disponibilidade'],
+                ['Atendimento', 'Solicitação urgente, sem garantia de atendimento imediato'],
                 ['Envio', selectedMode() === 'manual' ? 'Para os profissionais que você selecionar abaixo.' : 'Vamos procurar profissionais compatíveis com o seu serviço.']
             ].map(([label, value]) => `<p><strong>${label}:</strong> ${safe(value || 'Ainda não informado')}</p>`).join('');
             if (finalStep) reviewPanel.hidden = false;
@@ -104,27 +102,21 @@
                 if (!profile?.cidade) notify('locationMessage', 'Informe onde será o serviço. Você também pode salvar sua localização em Minha conta.');
             } catch { notify('locationMessage', 'Não foi possível recuperar sua localização. Informe o local do serviço abaixo.'); }
         }
-        const clearProfessionalSelection = () => { professionalSearchVersion++; professionalSelectionLoaded = false; document.getElementById('professionalList').innerHTML = ''; if (favoriteId) notify('favoriteMessage', 'Vamos conferir se o favorito atende ao serviço, local e horário escolhidos.'); changed(); };
+        const clearProfessionalSelection = () => { professionalSearchVersion++; professionalSelectionLoaded = false; document.getElementById('professionalList').innerHTML = ''; if (favoriteId) notify('favoriteMessage', 'Vamos conferir se o favorito atende ao serviço e local escolhidos.'); changed(); };
         document.querySelectorAll('input[name="distribution"]').forEach(radio => radio.addEventListener('change', () => { picker.hidden = selectedMode() !== 'manual'; clearProfessionalSelection(); }));
-        serviceType.addEventListener('change', () => {
-            const scheduled = serviceType.value === 'AGENDADO'; dateGroup.hidden = !scheduled; document.getElementById('desiredDate').required = scheduled;
-        });
-        [categorySelect, city, serviceType, ...['neighborhood', 'desiredDate'].map(id => document.getElementById(id))].forEach(input => {
+        [categorySelect, city, document.getElementById('neighborhood')].forEach(input => {
             input.addEventListener('change', clearProfessionalSelection); input.addEventListener('input', clearProfessionalSelection);
         });
         async function searchProfessionals() {
             const searchVersion = ++professionalSearchVersion;
             const categoryId = categorySelect.value, region = city.value.trim(), neighborhood = document.getElementById('neighborhood').value.trim();
             if (!categoryId || !region) { setMessage('formMessage', 'Escolha o serviço e a cidade antes de buscar profissionais.'); return; }
-            const date = document.getElementById('desiredDate').value;
-            if (serviceType.value === 'AGENDADO' && (!date || !Number.isFinite(new Date(date).getTime()) || new Date(date) <= new Date())) { setMessage('formMessage', 'Escolha uma data e horário no futuro.'); return; }
             const target = document.getElementById('professionalList');
             target.innerHTML = '<p class="empty-state" role="status">Buscando profissionais…</p>';
             try {
-                const query = new URLSearchParams({ categoriaId: categoryId, cidade: region, pagina: '1', tamanho: '50', tipoAtendimento: serviceType.value, verificado: 'true' });
+                const query = new URLSearchParams({ categoriaId: categoryId, cidade: region, pagina: '1', tamanho: '50', tipoAtendimento: 'IMEDIATO', verificado: 'true' });
                 if (neighborhood) query.set('bairro', neighborhood);
-                if (serviceType.value === 'AGENDADO') query.set('dataDesejada', new Date(date).toISOString());
-                let result = await C.api(`/profissionais?${query}`);
+                    let result = await C.api(`/profissionais?${query}`);
                 if (searchVersion !== professionalSearchVersion) return;
                 const rows = [...(result.itens || [])];
                 let page = 1;
@@ -134,8 +126,8 @@
                 }
                 const compatible = rows.filter(row => row.verificado === true);
                 professionalSelectionLoaded = true;
-                target.innerHTML = compatible.length ? compatible.map(pro => `<label class="app-row"><span><input type="checkbox" name="professionalId" value="${pro.id}" ${favoriteId === pro.id ? 'checked' : ''}> <strong>${safe(pro.nome)}</strong><small class="app-muted"> · nota ${C.formatarNota(pro.notaMedia)} · verificado</small></span><a href="perfil-profissional.html?id=${pro.id}" target="_blank" rel="noopener">Ver perfil</a></label>`).join('') : '<p class="empty-state">Não há profissionais verificados disponíveis para esta categoria, região e horário. Tente outro horário ou confira a localização.</p>';
-                if (favoriteId) notify('favoriteMessage', compatible.some(row => row.id === favoriteId) ? 'Seu favorito é compatível e está selecionado. Você pode mudar a escolha.' : 'Seu favorito não está disponível para esta categoria, região ou horário, ou não está verificado. Escolha outro profissional ou use a busca automática.');
+                target.innerHTML = compatible.length ? compatible.map(pro => `<label class="app-row"><span><input type="checkbox" name="professionalId" value="${pro.id}" ${favoriteId === pro.id ? 'checked' : ''}> <strong>${safe(pro.nome)}</strong><small class="app-muted"> · nota ${C.formatarNota(pro.notaMedia)}${pro.totalAvaliacoes ? "" : " · nota inicial, sem avaliações"} · verificado</small></span><a href="perfil-profissional.html?id=${pro.id}" target="_blank" rel="noopener">Ver perfil</a></label>`).join('') : '<p class="empty-state">Não há profissionais verificados disponíveis para esta categoria e região. Confira a localização ou use a busca automática para salvar seu pedido e aguardar novas propostas.</p>';
+                if (favoriteId) notify('favoriteMessage', compatible.some(row => row.id === favoriteId) ? 'Seu favorito é compatível e está selecionado. Você pode mudar a escolha.' : 'Seu favorito não está disponível para esta categoria, região, ou não está verificado. Escolha outro profissional ou use a busca automática.');
             } catch {
                 if (searchVersion === professionalSearchVersion) {
                     target.innerHTML = '<p class="empty-state" role="alert">Não foi possível buscar os profissionais. Use o botão de busca para tentar novamente ou deixe a plataforma procurar por você.</p>';
@@ -153,7 +145,7 @@
             const manual = document.querySelector('input[name="distribution"][value="manual"]');
             const auto = document.querySelector('input[name="distribution"][value="auto"]');
             if (manual && auto) { manual.checked = true; auto.checked = false; picker.hidden = false; }
-            notify('favoriteMessage', 'Você veio de um profissional favorito. Vamos conferir se ele atende ao serviço, local e horário escolhidos.');
+            notify('favoriteMessage', 'Você veio de um profissional favorito. Vamos conferir se ele atende ao serviço e local escolhidos.');
         }
         form.addEventListener('chamapro:stepchange', event => {
             finalStep = event.detail === 2;
@@ -165,9 +157,7 @@
             if (!['auto', 'manual'].includes(distribution)) { setMessage('formMessage', 'Escolha como receber as propostas.'); return false; }
             const ids = distribution === 'manual' ? [...document.querySelectorAll('input[name="professionalId"]:checked')].map(input => Number(input.value)) : [];
             if (distribution === 'manual' && (!ids.length || ids.length > 5)) { setMessage('formMessage', 'Selecione de um a cinco profissionais compatíveis.'); return false; }
-            const date = document.getElementById('desiredDate').value;
-            if (serviceType.value === 'AGENDADO' && (!date || !Number.isFinite(new Date(date).getTime()) || new Date(date) <= new Date())) { setMessage('formMessage', 'Escolha uma data e horário no futuro.'); return false; }
-            draft = { categoriaId: Number(categorySelect.value), titulo: document.getElementById('title').value.trim(), descricao: document.getElementById('description').value.trim(), cidade: city.value.trim(), bairro: document.getElementById('neighborhood').value.trim() || null, endereco: document.getElementById('address').value.trim() || null, tipoAtendimento: serviceType.value, dataDesejada: serviceType.value === 'AGENDADO' ? new Date(date).toISOString() : null, distribuirParaCompativeis: distribution === 'auto', profissionalIds: ids, fotoUrls: [] };
+            draft = { categoriaId: Number(categorySelect.value), titulo: document.getElementById('title').value.trim(), descricao: document.getElementById('description').value.trim(), cidade: city.value.trim(), bairro: document.getElementById('neighborhood').value.trim() || null, endereco: document.getElementById('address').value.trim() || null, tipoAtendimento: 'IMEDIATO', dataDesejada: null, distribuirParaCompativeis: distribution === 'auto', profissionalIds: ids, fotoUrls: [] };
             summary(); reviewPanel.hidden = false; return true;
         }
         form.addEventListener('submit', event => { event.preventDefault(); if (prepareDraft()) button.focus?.(); });
@@ -184,7 +174,7 @@
                     draft.fotoUrls.push(uploadedFiles.get(file));
                 }
                 const created = await C.api('/pedidos', { method: 'POST', body: draft });
-                C.toast('Pedido enviado! Acompanhe as respostas dos profissionais.', 'success'); location.assign(`orcamentos.html?pedidoId=${created.id}`);
+                C.toast(created.destinatarios?.length === 0 ? 'Pedido salvo. Ainda não há profissionais compatíveis. Seu pedido continuará aberto para receber propostas.' : 'Pedido urgente enviado! Acompanhe as propostas.', 'success'); location.assign(`orcamentos.html?pedidoId=${created.id}`);
             } catch (error) {
                 setMessage('reviewMessage', orderError(error)); submitting = false; form.inert = false; button.disabled = false; button.textContent = 'Confirmar pedido'; document.getElementById('backToEdit').disabled = false;
             }

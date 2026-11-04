@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="../../css/components.css">
 
     <!-- Estilo específico do login -->
-    <link rel="stylesheet" href="../../css/pages/autenticacao.css">
+    <link rel="stylesheet" href="../../css/pages/autenticacao.css?v=20261104-login-options1">
 </head>
 
 <body class="auth-page">
@@ -82,10 +82,10 @@
 
             <div class="auth-form-wrapper">
 
-                <div class="mobile-brand">
+                <a class="mobile-brand brand" href="/" aria-label="CHAMAPRO início">
                     <span class="brand-symbol">C</span>
                     <span class="brand-name">CHAMA<span>PRO</span></span>
-                </div>
+                </a>
 
                 <div class="auth-heading">
                     <span class="auth-eyebrow">BEM-VINDO DE VOLTA</span>
@@ -124,13 +124,7 @@
 
                     <!-- SENHA -->
                     <div class="form-group">
-                        <div class="label-row">
-                            <label for="password">Senha</label>
-
-                            <a href="recuperar-senha.html" class="forgot-password" id="forgotPassword">
-                                Esqueceu a senha?
-                            </a>
-                        </div>
+                        <label for="password">Senha</label>
 
                         <div class="input-wrapper">
                             <span class="input-icon" aria-hidden="true">
@@ -167,6 +161,9 @@
                             <span class="custom-checkbox"></span>
                             <span>Lembrar de mim</span>
                         </label>
+                        <a href="recuperar-senha.html" class="forgot-password" id="forgotPassword">
+                            Esqueceu a senha?
+                        </a>
                     </div>
 
 

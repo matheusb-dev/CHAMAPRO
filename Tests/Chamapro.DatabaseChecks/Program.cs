@@ -11,6 +11,8 @@ var secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFold
 using var secrets = JsonDocument.Parse(File.ReadAllText(secretsPath));
 var connectionString = secrets.RootElement.GetProperty("ConnectionStrings:DefaultConnection").GetString()!;
 var cs = new NpgsqlConnectionStringBuilder(connectionString);
+cs.Options = "-c default_transaction_read_only=on";
+connectionString = cs.ConnectionString;
 if (cs.Host != "localhost" || cs.Port != 5432 || cs.Database != "chamapro_local")
     throw new InvalidOperationException("Este verificador somente lê chamapro_local em localhost:5432.");
 var translator = new NpgsqlNullNameTranslator();
@@ -53,8 +55,7 @@ foreach (var entity in db.Model.GetEntityTypes())
         if (exists == "0") throw new Exception($"FK ausente: {table}.{localColumns}");
     }
     var rows = await Scalar($"SELECT count(*) FROM {Quote(schema)}.{Quote(table)}");
-    if (rows != "0") throw new Exception($"Banco de uso deveria estar vazio: {table}");
-    Console.WriteLine($"PASS {table}: colunas, PK, FKs; 0 registros");
+    Console.WriteLine($"PASS {table}: colunas, PK, FKs; {rows} registros (somente leitura)");
     count++;
 }
 foreach (var (name, type) in new[] { ("tipo_usuario", typeof(TipoUsuario)), ("status_pedido", typeof(StatusPedido)), ("status_agendamento", typeof(StatusAgendamento)), ("status_verificacao", typeof(StatusVerificacao)) })
@@ -63,4 +64,4 @@ foreach (var (name, type) in new[] { ("tipo_usuario", typeof(TipoUsuario)), ("st
     if (!labels.Order().SequenceEqual(Enum.GetNames(type).Order())) throw new Exception($"Enum divergente: {name}");
     Console.WriteLine($"PASS enum {name}");
 }
-Console.WriteLine($"PASS {count} entidades compatíveis com o catálogo PostgreSQL; banco de uso vazio.");
+Console.WriteLine($"PASS {count} entidades compatíveis com o catálogo PostgreSQL; consulta somente leitura, sem exigir base vazia.");

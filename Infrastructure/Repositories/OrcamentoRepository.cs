@@ -27,7 +27,7 @@ public class OrcamentoRepository : IOrcamentoRepository
     public async Task<IReadOnlyList<Orcamento>> ListarDoPedidoAsync(int pedidoId)
         => await _db.Set<Orcamento>().AsNoTracking()
             .Include(o => o.Profissional).ThenInclude(p => p.Usuario)
-            .Where(o => o.PedidoId == pedidoId)
+            .Where(o => o.PedidoId == pedidoId && o.Profissional.Usuario.Ativo)
             .OrderBy(o => o.Valor).ThenBy(o => o.Id)
             .ToListAsync();
 
